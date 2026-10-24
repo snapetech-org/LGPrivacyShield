@@ -1,0 +1,17 @@
+{
+  "id": "org.privacyshield.webos",
+  "version": "0.1.4",
+  "vendor": "PrivacyShield contributors",
+  "type": "web",
+  "title": "PrivacyShield",
+  "disableBackHistoryAPI": true,
+  "main": "index.html",
+  "icon": "assets/privacyshield-icon.png",
+  "requiredACG": [
+    "settings.query",
+    "systemconfig.query",
+    "network.query",
+    "lunabus.query"
+  ],
+  "appDescription": "Review privacy settings, LG agreement status, and local TV details."
+}

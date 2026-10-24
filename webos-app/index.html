@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="color-scheme" content="light">
+    <title>PrivacyShield</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="webOSTV.js"></script>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true"><span></span></div>
+          <div>
+            <p class="brand-name">PrivacyShield</p>
+            <p class="brand-subtitle">TV privacy settings and activity</p>
+          </div>
+        </div>
+        <div class="device-chip" id="device-summary">Reading TV…</div>
+      </header>
+
+      <nav class="tabs" aria-label="App sections">
+        <button class="tab is-active" type="button" data-view="overview">Overview</button>
+        <button class="tab" type="button" data-view="controls">Controls</button>
+        <button class="tab" type="button" data-view="agreements">LG agreements</button>
+        <button class="tab" type="button" data-view="evidence">TV details</button>
+      </nav>
+
+      <main id="main-content" tabindex="-1">
+        <section class="view is-visible" id="view-overview" aria-labelledby="overview-title">
+          <div class="hero">
+            <div class="hero-copy">
+              <p class="eyebrow">Status</p>
+              <h1 id="overview-title">TV privacy settings</h1>
+              <p class="hero-note">Check Live Plus, voice controls, consent, and local TV services. Settings and service details are read on the TV. No usage data is sent.</p>
+            </div>
+            <div class="posture" id="posture-card">
+              <div class="posture-orbit" aria-hidden="true"><div class="posture-core">PS</div></div>
+              <p class="posture-label">Privacy settings</p>
+              <p class="posture-value" id="posture-value">Reading…</p>
+              <p class="posture-detail" id="posture-detail">Checking three settings and consent.</p>
+            </div>
+          </div>
+
+          <div class="summary-grid">
+            <article class="summary-item">
+              <div class="summary-icon icon-viewing" aria-hidden="true"><span></span></div>
+              <div><h2>Live Plus (ACR)</h2><p id="summary-viewing">Checking…</p></div>
+              <span class="state-dot" id="dot-viewing"></span>
+            </article>
+            <article class="summary-item">
+              <div class="summary-icon icon-voice" aria-hidden="true"><span></span></div>
+              <div><h2>Voice settings</h2><p id="summary-voice">Checking…</p></div>
+              <span class="state-dot" id="dot-voice"></span>
+            </article>
+            <article class="summary-item">
+              <div class="summary-icon icon-network" aria-hidden="true"><span></span></div>
+              <div><h2>Internet connection</h2><p id="summary-network">Checking…</p></div>
+              <span class="state-dot" id="dot-network"></span>
+            </article>
+          </div>
+
+          <div class="overview-bottom">
+            <section class="panel mic-panel" aria-labelledby="mic-title">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Microphone</p>
+                  <h2 id="mic-title">Physical microphone switch</h2>
+                </div>
+                <span class="status-pill status-unknown" id="mic-status">Manual check</span>
+              </div>
+              <p>Software controls turn off hands-free voice features. They do not disconnect the microphone.</p>
+              <p class="micro-note" id="mic-note">Some LG C6 layouts have a microphone switch on the lower edge. Check the TV for a physical switch.</p>
+            </section>
+            <section class="panel connection-panel" aria-labelledby="connection-title">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Device</p>
+                  <h2 id="connection-title">TV and network</h2>
+                </div>
+                <span class="status-pill status-neutral" id="connection-status">Checking</span>
+              </div>
+              <dl class="facts">
+                <div><dt>Model</dt><dd id="model-name">—</dd></div>
+                <div><dt>webOS</dt><dd id="webos-version">—</dd></div>
+                <div><dt>Network</dt><dd id="network-name">—</dd></div>
+              </dl>
+            </section>
+          </div>
+
+          <div class="action-row">
+            <button class="button button-primary" type="button" data-go="controls">Privacy settings</button>
+            <button class="button button-quiet" type="button" id="refresh-button">Refresh</button>
+            <span class="last-updated" id="last-updated">Not updated yet</span>
+          </div>
+        </section>
+
+        <section class="view" id="view-controls" aria-labelledby="controls-title" hidden>
+          <div class="section-intro">
+            <p class="eyebrow">TV settings</p>
+            <h1 id="controls-title">Privacy settings</h1>
+            <p>The current values are saved on the TV before the first change. Restore saved settings returns them to those values.</p>
+          </div>
+          <div class="control-toolbar">
+            <button class="button button-primary" type="button" id="privacy-preset" disabled>Turn off all three</button>
+            <button class="button button-quiet" type="button" id="restore-button" disabled>Restore saved settings</button>
+            <span class="toolbar-status" id="control-status" role="status">No changes made.</span>
+          </div>
+          <div class="control-list" id="control-list">
+            <article class="control-row" data-control="livePlus">
+              <div class="control-copy"><span class="control-category">Viewing</span><h2>Live Plus (ACR)</h2><p>Uses audio fingerprints to identify programs. LG says it does not use screen images, video, or voice recordings. Turning it off may remove Live Plus recommendations.</p><span class="control-meta" id="livePlus-meta">Checking…</span></div>
+              <label class="switch" role="group"><span class="sr-only">Live Plus</span><input type="checkbox" data-setting="livePlus" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
+            </article>
+            <article class="control-row" data-control="voiceLongDistance">
+              <div class="control-copy"><span class="control-category">Voice</span><h2>Hands-free voice recognition</h2><p>Allows voice commands without pressing the remote. Turning it off disables hands-free control. Remote push-to-talk is controlled separately. The microphone remains connected.</p><span class="control-meta" id="voiceLongDistance-meta">Checking…</span></div>
+              <label class="switch" role="group"><span class="sr-only">Hands-free voice recognition</span><input type="checkbox" data-setting="voiceLongDistance" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
+            </article>
+            <article class="control-row" data-control="turnOnByVoice">
+              <div class="control-copy"><span class="control-category">Voice</span><h2>Voice wake</h2><p>Allows voice commands to wake the TV from standby. Turning it off leaves the power button and remote control available.</p><span class="control-meta" id="turnOnByVoice-meta">Checking…</span></div>
+              <label class="switch" role="group"><span class="sr-only">Voice wake</span><input type="checkbox" data-setting="turnOnByVoice" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
+            </article>
+          </div>
+          <div class="notice notice-info" id="write-access-note">
+            <strong>How changes are checked</strong>
+            <span>After a change, the TV is checked for the new value. A setting stays locked when its current value cannot be read.</span>
+          </div>
+        </section>
+
+        <section class="view" id="view-agreements" aria-labelledby="agreements-title" hidden>
+          <div class="section-intro">
+            <p class="eyebrow">Consent and services</p>
+            <h1 id="agreements-title">LG agreements</h1>
+            <p>Agreement choices are separate from privacy settings.</p>
+          </div>
+          <div class="agreement-list" id="agreement-list">
+            <article class="agreement-row" data-agreement="S_ADG"><div><h2>Viewing Information Agreement</h2><p>Some context-aware voice commands may require the agreement. Live Plus is controlled separately.</p></div><span class="status-pill status-unknown">Checking</span></article>
+            <article class="agreement-row" data-agreement="S_VNG"><div><h2>Voice Information</h2><p>Covers LG voice recognition, including voice search. Some voice features may stop working if consent is withdrawn.</p></div><span class="status-pill status-unknown">Checking</span></article>
+            <article class="agreement-row" data-agreement="S_TAG"><div><h2>Interest-Based Advertisement Agreement</h2><p>Allows ads to be personalized based on interests.</p></div><span class="status-pill status-unknown">Checking</span></article>
+            <article class="agreement-row" data-agreement="S_MKT"><div><h2>Marketing Communications Agreement</h2><p>Controls LG marketing messages.</p></div><span class="status-pill status-unknown">Checking</span></article>
+            <article class="agreement-row" data-agreement="S_DPA"><div><h2>Data Partners Agreement</h2><p>Some partner features may stop working. Availability varies by region.</p></div><span class="status-pill status-unknown">Checking</span></article>
+            <article class="agreement-row required" data-agreement="S_PRG"><div><h2>Privacy Policy <span class="required-tag">Required</span></h2><p>LG's privacy terms for smart services.</p></div><span class="status-pill status-unknown">Checking</span></article>
+            <article class="agreement-row required" data-agreement="S_SVC"><div><h2>Terms of Use <span class="required-tag">Required</span></h2><p>Required to use LG smart services such as Netflix and YouTube.</p></div><span class="status-pill status-unknown">Checking</span></article>
+          </div>
+          <div class="notice notice-warning">
+            <strong>Change agreements in Settings</strong>
+            <span>Open Settings → General → Privacy &amp; Terms → User Agreements.</span>
+          </div>
+        </section>
+
+        <section class="view" id="view-evidence" aria-labelledby="evidence-title" hidden>
+          <div class="section-intro">
+            <p class="eyebrow">Current status</p>
+            <h1 id="evidence-title">TV details</h1>
+            <p>Current service and app status appears below. Router logs can show network destinations and connection times.</p>
+          </div>
+          <div class="evidence-grid">
+            <article class="evidence-card">
+              <div class="evidence-head"><span class="evidence-mark mark-local">L</span><span class="evidence-grade grade-known">TV settings</span></div>
+              <h2>Agreement status</h2><p id="evidence-consent">Checking agreement status…</p>
+            </article>
+            <article class="evidence-card">
+              <div class="evidence-head"><span class="evidence-mark mark-local">L</span><span class="evidence-grade grade-limited">TV services</span></div>
+              <h2>Voice services</h2><p id="evidence-processes">Checking local services…</p>
+            </article>
+            <article class="evidence-card">
+              <div class="evidence-head"><span class="evidence-mark mark-network">N</span><span class="evidence-grade grade-external">Router logs</span></div>
+              <h2>Network destinations</h2><p>Router or Pi-hole logs can show destination names and connection times. They do not show which app connected or the contents of encrypted traffic.</p>
+            </article>
+            <article class="evidence-card">
+              <div class="evidence-head"><span class="evidence-mark mark-installed">A</span><span class="evidence-grade grade-root">Installed on TV</span></div>
+              <h2>Homebrew apps</h2><p id="evidence-apps">Checking installed apps…</p>
+              <ul class="app-inventory" id="app-inventory"></ul>
+            </article>
+          </div>
+          <div class="notice notice-info" id="diagnostics-note">
+            <strong>LG diagnostics</strong>
+            <span id="diagnostics-status">Checking diagnostics settings…</span>
+          </div>
+          <details class="evidence-method">
+            <summary>Data collection</summary>
+            <p>No audio, screenshots, passwords, or account data are collected. DNS settings are not changed and no background service is installed. No usage data is sent.</p>
+          </details>
+        </section>
+      </main>
+
+      <footer class="footer"><span>TV checks run locally.</span><span class="remote-hint">Arrows move · OK selects · Back returns to Overview or exits</span><span id="runtime-mode">Reading TV information…</span><button class="footer-refresh" type="button" id="footer-refresh">Refresh</button></footer>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+    <script src="src/privacy-model.js"></script>
+    <script src="src/device-api.js"></script>
+    <script src="src/remote-navigation.js"></script>
+    <script src="src/app.js"></script>
+  </body>
+</html>

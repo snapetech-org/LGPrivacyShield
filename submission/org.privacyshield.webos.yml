@@ -1,0 +1,8 @@
+title: PrivacyShield
+iconUri: https://raw.githubusercontent.com/snapetech-org/PrivacyShield/main/webos-app/assets/privacyshield-icon.png
+manifestUrl: https://github.com/snapetech-org/PrivacyShield/releases/latest/download/org.privacyshield.webos.manifest.json
+category: system
+pool: main
+description: |
+  Check Live Plus and voice settings, LG agreement status, local services, and
+  installed Homebrew apps on LG webOS TVs. The app sends no usage data.

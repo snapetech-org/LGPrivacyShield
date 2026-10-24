@@ -4,5 +4,9 @@ manifestUrl: https://github.com/snapetech-org/PrivacyShield/releases/latest/down
 category: system
 pool: main
 description: |
-  Check Live Plus and voice settings, LG agreement status, local services, and
-  installed Homebrew apps on LG webOS TVs. The app sends no usage data.
+  Review and change 15 LG TV privacy settings, check saved agreement status,
+  and see local services, diagnostics, and installed Homebrew apps. PrivacyShield
+  does not upload TV settings or viewing activity.
+  Support PrivacyShield development on [Ko-fi](https://ko-fi.com/snapetech).
+funding:
+  ko_fi: [snapetech]

@@ -16,11 +16,14 @@ separate router or DNS logs. A software voice switch cannot disconnect a
 physical microphone unless the TV exposes a verified disconnect control to the
 app.
 
-When I find a compatibility problem, I can prepare a report in Controls and
-scan one QR code with my phone. Opening its link sends the allowlisted report to
-GitHub and fills in the issue form. The issue becomes public only if I submit
-it. The report includes the model, software, service access, and control
-readability; it excludes setting values and agreement choices.
+When a model is missing or a control cannot be read, I can prepare a
+compatibility report in Controls and scan one QR code. It opens GitHub's
+compatibility issue form with the report JSON prefilled in the link. The report
+includes the TV model, SDK, firmware, profile scope, service access, and whether
+each of the 17 controls could be read. It excludes current setting values and
+agreement choices. I can add the TV region or a menu-path observation before
+submitting. The report becomes a public issue only if I submit the form, giving
+maintainers owner feedback to review model coverage and improve the maps.
 
 #### Submission checklist
 
@@ -43,10 +46,14 @@ responsibility for this submission.
 
 #### Compatibility and testing
 
-I expect the app to work on webOS 6 and later. I tested it on my LG C6
-(OLED77C6HUP), running webOS 26 / Rockhopper 11.2.0-3512, firmware 43.21.79.
-Earlier webOS releases have not been tested. Setting availability depends on
-the TV's model, software, firmware, and permissions.
+I expect the app to support LG OLED TVs in the B1–B6, C1–C6, and G1–G6 families
+running webOS 6.x or webOS 22–26. The settings map follows the model family and
+installed webOS version; available controls depend on the TV's model, region,
+firmware, and Homebrew access. A setting appears only when its current value is
+readable, and changes are confirmed by readback. I physically tested it on my
+LG C6 (OLED77C6HUP), running webOS 26 / Rockhopper 11.2.0-3512, firmware
+43.21.79. The Homebrew IPK verifier reports ES2017 and runtime API support on
+webOS 6.4.0, 7.4.0, 8.3.0, 9.2.0, 10.2.0, and 11.2.0 profiles.
 
 #### Submission details
 
@@ -67,6 +74,4 @@ maintainer review.
 #### Validation
 
 The 0.4.2 release passed 61 Node.js tests, 51 Python tests, and 18 packaged
-app browser checks; `npm audit` found no vulnerabilities. The Homebrew IPK
-verifier reports ES2017 and runtime API support on the webOS 6.4.0 and later
-profiles. Earlier webOS releases have not been physically tested.
+app browser checks; `npm audit` found no vulnerabilities.

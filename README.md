@@ -12,6 +12,7 @@ See Live Plus and voice status, adjust the controls your TV supports, and save s
   - [LG agreements](#lg-agreements)
   - [About](#about)
 - [Local operation and privacy](#local-operation-and-privacy)
+- [Expected TV support](#expected-tv-support)
 - [Install and help](#install-and-help)
 
 ## Screenshots
@@ -52,15 +53,19 @@ Find the app version, license and source code, plus the support QR code and [Ko-
 
 **Local-first:** LGPrivacyShield runs on your TV and uses local webOS services. The app sends no data during normal use.
 
-To report a missing model or unreadable control, scan the single QR code with your phone. It opens GitHub's prefilled form; opening the link sends the report, and submitting creates a public issue. The report includes TV model and software, service access, and which controls could be read—not current setting values or agreement choices. This helps us check support for your TV.
+To report a missing model or a control that cannot be read, choose **Prepare compatibility report** in Controls and scan the QR code. It opens GitHub's compatibility form with a report prefilled. The report includes the TV model, software and firmware, profile and service access, and whether each of the 17 controls could be read. It excludes current setting values and agreement choices. Opening the link sends the report to GitHub in a URL parameter; the issue becomes public only if you submit the form. You can add the TV's region or a menu-path observation before submitting. Owner reports help us find gaps and improve the model maps.
 
 The app does not record audio or screenshots, run a background service, inspect encrypted network traffic, or upload TV settings or viewing activity. Network destination history requires separate router or DNS logs. A software voice switch does not disconnect a physical microphone if the TV does not expose a verified microphone-disconnect control to this app.
 
 The TV's system software and other apps may still use the network. LGPrivacyShield does not monitor or block their traffic. See the [security notes](SECURITY.md) for the app's trust boundary and review limits.
 
+## Expected TV support
+
+We expect LGPrivacyShield to support LG OLED B1–B6, C1–C6, and G1–G6 TVs running webOS 6.x or webOS 22–26. The app chooses its settings map from the TV's family and installed webOS version, so available controls vary by model, region, firmware, and Homebrew access. A setting appears only when the TV returns a recognized current value, and changes are verified by reading the requested value back. Physical testing has been on one C6 (`OLED77C6HUP`) running webOS 26 (firmware `43.21.79`). See the [model compatibility maps](docs/DEVICE-COMPATIBILITY.md) for details.
+
 ## Install and help
 
-LGPrivacyShield is expected to work on LG webOS 6 and later. Physical testing is on a C6 running webOS 26; earlier releases have not been tested. Controls depend on your TV model, software, and Homebrew access. Install the [latest release](https://github.com/snapetech-org/LGPrivacyShield/releases/latest) with [webOS Dev Manager](https://github.com/webosbrew/dev-manager-desktop). Homebrew Channel on a rooted TV enables local setting access.
+Install the [latest release](https://github.com/snapetech-org/LGPrivacyShield/releases/latest) with [webOS Dev Manager](https://github.com/webosbrew/dev-manager-desktop). Homebrew Channel on a rooted TV enables local setting access.
 
 See the [installation guide](docs/TEST-ON-YOUR-TV.md), [setting effects](docs/FEATURE-IMPACT.md), [LG agreement effects](docs/LG-AGREEMENT-EFFECTS.md), and [model compatibility](docs/DEVICE-COMPATIBILITY.md).
 

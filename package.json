@@ -1,6 +1,6 @@
 {
   "name": "privacyshield-webos",
-  "version": "0.1.4",
+  "version": "0.1.10",
   "private": true,
   "description": "Local-first privacy controls and evidence for rooted LG webOS TVs",
   "license": "MIT",

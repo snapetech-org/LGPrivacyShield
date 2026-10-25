@@ -15,12 +15,24 @@ class DeviceSnapshotTests(unittest.TestCase):
             {
                 "livePlus": "off",
                 "turnOnByVoice": "on",
+                "hbbTV": "off",
+                "hbbTvDnt": "on",
+                "hbbTvDeviceId": "off",
+                "livePromotion": "on",
+                "thirdPartyCookie": "onByUser",
+                "homeSenseAbsence": "off",
                 "unrelated": "on",
             },
             {
                 "voiceLongDistance": "off",
+                "lmt": "on",
+                "doNotSellMyPersonalInformation": "off",
+                "screenSaverAd": "on",
+                "homePromotion": "off",
                 "other": "sensitive",
             },
+            {"bleAdvertisingOnOff": "off", "other": "private"},
+            {"contentRecommendation": "on", "other": "private"},
         )
         self.assertEqual(
             settings,
@@ -28,6 +40,18 @@ class DeviceSnapshotTests(unittest.TestCase):
                 "livePlus": "off",
                 "turnOnByVoice": "on",
                 "voiceLongDistance": "off",
+                "hbbTV": "off",
+                "hbbTvDnt": "on",
+                "hbbTvDeviceId": "off",
+                "lmt": "on",
+                "doNotSellMyPersonalInformation": "off",
+                "screenSaverAd": "on",
+                "homePromotion": "off",
+                "livePromotion": "on",
+                "contentRecommendation": "on",
+                "thirdPartyCookie": "onByUser",
+                "bleAdvertisingOnOff": "off",
+                "homeSenseAbsence": "off",
             },
         )
 
@@ -39,7 +63,7 @@ class DeviceSnapshotTests(unittest.TestCase):
             ),
             {},
         )
-        self.assertEqual(device_snapshot.privacy_settings({}, {}), {})
+        self.assertEqual(device_snapshot.privacy_settings({}, {}, {}, {}), {})
 
     def test_agreements_return_only_allowlisted_explicit_booleans(self):
         record = {
@@ -64,6 +88,18 @@ class DeviceSnapshotTests(unittest.TestCase):
                 }
             },
         )
+
+    def test_diagnostics_expose_upload_flags_without_returning_full_preferences(self):
+        details = device_snapshot.diagnostics({
+            "faultLogUpload": False,
+            "dbgLogUpload": False,
+            "unrelated": "private",
+        })
+        self.assertEqual(details["faultLogUpload"], False)
+        self.assertEqual(details["debugLogUpload"], False)
+        self.assertIn("services", details)
+        self.assertIn("autoUpload", details)
+        self.assertNotIn("unrelated", details)
 
     def test_malformed_agreement_data_fails_closed(self):
         self.assertEqual(

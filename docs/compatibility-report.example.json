@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "appVersion": "0.1.10",
+  "device": {
+    "model": "OLED77C6HUP",
+    "sdkVersion": "11.2.0",
+    "firmwareVersion": "43.21.79"
+  },
+  "compatibility": {
+    "profileId": "lg-oled77c6hup-webos26-43.21.79",
+    "evidenceLevel": "source-mapped",
+    "sampleCount": 1,
+    "mappedControlCount": 15
+  },
+  "apiAccess": {
+    "systemInfo": true,
+    "settingsService": "available",
+    "hbcSnapshot": true
+  },
+  "controlReads": {
+    "livePlus": true,
+    "voiceLongDistance": true,
+    "turnOnByVoice": true,
+    "lmt": true,
+    "doNotSellMyPersonalInformation": true,
+    "screenSaverAd": true,
+    "homePromotion": true,
+    "livePromotion": true,
+    "contentRecommendation": true,
+    "hbbTvDnt": true,
+    "hbbTvDeviceId": true,
+    "thirdPartyCookie": true,
+    "hbbTV": true,
+    "bleAdvertisingOnOff": true,
+    "homeSenseAbsence": true
+  }
+}

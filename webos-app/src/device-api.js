@@ -3,6 +3,8 @@
 
   const SETTINGS = "luna://com.webos.settingsservice";
   const HBC = "luna://org.webosbrew.hbchannel.service";
+  const ADMANAGER = "luna://com.webos.service.admanager";
+  const APPLICATION_MANAGER = "luna://com.webos.applicationManager";
 
   function request(uri, method, parameters) {
     return new Promise((resolve, reject) => {
@@ -43,6 +45,20 @@
     return request(SETTINGS, "setSystemSettings", { category, settings: { [key]: value } });
   }
 
+  function setDoNotSell(value) {
+    if (value !== "on" && value !== "off") {
+      return Promise.reject(new Error("Invalid Do Not Sell value"));
+    }
+    return request(ADMANAGER, "updateDNS", { status: value });
+  }
+
+  function openAgreements() {
+    return request(APPLICATION_MANAGER, "launch", {
+      id: "com.webos.app.firstuse-overlay",
+      params: { target: "eula", context: "all" }
+    });
+  }
+
   function getSystemInfo() {
     return request("luna://com.webos.service.tv.systemproperty", "getSystemInfo", {
       keys: ["firmwareVersion", "modelName", "sdkVersion"]
@@ -77,8 +93,10 @@
     getNetworkStatus,
     getSettings,
     getSystemInfo,
+    openAgreements,
     rootExec,
     appRootPath,
+    setDoNotSell,
     setSetting
   });
   root.PrivacyShieldDeviceApi = api;

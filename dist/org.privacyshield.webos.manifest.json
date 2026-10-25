@@ -1,16 +1,16 @@
 {
   "id": "org.privacyshield.webos",
-  "version": "0.1.4",
+  "version": "0.1.10",
   "type": "web",
   "title": "PrivacyShield",
-  "appDescription": "Review privacy settings, LG agreement status, and local TV details.",
+  "appDescription": "Review LG privacy settings, agreement status, local service status, installed Homebrew apps, and public compatibility evidence.",
   "iconUri": "https://raw.githubusercontent.com/snapetech-org/PrivacyShield/main/webos-app/assets/privacyshield-icon.png",
   "sourceUrl": "https://github.com/snapetech-org/PrivacyShield",
   "rootRequired": "optional",
-  "ipkUrl": "org.privacyshield.webos_0.1.4_all.ipk",
+  "ipkUrl": "org.privacyshield.webos_0.1.10_all.ipk",
   "ipkHash": {
-    "sha256": "f60f0a2c932dfc68ee38135a83262c35a8e166442c17c6e1e38b5036e5b01f0b"
+    "sha256": "ab5660772d345b3e7f92f77be559616cb0b9f49f262f17351ec8f330caf7ba52"
   },
-  "ipkSize": 35906,
-  "installedSize": 89977
+  "ipkSize": 58352,
+  "installedSize": 175947
 }

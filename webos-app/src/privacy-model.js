@@ -5,9 +5,21 @@
   "use strict";
 
   const CONTROLS = Object.freeze([
-    { key: "livePlus", category: "option", label: "Live Plus", safeValue: "off", feature: "Viewing recognition and related Live Plus recommendations" },
-    { key: "voiceLongDistance", category: "general", label: "Hands-free voice recognition", safeValue: "off", feature: "Far-field voice control" },
-    { key: "turnOnByVoice", category: "option", label: "Voice wake", safeValue: "off", feature: "Voice wake from standby" }
+    { key: "livePlus", category: "option", group: "Viewing", label: "Live Plus (ACR)", safeValue: "off", feature: "Live Plus viewing recognition and related recommendations" },
+    { key: "voiceLongDistance", category: "general", group: "Voice", label: "Hands-free voice recognition", safeValue: "off", feature: "Far-field voice commands" },
+    { key: "turnOnByVoice", category: "option", group: "Voice", label: "Voice wake", safeValue: "off", feature: "Voice wake from standby" },
+    { key: "lmt", category: "general", group: "Advertising", label: "Limit Ad Tracking", safeValue: "on", feature: "Ad targeting may be less personalized" },
+    { key: "doNotSellMyPersonalInformation", category: "general", group: "Advertising", label: "Do Not Sell My Personal Information", safeValue: "on", writer: "admanager", preset: false, feature: "LG instructs its third-party providers to stop commercializing personal information; some ad-supported services may remain" },
+    { key: "screenSaverAd", category: "general", group: "Advertising", label: "Screen Saver Promotion", safeValue: "off", feature: "Promotional ads in supported screen savers and apps" },
+    { key: "homePromotion", category: "general", group: "Advertising", label: "Home menu ads", safeValue: "off", feature: "Sponsored advertisements in the Home menu" },
+    { key: "livePromotion", category: "option", group: "Advertising", label: "Live Promotion", safeValue: "off", feature: "Custom ads and services while watching content; available when Live Plus is on" },
+    { key: "contentRecommendation", category: "other", group: "Recommendations", label: "Home content recommendations", safeValue: "off", feature: "Recommendation categories in the Home menu" },
+    { key: "hbbTvDnt", category: "option", group: "Broadcast services", label: "HbbTV Do Not Track", safeValue: "on", feature: "HbbTV apps are asked to disable user tracking" },
+    { key: "hbbTvDeviceId", category: "option", group: "Broadcast services", label: "HbbTV Device ID", safeValue: "off", feature: "HbbTV apps may receive a unique HbbTV-only identifier" },
+    { key: "thirdPartyCookie", category: "option", group: "Broadcast services", label: "HbbTV third-party cookies", safeValue: "off", writer: "thirdPartyCookie", preset: false, feature: "Third-party cookies used by HbbTV services" },
+    { key: "hbbTV", category: "option", group: "Broadcast services", label: "HbbTV interactive services", safeValue: "off", preset: false, feature: "Broadcast-linked interactive apps and services" },
+    { key: "bleAdvertisingOnOff", category: "network", group: "Connections", label: "Bluetooth wake", safeValue: "off", preset: false, feature: "Turning on the TV from a mobile device over Bluetooth while in networked standby" },
+    { key: "homeSenseAbsence", category: "option", group: "Presence features", label: "Sleep on Absence", safeValue: "off", preset: false, feature: "Automatically turns the TV off after LG detects the user is away" }
   ]);
 
   const AGREEMENTS = Object.freeze([
@@ -21,8 +33,8 @@
   ]);
 
   function normalizeToggle(value) {
-    if (value === true || value === 1 || value === "on" || value === "true") return "on";
-    if (value === false || value === 0 || value === "off" || value === "false") return "off";
+    if (value === true || value === 1 || value === "on" || value === "onByUser" || value === "true") return "on";
+    if (value === false || value === 0 || value === "off" || value === "offByUser" || value === "false") return "off";
     return "unknown";
   }
 
@@ -57,6 +69,13 @@
     };
   }
 
+  function countRecommendedControls(settings) {
+    const source = settings && typeof settings === "object" ? settings : {};
+    const known = CONTROLS.filter(({ key }) => normalizeToggle(source[key]) !== "unknown");
+    const recommended = known.filter(({ key, safeValue }) => normalizeToggle(source[key]) === safeValue).length;
+    return { recommended, total: CONTROLS.length, unknown: CONTROLS.length - known.length };
+  }
+
   function featureConsentSummary(record) {
     return AGREEMENTS.map((agreement) => ({
       ...agreement,
@@ -74,11 +93,12 @@
   }
 
   function privacyPreset() {
-    return CONTROLS.map(({ key, category, safeValue }) => ({ key, category, value: safeValue }));
+    return CONTROLS.filter(({ preset }) => preset !== false)
+      .map(({ key, category, safeValue }) => ({ key, category, value: safeValue }));
   }
 
   function canApplyPrivacyPreset(settings) {
-    return CONTROLS.every(({ key }) => normalizeToggle(settings && settings[key]) !== "unknown");
+    return privacyPreset().every(({ key }) => normalizeToggle(settings && settings[key]) !== "unknown");
   }
 
   return Object.freeze({
@@ -87,6 +107,7 @@
     agreementState,
     canApplyPrivacyPreset,
     countPrivacyControls,
+    countRecommendedControls,
     featureConsentSummary,
     hasAgreementRecord,
     normalizeToggle,

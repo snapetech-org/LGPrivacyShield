@@ -1,6 +1,6 @@
 {
   "id": "org.privacyshield.webos",
-  "version": "0.1.4",
+  "version": "0.1.10",
   "vendor": "PrivacyShield contributors",
   "type": "web",
   "title": "PrivacyShield",
@@ -11,7 +11,8 @@
     "settings.query",
     "systemconfig.query",
     "network.query",
-    "lunabus.query"
+    "lunabus.query",
+    "applications.launcher"
   ],
-  "appDescription": "Review privacy settings, LG agreement status, and local TV details."
+  "appDescription": "Review LG privacy settings, agreement status, local service status, installed Homebrew apps, and public compatibility evidence."
 }

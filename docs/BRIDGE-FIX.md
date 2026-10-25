@@ -23,7 +23,9 @@ is the source for this mapping.
 | `org.privacyshield.webos` app | `settings.query` | `com.webos.settingsservice` | Read privacy toggles and agreement status directly when firmware permits it. |
 | `org.privacyshield.webos` app | `systemconfig.query` | `com.webos.service.tv.systemproperty` | Read model and firmware details. |
 | `org.privacyshield.webos` app | `network.query` | `com.palm.connectionmanager` | Read local network status. |
+| `org.privacyshield.webos` app | `applications.launcher` | `com.webos.applicationManager/launch` | Open LG's agreement screen after the user selects the button. |
 | `org.privacyshield.webos` app | `lunabus.query` | `org.webosbrew.hbchannel.service/exec` | Request the HBC root bridge for the bounded local snapshot and allowlisted setting writes. |
+| `org.privacyshield.webos` app | `public` method on this firmware | `com.webos.service.admanager/updateDNS` | Apply the Do Not Sell choice through LG's settings path. |
 | HBC `*.api.json` file (already installed) | `org.webosbrew.hbchannel.service.group`, `ares.webos.cli` | `org.webosbrew.hbchannel.service/*` | Existing HBC service and CLI access groups. |
 | HBC `*.api.public.json` file (already installed) | `public` | `org.webosbrew.hbchannel.service/*` | Existing public HBC API methods. |
 | HBC `*.api.lunabus.query.json` file (missing before repair) | `lunabus.query` | `org.webosbrew.hbchannel.service/*` | The missing webOS 26 caller group required by PrivacyShield's `exec` request. |
@@ -120,15 +122,16 @@ service and making a new request caused it to register the updated groups.
 `ls-monitor -i` then showed `lunabus.query` in the live `exec` method's
 `provides` list.
 
-Headless validation against the running PrivacyShield app confirmed that its
-own Luna client identity can execute the bounded snapshot and allowlisted
-writer through HBC. The bridge returned root identity, read all three privacy
-settings and the seven supported agreement flags, and completed idempotent
-`off` write/readback checks for all three controls. The setting values were
-already `off`; validation did not change them or EULA consent. Direct
-SettingsService reads remain denied on this firmware, so the app relies on the
-working HBC snapshot fallback for those values. System information and network
-status calls succeeded directly.
+During v0.1.4 validation, the running PrivacyShield app's own Luna client
+identity executed the bounded snapshot and allowlisted writer through HBC. The
+bridge returned root identity, read three privacy settings and seven agreement
+flags, and completed idempotent `off` write/readback checks for those three
+controls. They were already `off`; that validation did not change them or
+agreement consent. A later v0.1.5 app session toggled Live Plus off and on;
+the other v0.1.5 additions were not individually tested live. The current
+v0.1.6 package has not been installed or run on the TV. Direct SettingsService
+reads remain denied on this firmware, so the app uses the HBC snapshot
+fallback. System information and network status calls succeeded directly.
 
 ## Security scope
 
@@ -139,10 +142,11 @@ fix. The group gate is shared by clients with that ACG, not bound to the
 PrivacyShield app ID. HBC's elevated `exec` method is security-sensitive.
 
 PrivacyShield uses the bridge only with app-owned script paths and allowlisted
-setting keys and values. Its snapshot returns only three privacy settings,
-seven explicit agreement flags, selected local process names, basic diagnostic
-state, and installed app IDs/titles/versions. The permission map does not add a
-background service, change EULA consent, or alter DNS. Review this scope before
+setting keys and values. Its snapshot returns only 15 privacy settings,
+seven explicit agreement flags, selected local process names, diagnostic
+upload flags, and installed Homebrew app IDs/titles/versions. The permission
+map does not add a background service, change EULA consent, or alter DNS.
+Review this scope before
 installing the app on a rooted TV.
 
 ## Apply and rollback

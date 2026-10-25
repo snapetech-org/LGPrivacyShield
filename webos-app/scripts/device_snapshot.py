@@ -41,7 +41,11 @@ def installed_apps():
     return sorted(apps, key=lambda item: (item["title"].lower(), item["id"]))
 
 
-def diagnostics():
+def diagnostics(option=None):
+    if option is None:
+        option = read_json("/var/luna/preferences/option")
+    if not isinstance(option, dict):
+        option = {}
     services = []
     try:
         result = subprocess.run(["pidof", "rdxd", "uploadd"], capture_output=True, text=True, timeout=2)
@@ -67,11 +71,16 @@ def diagnostics():
                     break
     except OSError:
         pass
-    return {"services": sorted(set(services)), "autoUpload": auto_upload}
+    return {
+        "services": sorted(set(services)),
+        "autoUpload": auto_upload,
+        "faultLogUpload": option.get("faultLogUpload") if isinstance(option.get("faultLogUpload"), bool) else None,
+        "debugLogUpload": option.get("dbgLogUpload") if isinstance(option.get("dbgLogUpload"), bool) else None,
+    }
 
 
-def privacy_settings(option=None, general=None):
-    """Read only the three explicitly supported privacy controls."""
+def privacy_settings(option=None, general=None, network=None, other=None):
+    """Read only explicit, reviewed privacy controls from local preferences."""
     if option is None:
         option = read_json("/var/luna/preferences/option")
     if general is None:
@@ -80,15 +89,32 @@ def privacy_settings(option=None, general=None):
         option = {}
     if not isinstance(general, dict):
         general = {}
+    if not isinstance(network, dict):
+        network = {}
+    if not isinstance(other, dict):
+        other = {}
     values = {
         "livePlus": option.get("livePlus"),
         "turnOnByVoice": option.get("turnOnByVoice"),
         "voiceLongDistance": general.get("voiceLongDistance"),
+        "hbbTV": option.get("hbbTV"),
+        "hbbTvDnt": option.get("hbbTvDnt"),
+        "hbbTvDeviceId": option.get("hbbTvDeviceId"),
+        "lmt": general.get("lmt"),
+        "doNotSellMyPersonalInformation": general.get("doNotSellMyPersonalInformation"),
+        "screenSaverAd": general.get("screenSaverAd"),
+        "homePromotion": general.get("homePromotion"),
+        "livePromotion": option.get("livePromotion"),
+        "contentRecommendation": other.get("contentRecommendation"),
+        "thirdPartyCookie": option.get("thirdPartyCookie"),
+        "bleAdvertisingOnOff": network.get("bleAdvertisingOnOff"),
+        "homeSenseAbsence": option.get("homeSenseAbsence"),
     }
+    accepted = {"on", "off", "onByUser", "offByUser"}
     return {
         key: value
         for key, value in values.items()
-        if isinstance(value, str) and value in {"on", "off"}
+        if isinstance(value, str) and value in accepted
     }
 
 
@@ -114,11 +140,15 @@ def agreements(record=None):
 
 
 def snapshot():
+    option = read_json("/var/luna/preferences/option")
+    general = read_json("/var/luna/preferences/general")
+    network = read_json("/var/luna/preferences/network")
+    other = read_json("/var/luna/preferences/other")
     return {
         "apps": installed_apps(),
         "voiceProcesses": process_names(),
-        "diagnostics": diagnostics(),
-        "settings": privacy_settings(),
+        "diagnostics": diagnostics(option),
+        "settings": privacy_settings(option, general, network, other),
         "agreements": agreements(),
     }
 

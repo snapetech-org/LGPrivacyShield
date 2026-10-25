@@ -26,11 +26,20 @@ source-aware voice commands may need Viewing Information. Accept only the
 agreements needed for the desired features. The Privacy Policy and Terms of
 Use are required for smart services such as Netflix and YouTube.
 
-PrivacyShield controls these software settings:
+PrivacyShield exposes 15 settings traced to LG's Settings UI: Live Plus / ACR,
+two voice controls, Limit Ad Tracking, Do Not Sell, Screen Saver Promotion,
+Home menu ads, Live Promotion, Home content recommendations, four HbbTV
+controls, Bluetooth wake, and Sleep on Absence. The full handlers, effects,
+permission boundary, one-time ID actions, and unmapped candidates are in
+[TV-PRIVACY-CAPABILITY-MAP.md](TV-PRIVACY-CAPABILITY-MAP.md).
 
-- `option.livePlus`: Live Plus / ACR
-- `general.voiceLongDistance`: far-field hands-free voice recognition
-- `option.turnOnByVoice`: voice wake from standby
+The Settings bundle handles Do Not Sell through
+`com.webos.service.admanager/updateDNS` with a `status` value. PrivacyShield
+uses that same method rather than writing the cached preference directly.
+Other confirmed switches use their SettingsService category and key. Each
+change is read back before the app reports success. The ten-setting preset
+leaves Do Not Sell, the HbbTV master switch, HbbTV cookies, Bluetooth wake, and
+Sleep on Absence for separate user action.
 
 Turning off hands-free recognition and voice wake does not electrically
 disconnect a microphone. Deliberate Magic Remote push-to-talk is a separate
@@ -39,19 +48,20 @@ captured or transmitted.
 
 ## Hardware microphone switch
 
-The owner-manual page indexed for the OLED77C6HUP family depicts two bottom
-control layouts. One includes a mic switch; the other does not show one. The
-manual page does not map each layout to each SKU, so PrivacyShield reports the
-physical mic state as unverified. The software controls above do not replace a
-hardware disconnect.
+The official owner manual for OLED77C6HUP is shared across multiple model
+variants. It depicts two bottom-control layouts: Type A has a microphone
+switch; Type B does not. The manual does not identify which layout is fitted
+to the installed unit, so PrivacyShield displays **Check TV**. The software
+controls above turn off voice features; they do not replace a hardware
+disconnect.
 
 ## webOS 26 and Homebrew access
 
-PrivacyShield first queries SettingsService for private setting values and
-falls back to a root snapshot that reads only the three supported toggles and
-the accepted flags for seven agreement IDs. The snapshot does not return the
-raw preferences files. Local app/process inventory and the fallback require
-the Homebrew Channel `exec` API. On webOS 26, the application declares
+PrivacyShield queries SettingsService and falls back to a root snapshot that
+reads only the 15 supported setting values, seven agreement flags, selected
+diagnostic flags, service names, and Homebrew app metadata. The snapshot does
+not return raw preference files. Local app/process inventory and the fallback
+require the Homebrew Channel `exec` API. On webOS 26, the application declares
 `lunabus.query`, and the installed HBC service also needs an API-permission
 mapping for that group. Before repair, HBC 0.7.3 on the test TV lacked it, and
 the service returned `Denied method call "exec" for category "/"`. The map and
@@ -59,15 +69,18 @@ manifest path were present after repair, but the already-running HBC process
 still advertised its old access groups. `ls-control scan-services` did not
 refresh that dynamic registration; restarting HBC and making a new request did.
 
-Live validation then showed `lunabus.query` in the active `exec` method's
+Live validation showed `lunabus.query` in the active `exec` method's
 `provides` list. From the running PrivacyShield app context, `exec id` returned
-root identity and the bounded snapshot returned all three toggle values and
-the seven supported agreement flags. The allowlisted writer completed an
-idempotent `off` write/readback for each setting; all were already `off`, and
-neither settings nor agreement consent changed during validation. Direct
-SettingsService option/general/agreement requests remain denied on this
-firmware, so the app uses the HBC snapshot fallback. System information and
-network status calls succeed directly.
+root identity and the v0.1.4 snapshot returned the original three toggle
+values and seven agreement flags. The v0.1.4 allowlisted writer completed
+idempotent `off` write/readback for those three controls. A later v0.1.5 app
+session toggled Live Plus off and on; its other added settings were not
+individually tested live. The current v0.1.6 package has not been installed or
+run on the TV. Its expanded settings were read over SSH only; no settings or
+agreement choices were changed during this map work. Direct SettingsService
+option/general/agreement requests remain denied on this firmware, so the app
+uses the HBC snapshot fallback. System information and network status calls
+succeed directly.
 
 The upstream HBC change for webOS 26 adds a `lunabus.query` mapping to the
 elevated service by adding
@@ -109,10 +122,9 @@ application, plus LG's model documentation and statements.
 
 ## Sources
 
-- [LG OLED77C6HUP product support and manuals](https://www.lg.com/us/support/product/lg-OLED77C6HUP.AUSZ)
-- [OLED77C6HUP owner-manual text](https://manualsfile.com/product/k69pr40oxv2.html) — shared hardware layouts and mic-switch note
+- [LG OLED77C6HUP product support and manuals](https://www.lg.com/us/support/product/lg-OLED77C6HUP.AUS)
+- [LG OLED77C6HUP owner manual](https://gscs-b2c.lge.com/open/downloadFile?fileId=wfynXPbF61Qz9tGNP8mg) — page 7 shows the two bottom-control layouts
 - [LG explanation of voice recognition and ACR](https://www.lgcorp.com/media/release/30566)
-- [LG help: reviewing and changing optional User Agreements](https://www.lg.com/us/support/help-library/seeing-a-user-agreements-screen-on-your-lg-tv-CT10000018-20155426555618)
 - [Samsung support: Vision AI, including Pet Care and Family Care](https://www.samsung.com/us/support/answer/ANS10006930/)
 - [Report on the Samsung reverse-engineering claims and verification status](https://pasqualepillitteri.it/en/news/26796/samsung-tvs-researcher-claims-microphone-always-on)
 - [LG Privacy Statement for Smart TVs](https://www.lg.com/us/newsroom/corporate/statement-understanding-privacy-on-lg-smart-tvs)

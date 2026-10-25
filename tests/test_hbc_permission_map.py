@@ -169,5 +169,12 @@ class HbcPermissionMapTests(unittest.TestCase):
             repair.parse_exec_provides("service is not registered")
 
 
+class AppPermissionTests(unittest.TestCase):
+    def test_native_user_agreement_screen_permission_is_declared(self):
+        appinfo_path = Path(__file__).resolve().parents[1] / "webos-app/appinfo.json"
+        appinfo = json.loads(appinfo_path.read_text(encoding="utf-8"))
+        self.assertIn("applications.launcher", appinfo["requiredACG"])
+
+
 if __name__ == "__main__":
     unittest.main()

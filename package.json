@@ -1,6 +1,6 @@
 {
   "name": "privacyshield-webos",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "private": true,
   "description": "Local-first privacy controls and evidence for rooted LG webOS TVs",
   "license": "MIT",
@@ -13,6 +13,7 @@
     "clean": "bash scripts/clean-generated.sh"
   },
   "devDependencies": {
-    "@webos-tools/cli": "3.2.6"
+    "@webos-tools/cli": "3.2.6",
+    "esbuild": "0.28.2"
   }
 }

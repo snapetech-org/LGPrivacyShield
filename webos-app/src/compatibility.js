@@ -4,7 +4,7 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
-  const APP_VERSION = "0.1.10";
+  const APP_VERSION = "0.1.11";
   const CONTROL_KEYS = Object.freeze([
     "livePlus", "voiceLongDistance", "turnOnByVoice", "lmt",
     "doNotSellMyPersonalInformation", "screenSaverAd", "homePromotion",

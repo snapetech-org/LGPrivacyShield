@@ -18,6 +18,13 @@ npm run test:ipk
 Run only the browser checks with `npm run test:headless`. If Chromium is not on
 `PATH`, set `CHROMIUM_BIN=/path/to/chromium`.
 
+The 0.1.11 IPK is built with JavaScript targeted to Chromium 79. The Homebrew
+IPK verifier reports ES2017 syntax and no syntax incompatibility on its webOS
+6.4.0/Chromium 79 profile or later; its runtime API row remains a warning on
+6.4.0. The catalog entry therefore declares `webosRelease >=6.0`, while all
+privacy-setting writes remain locked outside the exact C6H profile. This is a
+static package check, not execution on a 2021 TV.
+
 The browser scenarios cover:
 
 1. Successful SettingsService reads/writes for all 15 switches, repeated OK

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "appVersion": "0.1.10",
+  "appVersion": "0.1.11",
   "device": {
     "model": "OLED77C6HUP",
     "sdkVersion": "11.2.0",

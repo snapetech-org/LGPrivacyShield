@@ -77,6 +77,9 @@ CleanYourTV table, and separate C1/G1 network, G4 app, C5 root-audit, unassigned
 webOS 26 settings and 2021 webOS 6 owner evidence, plus an LG firmware ACR
 analysis pinned to build 43.21.73. The C5 microphone-switch reports retain
 their separate model and software limits.
+Version 0.1.11 compiles the packaged JavaScript for Chromium 79, the web engine
+used by webOS 6. This allows the evidence and read-only views to load on 2021
+sets; settings writes remain restricted to the exact validated C6H profile.
 The public catalog covers all 18 B1–B6, C1–C6, and G1–G6 family labels, with
 source-scoped device reports, privacy-control paths, model/menu references,
 and limits. Twelve family labels have at least one matching community row in
@@ -101,7 +104,7 @@ checks. See [docs/HEADLESS-QA.md](docs/HEADLESS-QA.md).
 
 The public repository is
 [snapetech-org/PrivacyShield](https://github.com/snapetech-org/PrivacyShield).
-The current package version is v0.1.10. The IPK and matching manifest are built
+The current package version is v0.1.11. The IPK and matching manifest are built
 locally in `dist/`. The local Homebrew catalog draft includes a clickable Ko-fi
 link and the catalog's `funding.ko_fi` entry. Homebrew publication is a separate
 release step and requires maintainer sign-off.

@@ -6,12 +6,23 @@ const test = require("node:test");
 const metadata = fs.readFileSync(path.join(__dirname, "../submission/org.privacyshield.webos.yml"), "utf8");
 const normalizedMetadata = metadata.replace(/\s+/g, " ");
 
-test("Homebrew listing states readback limits and includes the Ko-fi support link", () => {
+test("Homebrew listing describes the current app and includes support details", () => {
   assert.match(metadata, /Support development on \[Ko-fi\]\(https:\/\/ko-fi\.com\/snapetech\)\./);
   assert.match(metadata, /funding:\s*\n\s+ko_fi:\s*\[snapetech\]/);
-  assert.match(metadata, /Review 17 privacy settings/);
-  assert.match(normalizedMetadata, /A switch is enabled only when the TV returns a readable value/);
-  assert.match(normalizedMetadata, /each change is confirmed by readback/);
+  const shortDescription = metadata.match(/^shortDescription: (.+)$/m)?.[1];
+  assert.ok(shortDescription, "a concise listing summary is present");
+  assert.ok(shortDescription.length <= 80, "the listing summary fits Homebrew's 80-character limit");
+  assert.match(normalizedMetadata, /Review supported LG TV privacy settings and saved agreement choices/);
+  assert.match(normalizedMetadata, /Save settings to restore later/);
+  assert.match(normalizedMetadata, /PrivacyShield runs locally\. The app and TV send nothing/);
+  assert.match(normalizedMetadata, /scan the compatibility QR code with your phone/);
+  assert.doesNotMatch(metadata, /installed apps|diagnostic upload settings|model references/i);
   assert.doesNotMatch(metadata, /only on the validated OLED77C6HUP/);
   assert.match(metadata, /webosRelease: '\>=6\.0'/);
+
+  const screenshots = [...metadata.matchAll(/^  - url: https:\/\/raw\.githubusercontent\.com\/snapetech-org\/PrivacyShield\/main\/docs\/screenshots\/([\w-]+\.png)$/gm)];
+  assert.equal(screenshots.length, 8, "each main page has dark and light catalog screenshots");
+  for (const [, filename] of screenshots) {
+    assert.ok(fs.existsSync(path.join(__dirname, "../docs/screenshots", filename)), `${filename} exists`);
+  }
 });

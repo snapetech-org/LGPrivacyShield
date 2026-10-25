@@ -11,10 +11,9 @@ It contains 405 checksummed package records for 525 exact model codes across
 B1–B6, C1–C6, and G1–G6. The records preserve model suffixes, regions, firmware
 and platform versions, OTA IDs, archive URLs, and ZIP/EPK checksums.
 
-This is package identity metadata. It contains no firmware image, extracted
+This is maintainer research data. It contains no firmware image, extracted
 settings registry, current preference value, or proof that a setting works on
-a physical TV. The app uses it only to describe a possible firmware package
-match; it never enables a privacy control from this data.
+a physical TV. It is not loaded by the app or included in the installable IPK.
 
 Regenerate both outputs after downloading the source index:
 
@@ -23,7 +22,8 @@ python3 scripts/build_firmware_catalog.py --input /path/to/processed_fw.json
 ```
 
 The source JSON did not include a license declaration in the retrieved
-snapshot. This project records its source and checksum and makes no claim that
-the archive's metadata is LG-authored or licensed under PrivacyShield's
-AGPL-3.0-only license. Check the source's current terms before redistributing
-the catalog outside this project.
+snapshot. The generated data is checked into this public source repository but
+is not included in the TV IPK. This project records its source and checksum and
+makes no claim that the archive's metadata is LG-authored or licensed under
+PrivacyShield's AGPL-3.0-only license. Resolve the archive's terms or remove
+this snapshot before further redistribution.

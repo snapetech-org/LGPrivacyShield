@@ -78,8 +78,8 @@ with tarfile.open(fileobj=io.BytesIO(data_bytes), mode="r:gz") as archive:
     required_files = {
         f"{app_root}LICENSE": f"{repo_root}/LICENSE",
         f"{app_root}THIRD-PARTY-NOTICES.md": f"{repo_root}/THIRD-PARTY-NOTICES.md",
-        f"{app_root}licenses/Apache-2.0.txt": f"{repo_root}/webos-app/licenses/Apache-2.0.txt",
-        f"{app_root}licenses/MIT-qrcode-generator.txt": f"{repo_root}/webos-app/licenses/MIT-qrcode-generator.txt",
+        f"{app_root}vendor/LICENSE-2.0.txt": f"{repo_root}/webos-app/vendor/LICENSE-2.0.txt",
+        f"{app_root}vendor/LICENSE.qrcode-generator.txt": f"{repo_root}/webos-app/vendor/LICENSE.qrcode-generator.txt",
     }
     for packaged_path, source_path in required_files.items():
         member = files.get(packaged_path)

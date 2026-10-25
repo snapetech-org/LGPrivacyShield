@@ -73,10 +73,14 @@ request does not validate the app's own Luna permissions. See
 2026-10-25:
 
 - `npm test`: 58 Node.js tests and 48 Python tests passed.
-- `npm run package`: produced a 71,008-byte 0.4.0 IPK, SHA-256
-  `076cad5fe4d70010b925f549c5899b81f3d4ce8e04a30a6391fd6abf03419017`.
+- `npm run package`: produced a 66,432-byte 0.4.0 IPK, SHA-256
+  `fb8c983fdc577e71fdf63014654296f15b31422f3d6c696f3c2d51979e0b9b2d`.
 - `npm run test:ipk`: package metadata, licenses, research-file exclusions, and
   all 18 packaged-app browser checks passed.
+- Homebrew's `webosbrew-ipk-verify` exited successfully for webOS 6.4.0. Its
+  runtime API check warns for manual verification; it also lists seven
+  user-activated external links. The physical TV test record covers webOS 26,
+  not webOS 6.
 - Successful reads leave the footer clear, and Overview shows no read timestamp.
 - Installed and launched the IPK on an OLED77C6HUP running webOS 26,
   firmware 43.21.79. The app-manager reported PrivacyShield running after

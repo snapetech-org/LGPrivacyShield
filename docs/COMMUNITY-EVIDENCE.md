@@ -4,6 +4,17 @@ Checked 2026-10-24. The source snapshots are in [`community-data.js`](../webos-a
 
 The combined sources provide real model rows, software versions, settings/service maps, consent effects, microphone paths, and independent network observations. Their scope and access level stay attached to each finding. A tool running as root, on a different TV variant, or in a network-capture setup does not prove that PrivacyShield can read or write the same thing from its packaged-app context.
 
+The normalized Glasshouse (Copyright © 2026 Rory Gallagher) and CleanYourTV
+(Copyright © 2026 cleanyourtv-WebOS contributors) device observations in
+[`community-data.js`](../webos-app/src/community-data.js) use source snapshots
+whose repositories publish MIT licenses: [Glasshouse](https://github.com/rorygallagher2024/glasshouse/blob/a1b93a218222034934004d502aeff3f111dfd411/LICENSE)
+and [CleanYourTV](https://github.com/lasharor/cleanyourtv-WebOS/blob/5736f246d0192d78c9bed9b3ba66f8e2ac945c5b/LICENSE). These research files are
+excluded from the TV package. Their notices are preserved in
+[`LICENSE-Glasshouse`](../data/licenses/LICENSE-Glasshouse.txt) and
+[`LICENSE-CleanYourTV`](../data/licenses/LICENSE-CleanYourTV.txt). The firmware
+package catalog has separate license uncertainty documented in
+[`data/README.md`](../data/README.md).
+
 PrivacyShield combines a shared Glasshouse SettingsService registry with narrower model/software control maps: a C5/SDK 10.3.1 cohort overlay, exact `OLED55B56LA` B5 and `OLED65G5WUA` G5 overlays, and the exact `OLED77C6HUP` / SDK `11.2.0` / firmware `43.21.79` profile. Other reported settings remain research evidence; the app does not read or display them. These maps are published across separate projects; there is no single per-model private-key database. A source map nominates a control; the TV must return a readable value before the app enables its switch, and each change requires exact readback.
 
 The Opt Out Of catalog has a separate guide for every B1–B6, C1–C6, and G1–G6 family. These pages are model-family privacy and menu maps, not private Luna key tables. Rooted projects publish both shared SettingsService registries that adapt to keys reported by a TV and narrower model/software maps such as the B5 and C5 findings below. The repository keeps source maps separate from on-device readback.

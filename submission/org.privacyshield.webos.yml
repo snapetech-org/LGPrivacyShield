@@ -5,13 +5,33 @@ category: system
 pool: main
 requirements:
   webosRelease: '>=6.0'
+shortDescription: Review LG TV privacy settings and agreement choices.
+screenshots:
+  - url: https://raw.githubusercontent.com/snapetech-org/PrivacyShield/main/docs/screenshots/overview-dark.png
+    caption: Overview in dark mode
+  - url: https://raw.githubusercontent.com/snapetech-org/PrivacyShield/main/docs/screenshots/overview-light.png
+    caption: Overview in light mode
+  - url: https://raw.githubusercontent.com/snapetech-org/PrivacyShield/main/docs/screenshots/controls-top-dark.png
+    caption: Controls in dark mode
+  - url: https://raw.githubusercontent.com/snapetech-org/PrivacyShield/main/docs/screenshots/controls-top-light.png
+    caption: Controls in light mode
+  - url: https://raw.githubusercontent.com/snapetech-org/PrivacyShield/main/docs/screenshots/agreements-top-dark.png
+    caption: LG agreements in dark mode
+  - url: https://raw.githubusercontent.com/snapetech-org/PrivacyShield/main/docs/screenshots/agreements-top-light.png
+    caption: LG agreements in light mode
+  - url: https://raw.githubusercontent.com/snapetech-org/PrivacyShield/main/docs/screenshots/about-dark.png
+    caption: About in dark mode
+  - url: https://raw.githubusercontent.com/snapetech-org/PrivacyShield/main/docs/screenshots/about-light.png
+    caption: About in light mode
 description: |
-  Review 17 privacy settings, LG agreement status, local services, installed
-  apps, diagnostic upload settings, and model references. Controls vary by
-  model and webOS version. A switch is enabled only when the TV returns a
-  readable value; each change is confirmed by readback. Unsupported settings
-  remain read-only. PrivacyShield does not send setting values or viewing
-  activity. A sanitized compatibility report can be shared by user action.
+  Review supported LG TV privacy settings and saved agreement choices. Save
+  settings to restore later; each change is checked on the TV.
+
+  PrivacyShield runs locally. The app and TV send nothing. To report a missing
+  model or unreadable control, scan the compatibility QR code with your phone.
+  GitHub opens with a prefilled report; submit it to share it with maintainers.
+
+  Controls depend on your model, software, and Homebrew permissions.
   Support development on [Ko-fi](https://ko-fi.com/snapetech).
 funding:
   ko_fi: [snapetech]

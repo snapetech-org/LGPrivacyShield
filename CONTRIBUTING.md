@@ -34,5 +34,6 @@ The headless UI tests use Chromium and a simulated TV bridge. They verify
 application behavior, not private firmware behavior or every physical TV.
 Describe any physical-device validation separately from emulator results.
 
-Keep pull requests focused. Do not include TV identifiers, network addresses,
-credentials, unredacted reports, or local machine names.
+Keep pull requests focused. Do not include TV serial numbers, network or
+household identifiers, credentials, unredacted reports, or local machine
+names. Model and software versions are useful compatibility evidence.

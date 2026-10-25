@@ -109,75 +109,86 @@
             <button class="button button-quiet" type="button" id="restore-button" disabled>Restore saved settings</button>
             <span class="toolbar-status" id="control-status" role="status">No changes made.</span>
           </div>
-          <div class="control-list" id="control-list">
-            <article class="control-row" data-control="livePlus">
-              <div class="control-copy"><span class="control-category">Viewing</span><h2>Live Plus (ACR)</h2><p>Uses audio fingerprints to identify programs on screen. Turning it off may remove Live Plus recommendations. This switch is separate from LG agreements.</p><span class="control-meta" id="livePlus-meta">Checking…</span></div>
-              <label class="switch" role="group"><span class="sr-only">Live Plus</span><input type="checkbox" data-setting="livePlus" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
-            </article>
-            <article class="control-row" data-control="voiceLongDistance">
-              <div class="control-copy"><span class="control-category">Voice</span><h2>Hands-free voice recognition</h2><p>Allows voice commands without pressing the remote. Off disables hands-free commands; it does not disconnect either microphone.</p><span class="control-meta" id="voiceLongDistance-meta">Checking…</span></div>
-              <label class="switch" role="group"><span class="sr-only">Hands-free voice recognition</span><input type="checkbox" data-setting="voiceLongDistance" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
-            </article>
-            <article class="control-row" data-control="turnOnByVoice">
-              <div class="control-copy"><span class="control-category">Voice</span><h2>Voice wake</h2><p>Allows voice commands to wake the TV from standby. Off leaves the power button and remote control available.</p><span class="control-meta" id="turnOnByVoice-meta">Checking…</span></div>
-              <label class="switch" role="group"><span class="sr-only">Voice wake</span><input type="checkbox" data-setting="turnOnByVoice" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
-            </article>
-            <article class="control-row" data-control="lmt">
-              <div class="control-copy"><span class="control-category">Advertising</span><h2>Limit Ad Tracking</h2><p>Limits use of personal data for advertising. On may change ad personalization; it does not remove ads.</p><span class="control-meta" id="lmt-meta">Checking…</span></div>
-              <label class="switch" role="group"><span class="sr-only">Limit Ad Tracking</span><input type="checkbox" data-setting="lmt" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
-            </article>
-            <article class="control-row" data-control="doNotSellMyPersonalInformation">
-              <div class="control-copy"><span class="control-category">Advertising</span><h2>Do Not Sell My Personal Information</h2><p>Asks LG's third-party providers to stop selling personal information. Some ad-supported services may remain. This does not block network traffic.</p><span class="control-meta" id="doNotSellMyPersonalInformation-meta">Checking…</span></div>
-              <label class="switch" role="group"><span class="sr-only">Do Not Sell My Personal Information</span><input type="checkbox" data-setting="doNotSellMyPersonalInformation" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
-            </article>
-            <article class="control-row" data-control="screenSaverAd">
-              <div class="control-copy"><span class="control-category">Advertising</span><h2>Screen Saver Promotion</h2><p>Controls promotional ads shown by supported screen savers and apps. Off hides those promotions; it does not remove every ad on the TV.</p><span class="control-meta" id="screenSaverAd-meta">Checking…</span></div>
-              <label class="switch" role="group"><span class="sr-only">Screen Saver Promotion</span><input type="checkbox" data-setting="screenSaverAd" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
-            </article>
-            <article class="control-row" data-control="homePromotion">
-              <div class="control-copy"><span class="control-category">Advertising</span><h2>Home menu ads</h2><p>Controls sponsored advertisements in the Home menu. Off hides these sponsored items; other TV ads may remain.</p><span class="control-meta" id="homePromotion-meta">Checking…</span></div>
-              <label class="switch" role="group"><span class="sr-only">Home menu ads</span><input type="checkbox" data-setting="homePromotion" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
-            </article>
-            <article class="control-row" data-control="livePromotion">
-              <div class="control-copy"><span class="control-category">Advertising</span><h2>Live Promotion</h2><p>Controls custom ads and services while watching content. LG makes this setting available when Live Plus is on.</p><span class="control-meta" id="livePromotion-meta">Checking…</span></div>
-              <label class="switch" role="group"><span class="sr-only">Live Promotion</span><input type="checkbox" data-setting="livePromotion" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
-            </article>
-            <article class="control-row" data-control="contentRecommendation">
-              <div class="control-copy"><span class="control-category">Recommendations</span><h2>Home content recommendations</h2><p>Controls recommendation categories in the Home menu. Turning this off hides those categories; availability varies by country.</p><span class="control-meta" id="contentRecommendation-meta">Checking…</span></div>
-              <label class="switch" role="group"><span class="sr-only">Home content recommendations</span><input type="checkbox" data-setting="contentRecommendation" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
-            </article>
-            <article class="control-row" data-control="aiNudge">
-              <div class="control-copy"><span class="control-category">Recommendations</span><h2>Smart tips</h2><p>Shows suggestions for TV features while watching or using apps. Off hides these prompts; it does not change what the TV collects.</p><span class="control-meta" id="aiNudge-meta">Checking…</span></div>
-              <label class="switch" role="group"><span class="sr-only">Smart tips</span><input type="checkbox" data-setting="aiNudge" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
-            </article>
-            <article class="control-row" data-control="aiSettingsNudge">
-              <div class="control-copy"><span class="control-category">Recommendations</span><h2>Smart tips in Settings</h2><p>Shows suggested settings in LG's Settings menu. Off hides these prompts; it does not change the selected TV settings.</p><span class="control-meta" id="aiSettingsNudge-meta">Checking…</span></div>
-              <label class="switch" role="group"><span class="sr-only">Smart tips in Settings</span><input type="checkbox" data-setting="aiSettingsNudge" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
-            </article>
-            <article class="control-row" data-control="hbbTvDnt">
-              <div class="control-copy"><span class="control-category">Broadcast services</span><h2>HbbTV Do Not Track</h2><p>Asks HbbTV apps and services to disable user tracking. This applies only when HbbTV services are used.</p><span class="control-meta" id="hbbTvDnt-meta">Checking…</span></div>
-              <label class="switch" role="group"><span class="sr-only">HbbTV Do Not Track</span><input type="checkbox" data-setting="hbbTvDnt" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
-            </article>
-            <article class="control-row" data-control="hbbTvDeviceId">
-              <div class="control-copy"><span class="control-category">Broadcast services</span><h2>HbbTV Device ID</h2><p>When on, HbbTV services can receive a unique HbbTV-only ID. Off stops sharing that ID. This setting has no effect while HbbTV is off.</p><span class="control-meta" id="hbbTvDeviceId-meta">Checking…</span></div>
-              <label class="switch" role="group"><span class="sr-only">HbbTV Device ID</span><input type="checkbox" data-setting="hbbTvDeviceId" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
-            </article>
-            <article class="control-row" data-control="thirdPartyCookie">
-              <div class="control-copy"><span class="control-category">Broadcast services</span><h2>HbbTV third-party cookies</h2><p>Allows third-party cookies for HbbTV. Turning this off may affect sign-in and interactive features in HbbTV apps.</p><span class="control-meta" id="thirdPartyCookie-meta">Checking…</span></div>
-              <label class="switch" role="group"><span class="sr-only">HbbTV third-party cookies</span><input type="checkbox" data-setting="thirdPartyCookie" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
-            </article>
-            <article class="control-row" data-control="hbbTV">
-              <div class="control-copy"><span class="control-category">Broadcast services</span><h2>HbbTV interactive services</h2><p>Enables interactive services linked to broadcast channels. Turning it off may remove broadcaster apps and interactive features.</p><span class="control-meta" id="hbbTV-meta">Checking…</span></div>
-              <label class="switch" role="group"><span class="sr-only">HbbTV interactive services</span><input type="checkbox" data-setting="hbbTV" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
-            </article>
-            <article class="control-row" data-control="bleAdvertisingOnOff">
-              <div class="control-copy"><span class="control-category">Connections</span><h2>Bluetooth wake</h2><p>Lets a supported mobile device turn on the TV over Bluetooth. On may increase standby power use.</p><span class="control-meta" id="bleAdvertisingOnOff-meta">Checking…</span></div>
-              <label class="switch" role="group"><span class="sr-only">Bluetooth wake</span><input type="checkbox" data-setting="bleAdvertisingOnOff" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
-            </article>
-            <article class="control-row" data-control="homeSenseAbsence">
-              <div class="control-copy"><span class="control-category">Presence features</span><h2>Sleep on Absence</h2><p>When on, the TV learns for one week and can turn off after LG detects that you are away. It requires the TV and mobile device to be off the same network for an hour.</p><span class="control-meta" id="homeSenseAbsence-meta">Checking…</span></div>
-              <label class="switch" role="group"><span class="sr-only">Sleep on Absence</span><input type="checkbox" data-setting="homeSenseAbsence" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
-            </article>
+          <div class="control-scroll-frame" id="control-scroll-frame">
+            <div class="control-scroll-frame-status">
+              <span id="control-scroll-range" role="status" aria-live="polite" aria-atomic="true">17 controls</span>
+              <span id="control-scroll-cue">Use Up and Down on the remote to move through settings.</span>
+            </div>
+            <div class="control-scroll-track" role="progressbar" aria-label="Position in privacy settings" aria-valuemin="0" aria-valuemax="17" aria-valuenow="0" aria-valuetext="At the start of the settings list">
+              <span class="control-scroll-progress" id="control-scroll-progress"></span>
+            </div>
+          </div>
+          <div class="control-list-frame" id="control-list-frame">
+            <div class="control-list" id="control-list">
+              <article class="control-row" data-control="livePlus">
+                <div class="control-copy"><span class="control-category">Viewing</span><h2>Live Plus (ACR)</h2><p>Uses audio fingerprints to identify programs on screen. Turning it off may remove Live Plus recommendations. This switch is separate from LG agreements.</p><span class="control-meta" id="livePlus-meta">Checking…</span></div>
+                <label class="switch" role="group"><span class="sr-only">Live Plus</span><input type="checkbox" data-setting="livePlus" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
+              </article>
+              <article class="control-row" data-control="voiceLongDistance">
+                <div class="control-copy"><span class="control-category">Voice</span><h2>Hands-free voice recognition</h2><p>Allows voice commands without pressing the remote. Off disables hands-free commands; it does not disconnect either microphone.</p><span class="control-meta" id="voiceLongDistance-meta">Checking…</span></div>
+                <label class="switch" role="group"><span class="sr-only">Hands-free voice recognition</span><input type="checkbox" data-setting="voiceLongDistance" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
+              </article>
+              <article class="control-row" data-control="turnOnByVoice">
+                <div class="control-copy"><span class="control-category">Voice</span><h2>Voice wake</h2><p>Allows voice commands to wake the TV from standby. Off leaves the power button and remote control available.</p><span class="control-meta" id="turnOnByVoice-meta">Checking…</span></div>
+                <label class="switch" role="group"><span class="sr-only">Voice wake</span><input type="checkbox" data-setting="turnOnByVoice" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
+              </article>
+              <article class="control-row" data-control="lmt">
+                <div class="control-copy"><span class="control-category">Advertising</span><h2>Limit Ad Tracking</h2><p>Limits use of personal data for advertising. On may change ad personalization; it does not remove ads.</p><span class="control-meta" id="lmt-meta">Checking…</span></div>
+                <label class="switch" role="group"><span class="sr-only">Limit Ad Tracking</span><input type="checkbox" data-setting="lmt" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
+              </article>
+              <article class="control-row" data-control="doNotSellMyPersonalInformation">
+                <div class="control-copy"><span class="control-category">Advertising</span><h2>Do Not Sell My Personal Information</h2><p>Asks LG's third-party providers to stop selling personal information. Some ad-supported services may remain. This does not block network traffic.</p><span class="control-meta" id="doNotSellMyPersonalInformation-meta">Checking…</span></div>
+                <label class="switch" role="group"><span class="sr-only">Do Not Sell My Personal Information</span><input type="checkbox" data-setting="doNotSellMyPersonalInformation" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
+              </article>
+              <article class="control-row" data-control="screenSaverAd">
+                <div class="control-copy"><span class="control-category">Advertising</span><h2>Screen Saver Promotion</h2><p>Controls promotional ads shown by supported screen savers and apps. Off hides those promotions; it does not remove every ad on the TV.</p><span class="control-meta" id="screenSaverAd-meta">Checking…</span></div>
+                <label class="switch" role="group"><span class="sr-only">Screen Saver Promotion</span><input type="checkbox" data-setting="screenSaverAd" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
+              </article>
+              <article class="control-row" data-control="homePromotion">
+                <div class="control-copy"><span class="control-category">Advertising</span><h2>Home menu ads</h2><p>Controls sponsored advertisements in the Home menu. Off hides these sponsored items; other TV ads may remain.</p><span class="control-meta" id="homePromotion-meta">Checking…</span></div>
+                <label class="switch" role="group"><span class="sr-only">Home menu ads</span><input type="checkbox" data-setting="homePromotion" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
+              </article>
+              <article class="control-row" data-control="livePromotion">
+                <div class="control-copy"><span class="control-category">Advertising</span><h2>Live Promotion</h2><p>Controls custom ads and services while watching content. LG makes this setting available when Live Plus is on.</p><span class="control-meta" id="livePromotion-meta">Checking…</span></div>
+                <label class="switch" role="group"><span class="sr-only">Live Promotion</span><input type="checkbox" data-setting="livePromotion" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
+              </article>
+              <article class="control-row" data-control="contentRecommendation">
+                <div class="control-copy"><span class="control-category">Recommendations</span><h2>Home content recommendations</h2><p>Controls recommendation categories in the Home menu. Turning this off hides those categories; availability varies by country.</p><span class="control-meta" id="contentRecommendation-meta">Checking…</span></div>
+                <label class="switch" role="group"><span class="sr-only">Home content recommendations</span><input type="checkbox" data-setting="contentRecommendation" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
+              </article>
+              <article class="control-row" data-control="aiNudge">
+                <div class="control-copy"><span class="control-category">Recommendations</span><h2>Smart tips</h2><p>Shows suggestions for TV features while watching or using apps. Off hides these prompts; it does not change what the TV collects.</p><span class="control-meta" id="aiNudge-meta">Checking…</span></div>
+                <label class="switch" role="group"><span class="sr-only">Smart tips</span><input type="checkbox" data-setting="aiNudge" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
+              </article>
+              <article class="control-row" data-control="aiSettingsNudge">
+                <div class="control-copy"><span class="control-category">Recommendations</span><h2>Smart tips in Settings</h2><p>Shows suggested settings in LG's Settings menu. Off hides these prompts; it does not change the selected TV settings.</p><span class="control-meta" id="aiSettingsNudge-meta">Checking…</span></div>
+                <label class="switch" role="group"><span class="sr-only">Smart tips in Settings</span><input type="checkbox" data-setting="aiSettingsNudge" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
+              </article>
+              <article class="control-row" data-control="hbbTvDnt">
+                <div class="control-copy"><span class="control-category">Broadcast services</span><h2>HbbTV Do Not Track</h2><p>Asks HbbTV apps and services to disable user tracking. This applies only when HbbTV services are used.</p><span class="control-meta" id="hbbTvDnt-meta">Checking…</span></div>
+                <label class="switch" role="group"><span class="sr-only">HbbTV Do Not Track</span><input type="checkbox" data-setting="hbbTvDnt" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
+              </article>
+              <article class="control-row" data-control="hbbTvDeviceId">
+                <div class="control-copy"><span class="control-category">Broadcast services</span><h2>HbbTV Device ID</h2><p>When on, HbbTV services can receive a unique HbbTV-only ID. Off stops sharing that ID. This setting has no effect while HbbTV is off.</p><span class="control-meta" id="hbbTvDeviceId-meta">Checking…</span></div>
+                <label class="switch" role="group"><span class="sr-only">HbbTV Device ID</span><input type="checkbox" data-setting="hbbTvDeviceId" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
+              </article>
+              <article class="control-row" data-control="thirdPartyCookie">
+                <div class="control-copy"><span class="control-category">Broadcast services</span><h2>HbbTV third-party cookies</h2><p>Allows third-party cookies for HbbTV. Turning this off may affect sign-in and interactive features in HbbTV apps.</p><span class="control-meta" id="thirdPartyCookie-meta">Checking…</span></div>
+                <label class="switch" role="group"><span class="sr-only">HbbTV third-party cookies</span><input type="checkbox" data-setting="thirdPartyCookie" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
+              </article>
+              <article class="control-row" data-control="hbbTV">
+                <div class="control-copy"><span class="control-category">Broadcast services</span><h2>HbbTV interactive services</h2><p>Enables interactive services linked to broadcast channels. Turning it off may remove broadcaster apps and interactive features.</p><span class="control-meta" id="hbbTV-meta">Checking…</span></div>
+                <label class="switch" role="group"><span class="sr-only">HbbTV interactive services</span><input type="checkbox" data-setting="hbbTV" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
+              </article>
+              <article class="control-row" data-control="bleAdvertisingOnOff">
+                <div class="control-copy"><span class="control-category">Connections</span><h2>Bluetooth wake</h2><p>Lets a supported mobile device turn on the TV over Bluetooth. On may increase standby power use.</p><span class="control-meta" id="bleAdvertisingOnOff-meta">Checking…</span></div>
+                <label class="switch" role="group"><span class="sr-only">Bluetooth wake</span><input type="checkbox" data-setting="bleAdvertisingOnOff" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
+              </article>
+              <article class="control-row" data-control="homeSenseAbsence">
+                <div class="control-copy"><span class="control-category">Presence features</span><h2>Sleep on Absence</h2><p>When on, the TV learns for one week and can turn off after LG detects that you are away. It requires the TV and mobile device to be off the same network for an hour.</p><span class="control-meta" id="homeSenseAbsence-meta">Checking…</span></div>
+                <label class="switch" role="group"><span class="sr-only">Sleep on Absence</span><input type="checkbox" data-setting="homeSenseAbsence" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
+              </article>
+            </div>
           </div>
           <div class="notice notice-info" id="write-access-note">
             <strong>About these changes</strong>

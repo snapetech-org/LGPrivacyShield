@@ -87,11 +87,26 @@
 
   function focusRemote(element) {
     if (!element || element.disabled) return false;
-    element.focus();
     const anchor = focusAnchor(element);
-    if (anchor && typeof anchor.scrollIntoView === "function") {
+    const row = anchor && anchor.closest(".control-row");
+    const main = $("#main-content");
+    const scrollFrame = $("#control-scroll-frame");
+    const isControlRow = Boolean(row && main && scrollFrame && $("#view-controls").classList.contains("is-visible"));
+
+    element.focus({ preventScroll: true });
+    if (isControlRow) {
+      const mainRect = main.getBoundingClientRect();
+      const frameRect = scrollFrame.getBoundingClientRect();
+      const topLimit = Math.max(mainRect.top, frameRect.bottom + 10);
+      const bottomLimit = mainRect.bottom - 10;
+      let rect = row.getBoundingClientRect();
+      if (rect.top < topLimit) main.scrollTop = Math.max(0, main.scrollTop + rect.top - topLimit);
+      rect = row.getBoundingClientRect();
+      if (rect.bottom > bottomLimit) main.scrollTop += rect.bottom - bottomLimit;
+    } else if (anchor && typeof anchor.scrollIntoView === "function") {
       anchor.scrollIntoView({ block: "nearest", inline: "nearest" });
     }
+    updateControlScrollCue();
     return true;
   }
 
@@ -123,7 +138,41 @@
     const target = Math.max(0, Math.min(maximum, main.scrollTop + direction * step));
     if (Math.abs(target - main.scrollTop) < 3) return false;
     main.scrollTo({ top: target, behavior: "auto" });
+    updateControlScrollCue();
     return true;
+  }
+
+  function updateControlScrollCue() {
+    const view = $("#view-controls");
+    const main = $("#main-content");
+    const range = $("#control-scroll-range");
+    const cue = $("#control-scroll-cue");
+    const track = $(".control-scroll-track");
+    const fill = $("#control-scroll-progress");
+    const frame = $("#control-scroll-frame");
+    const rows = $$("#control-list .control-row");
+    if (!view || view.hidden || !view.classList.contains("is-visible") || !main || !range || !cue || !track || !fill || !frame || !rows.length) return;
+
+    const mainRect = main.getBoundingClientRect();
+    const frameRect = frame.getBoundingClientRect();
+    const visibleTop = Math.max(mainRect.top, frameRect.bottom + 2);
+    const visibleRows = rows.map((row, index) => ({ index, rect: row.getBoundingClientRect() }))
+      .filter(({ rect }) => rect.bottom > visibleTop && rect.top < mainRect.bottom - 2);
+    const first = visibleRows.length ? visibleRows[0].index : 0;
+    const last = visibleRows.length ? visibleRows[visibleRows.length - 1].index : first;
+    const above = first;
+    const below = rows.length - last - 1;
+
+    range.textContent = `Showing ${first + 1}–${last + 1} of ${rows.length} controls`;
+    if (above && below) cue.textContent = `↑ ${above} above · ↓ ${below} below · Use Up/Down`;
+    else if (below) cue.textContent = `↓ ${below} more below · Use Down on the remote`;
+    else if (above) cue.textContent = `↑ ${above} above · Use Up on the remote`;
+    else cue.textContent = "All controls are in view";
+
+    const reached = last + 1;
+    fill.style.width = `${Math.round((reached / rows.length) * 100)}%`;
+    track.setAttribute("aria-valuenow", String(reached));
+    track.setAttribute("aria-valuetext", `${range.textContent}; ${above} above, ${below} below`);
   }
 
   function switchSectionByKey(key) {
@@ -855,6 +904,7 @@
     $("#restore-button").disabled = !canRestoreSaved(savedControls());
     $("#runtime-mode").textContent = state.errors.length ? "Some TV status unavailable" : "TV status updated";
     $("#app-version").textContent = Compatibility.APP_VERSION;
+    updateControlScrollCue();
     if (!state.profile) {
       $("#write-access-note span").textContent = "No settings were changed. No controls are available for this model and software version.";
     } else if (state.errors.length) {
@@ -1174,6 +1224,8 @@
     $("#prepare-compatibility-report").addEventListener("click", prepareCompatibilityReport);
     $("#restore-button").disabled = !canRestoreSaved(savedControls());
     document.addEventListener("keydown", handleRemoteKey);
+    $("#main-content").addEventListener("scroll", updateControlScrollCue, { passive: true });
+    window.addEventListener("resize", updateControlScrollCue);
     document.addEventListener("visibilitychange", refreshAfterAgreementReview);
     document.addEventListener("webOSRelaunch", refreshAfterAgreementReview);
     window.addEventListener("focus", refreshAfterAgreementReview);

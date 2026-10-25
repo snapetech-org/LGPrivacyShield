@@ -537,6 +537,90 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
         assert.equal(await browser.evaluate("document.querySelector('.view.is-visible').id"), "view-overview", "refresh keeps the current section selected");
       }
     });
+    await t.test("privacy controls show list position and remote scrolling reaches the final setting", async () => {
+      await browser.navigate("success");
+      await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').textContent")) === "TV status updated", "controls scroll fixture ready");
+      await browser.evaluate("document.querySelector('.tab[data-view=controls]').focus()");
+      await browser.press("Enter");
+      const initial = await browser.evaluate(`(() => {
+        const main = document.querySelector('#main-content');
+        const frame = document.querySelector('#control-scroll-frame');
+        const frameRect = frame.getBoundingClientRect();
+        const mainRect = main.getBoundingClientRect();
+        const visibleCount = [...document.querySelectorAll('#control-list .control-row')]
+          .filter((row) => { const rect = row.getBoundingClientRect(); return rect.bottom > frameRect.bottom + 2 && rect.top < mainRect.bottom - 2; }).length;
+        return {
+          range: document.querySelector('#control-scroll-range').textContent,
+          cue: document.querySelector('#control-scroll-cue').textContent,
+          visibleCount,
+          total: document.querySelectorAll('#control-list .control-row').length,
+          progress: document.querySelector('.control-scroll-track').getAttribute('aria-valuenow'),
+          sticky: getComputedStyle(frame).position,
+          scrollTop: main.scrollTop
+        };
+      })()`);
+      assert.match(initial.range, /^Showing 1–\d+ of 17 controls$/);
+      assert.ok(initial.visibleCount >= 2 && initial.visibleCount < initial.total, "the framed list must show some controls and indicate the rest continue below");
+      assert.match(initial.cue, /below.*Use Down on the remote/i);
+      assert.equal(initial.progress, String(initial.visibleCount));
+      assert.equal(initial.sticky, "sticky");
+      assert.equal(initial.scrollTop, 0);
+      if (process.env.PRIVACYSHIELD_CONTROLS_TOP_CAPTURE_PATH) {
+        await browser.screenshot(process.env.PRIVACYSHIELD_CONTROLS_TOP_CAPTURE_PATH);
+      }
+
+      const rowKeys = await browser.evaluate("[...document.querySelectorAll('#control-list .control-row')].map((row) => row.dataset.control)");
+      assert.equal(rowKeys.length, 17);
+      assert.equal(rowKeys[0], "livePlus");
+      assert.equal(rowKeys.at(-1), "homeSenseAbsence");
+      await browser.evaluate("document.querySelector('[data-setting=livePlus]').focus()");
+      for (const key of rowKeys.slice(1)) {
+        await browser.press("ArrowDown");
+        const focusedRow = await browser.evaluate(`(() => {
+          const active = document.activeElement;
+          return active.closest('.control-row')?.dataset.control || null;
+        })()`);
+        assert.equal(focusedRow, key, `Down should move to the ${key} control row, including unavailable settings`);
+      }
+      const bottom = await browser.evaluate(`(() => {
+        const main = document.querySelector('#main-content');
+        const frame = document.querySelector('#control-scroll-frame');
+        const frameRect = frame.getBoundingClientRect();
+        const mainRect = main.getBoundingClientRect();
+        const lastRow = document.querySelector('[data-control=homeSenseAbsence]');
+        const lastRect = lastRow.getBoundingClientRect();
+        const switchRect = lastRow.querySelector('.switch').getBoundingClientRect();
+        return {
+          range: document.querySelector('#control-scroll-range').textContent,
+          cue: document.querySelector('#control-scroll-cue').textContent,
+          progress: document.querySelector('.control-scroll-track').getAttribute('aria-valuenow'),
+          scrollTop: main.scrollTop,
+          pageScrollTop: window.scrollY,
+          focused: document.activeElement.dataset.setting,
+          geometry: {
+            main: { top: mainRect.top, bottom: mainRect.bottom, scrollTop: main.scrollTop, scrollHeight: main.scrollHeight, clientHeight: main.clientHeight },
+            frame: { top: frameRect.top, bottom: frameRect.bottom, position: getComputedStyle(frame).position },
+            row: { top: lastRect.top, bottom: lastRect.bottom },
+            switch: { top: switchRect.top, bottom: switchRect.bottom }
+          },
+          lastRowVisible: lastRect.top >= frameRect.bottom - 2 && lastRect.bottom <= mainRect.bottom + 2,
+          switchVisible: switchRect.top >= frameRect.bottom - 2 && switchRect.bottom <= mainRect.bottom + 2
+        };
+      })()`);
+      assert.ok(bottom.scrollTop > 0, "remote focus should scroll the page");
+      assert.equal(bottom.focused, "homeSenseAbsence");
+      assert.equal(bottom.pageScrollTop, 0, "remote navigation must keep the app viewport fixed");
+      assert.match(bottom.range, /^Showing \d+–17 of 17 controls$/);
+      assert.match(bottom.cue, /above.*Use Up on the remote/i);
+      assert.equal(bottom.progress, "17");
+      assert.equal(bottom.lastRowVisible, true, `the final control row must fit below the sticky cue and inside the viewport: ${JSON.stringify(bottom)}`);
+      assert.equal(bottom.switchVisible, true, `the final switch must remain below the sticky cue and inside the viewport: ${JSON.stringify(bottom)}`);
+      if (process.env.PRIVACYSHIELD_CONTROLS_BOTTOM_CAPTURE_PATH) {
+        await browser.screenshot(process.env.PRIVACYSHIELD_CONTROLS_BOTTOM_CAPTURE_PATH);
+      }
+      await browser.evaluate("document.querySelector('.tab[data-view=overview]').click()");
+      assert.equal(await browser.evaluate("document.querySelector('.view.is-visible').id"), "view-overview", "leave the fixture on Overview for the next UI test");
+    });
     await t.test("known settings navigate, change once, verify, and open the evidence disclosure", async () => {
       await browser.evaluate("document.querySelector('.tab[data-view=overview]').focus()");
       const ready = await browser.evaluate(`(() => ({

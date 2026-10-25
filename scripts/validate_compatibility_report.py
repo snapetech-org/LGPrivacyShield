@@ -28,6 +28,8 @@ CONTROL_KEYS = frozenset(
         "hbbTV",
         "bleAdvertisingOnOff",
         "homeSenseAbsence",
+        "aiNudge",
+        "aiSettingsNudge",
     }
 )
 EVIDENCE_LEVELS = frozenset(
@@ -35,6 +37,7 @@ EVIDENCE_LEVELS = frozenset(
         "unmapped",
         "reported",
         "source-mapped",
+        "platform-source-mapped",
         "device-read-verified",
         "write-readback-verified",
         "cross-validated",
@@ -100,8 +103,8 @@ def validate_report(report: Any) -> dict[str, Any]:
         {"schemaVersion", "appVersion", "device", "compatibility", "apiAccess", "controlReads"},
         "report",
     )
-    if type(root["schemaVersion"]) is not int or root["schemaVersion"] != 1:
-        raise ValueError("schemaVersion must be integer 1")
+    if type(root["schemaVersion"]) is not int or root["schemaVersion"] != 2:
+        raise ValueError("schemaVersion must be integer 2")
     if not isinstance(root["appVersion"], str) or not APP_VERSION_RE.fullmatch(root["appVersion"]):
         raise ValueError("appVersion must use numeric major.minor.patch form")
 
@@ -114,7 +117,7 @@ def validate_report(report: Any) -> dict[str, Any]:
     compatibility = _require_object(root["compatibility"], "compatibility")
     _require_exact_keys(
         compatibility,
-        {"profileId", "evidenceLevel", "sampleCount", "mappedControlCount"},
+        {"profileId", "evidenceLevel", "mappingScope", "sampleCount", "mappedControlCount"},
         "compatibility",
     )
     profile_id = compatibility["profileId"]
@@ -123,6 +126,13 @@ def validate_report(report: Any) -> dict[str, Any]:
     evidence = compatibility["evidenceLevel"]
     if not isinstance(evidence, str) or evidence not in EVIDENCE_LEVELS:
         raise ValueError("compatibility.evidenceLevel is not recognized")
+    mapping_scope = compatibility["mappingScope"]
+    if not isinstance(mapping_scope, str) or mapping_scope not in {
+        "unmapped",
+        "exact-device-firmware",
+        "model-family-platform",
+    }:
+        raise ValueError("compatibility.mappingScope is not recognized")
     sample_count = compatibility["sampleCount"]
     mapped_count = compatibility["mappedControlCount"]
     if type(sample_count) is not int or sample_count < 0:
@@ -130,10 +140,14 @@ def validate_report(report: Any) -> dict[str, Any]:
     if type(mapped_count) is not int or not 0 <= mapped_count <= len(CONTROL_KEYS):
         raise ValueError("compatibility.mappedControlCount is outside the known control range")
     if profile_id is None:
-        if evidence != "unmapped" or sample_count != 0 or mapped_count != 0:
+        if evidence != "unmapped" or mapping_scope != "unmapped" or sample_count != 0 or mapped_count != 0:
             raise ValueError("an unmapped report must have no profile, samples, or mapped controls")
-    elif evidence == "unmapped" or sample_count < 1 or mapped_count < 1 or device["model"] is None:
-        raise ValueError("a mapped profile requires an identified device, evidence, and at least one sample/control")
+    elif evidence == "unmapped" or mapping_scope == "unmapped" or mapped_count < 1 or device["model"] is None:
+        raise ValueError("a mapped profile requires an identified device, evidence, and at least one mapped control")
+    elif mapping_scope == "exact-device-firmware" and sample_count < 1:
+        raise ValueError("an exact device profile requires at least one device read sample")
+    elif mapping_scope == "model-family-platform" and evidence != "platform-source-mapped":
+        raise ValueError("a family/platform profile must identify its platform source map")
 
     access = _require_object(root["apiAccess"], "apiAccess")
     _require_exact_keys(access, {"systemInfo", "settingsService", "hbcSnapshot"}, "apiAccess")

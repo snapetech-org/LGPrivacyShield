@@ -1,0 +1,58 @@
+{
+  "provenance": {
+    "model": "OLED77C6HUP.ACCQLJD",
+    "webOS": "26",
+    "sdk": "11.2.0",
+    "firmware": "43.21.79",
+    "capturedOn": "2026-10-24",
+    "sourcePath": "/etc/palm/description.categorykeysmap.json",
+    "sourceSha256": "2c818cd342ae675fac4e425ec6d2078b328e281a8e5994449bd6662cab92eec1",
+    "note": "Sanitized to reviewed PrivacyShield control/reference key names and categories; no values or other firmware keys are included."
+  },
+  "categoryKeysMap": [
+    {
+      "category": "general",
+      "keys": [
+        "aiNudge",
+        "aiSettingsNudge",
+        "doNotSellMyPersonalInformation",
+        "homePromotion",
+        "lmt",
+        "screenSaverAd",
+        "sportsAlarm",
+        "voiceLongDistance"
+      ]
+    },
+    {
+      "category": "network",
+      "keys": [
+        "allowMobileDeviceAccess",
+        "bleAdvertisingOnOff"
+      ]
+    },
+    {
+      "category": "option",
+      "keys": [
+        "dbgLogUpload",
+        "faultLogUpload",
+        "hbbTV",
+        "hbbTvDeviceId",
+        "homeSenseAbsence",
+        "livePlus",
+        "livePromotion",
+        "promotionStreamer",
+        "thirdPartyCookie",
+        "turnOnByVoice",
+        "usageCare",
+        "watchedListCollection",
+        "webOSPromotionVideo"
+      ]
+    },
+    {
+      "category": "other",
+      "keys": [
+        "contentRecommendation"
+      ]
+    }
+  ]
+}

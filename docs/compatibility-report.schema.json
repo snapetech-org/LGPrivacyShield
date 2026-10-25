@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": ["schemaVersion", "appVersion", "device", "compatibility", "apiAccess", "controlReads"],
   "properties": {
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": { "const": 2 },
     "appVersion": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
     "device": {
       "type": "object",
@@ -21,12 +21,13 @@
     "compatibility": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["profileId", "evidenceLevel", "sampleCount", "mappedControlCount"],
+      "required": ["profileId", "evidenceLevel", "mappingScope", "sampleCount", "mappedControlCount"],
       "properties": {
         "profileId": { "type": ["string", "null"], "pattern": "^[a-z0-9][a-z0-9.-]{0,95}$" },
-        "evidenceLevel": { "enum": ["unmapped", "reported", "source-mapped", "device-read-verified", "write-readback-verified", "cross-validated"] },
+        "evidenceLevel": { "enum": ["unmapped", "reported", "source-mapped", "platform-source-mapped", "device-read-verified", "write-readback-verified", "cross-validated"] },
+        "mappingScope": { "enum": ["unmapped", "exact-device-firmware", "model-family-platform"] },
         "sampleCount": { "type": "integer", "minimum": 0 },
-        "mappedControlCount": { "type": "integer", "minimum": 0, "maximum": 15 }
+        "mappedControlCount": { "type": "integer", "minimum": 0, "maximum": 17 }
       }
     },
     "apiAccess": {
@@ -42,9 +43,9 @@
     "controlReads": {
       "type": "object",
       "additionalProperties": false,
-      "minProperties": 15,
-      "maxProperties": 15,
-      "required": ["livePlus", "voiceLongDistance", "turnOnByVoice", "lmt", "doNotSellMyPersonalInformation", "screenSaverAd", "homePromotion", "livePromotion", "contentRecommendation", "hbbTvDnt", "hbbTvDeviceId", "thirdPartyCookie", "hbbTV", "bleAdvertisingOnOff", "homeSenseAbsence"],
+      "minProperties": 17,
+      "maxProperties": 17,
+      "required": ["livePlus", "voiceLongDistance", "turnOnByVoice", "lmt", "doNotSellMyPersonalInformation", "screenSaverAd", "homePromotion", "livePromotion", "contentRecommendation", "hbbTvDnt", "hbbTvDeviceId", "thirdPartyCookie", "hbbTV", "bleAdvertisingOnOff", "homeSenseAbsence", "aiNudge", "aiSettingsNudge"],
       "properties": {
         "livePlus": { "type": "boolean" },
         "voiceLongDistance": { "type": "boolean" },
@@ -60,7 +61,9 @@
         "thirdPartyCookie": { "type": "boolean" },
         "hbbTV": { "type": "boolean" },
         "bleAdvertisingOnOff": { "type": "boolean" },
-        "homeSenseAbsence": { "type": "boolean" }
+        "homeSenseAbsence": { "type": "boolean" },
+        "aiNudge": { "type": "boolean" },
+        "aiSettingsNudge": { "type": "boolean" }
       }
     }
   }

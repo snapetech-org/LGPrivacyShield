@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "appVersion": "0.1.12",
+  "schemaVersion": 2,
+  "appVersion": "0.4.0",
   "device": {
     "model": "OLED77C6HUP",
     "sdkVersion": "11.2.0",
@@ -9,6 +9,7 @@
   "compatibility": {
     "profileId": "lg-oled77c6hup-webos26-43.21.79",
     "evidenceLevel": "source-mapped",
+    "mappingScope": "exact-device-firmware",
     "sampleCount": 1,
     "mappedControlCount": 15
   },
@@ -32,6 +33,8 @@
     "thirdPartyCookie": true,
     "hbbTV": true,
     "bleAdvertisingOnOff": true,
-    "homeSenseAbsence": true
+    "homeSenseAbsence": true,
+    "aiNudge": false,
+    "aiSettingsNudge": false
   }
 }

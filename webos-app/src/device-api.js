@@ -2,6 +2,7 @@
   "use strict";
 
   const SETTINGS = "luna://com.webos.settingsservice";
+  const LEGACY_SETTINGS = "luna://com.webos.service.settings";
   const HBC = "luna://org.webosbrew.hbchannel.service";
   const ADMANAGER = "luna://com.webos.service.admanager";
   const APPLICATION_MANAGER = "luna://com.webos.applicationManager";
@@ -34,15 +35,27 @@
   }
 
   function getSettings(category, keys) {
-    return request(SETTINGS, "getSystemSettings", { category, keys, subscribe: false });
+    return settingsRequest("getSystemSettings", { category, keys, subscribe: false });
   }
 
   function getAgreements() {
-    return request(SETTINGS, "getSystemSettings", { keys: ["eulaStatus", "eulaInfoNetwork"], subscribe: false });
+    return settingsRequest("getSystemSettings", { keys: ["eulaStatus", "eulaInfoNetwork"], subscribe: false });
   }
 
   function setSetting(category, key, value) {
-    return request(SETTINGS, "setSystemSettings", { category, settings: { [key]: value } });
+    return settingsRequest("setSystemSettings", { category, settings: { [key]: value } });
+  }
+
+  function missingSettingsService(error) {
+    return /(?:unknown|missing|unavailable) service|service.{0,32}(?:not found|does not exist)|method.{0,32}(?:not found|does not exist)/i
+      .test(String(error && error.message || error || ""));
+  }
+
+  function settingsRequest(method, parameters) {
+    return request(SETTINGS, method, parameters).catch((error) => {
+      if (!missingSettingsService(error)) throw error;
+      return request(LEGACY_SETTINGS, method, parameters);
+    });
   }
 
   function setDoNotSell(value) {
@@ -93,6 +106,7 @@
     getNetworkStatus,
     getSettings,
     getSystemInfo,
+    missingSettingsService,
     openAgreements,
     rootExec,
     appRootPath,

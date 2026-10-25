@@ -6,16 +6,28 @@ Identifies the exact TV software cohort for which PrivacyShield has an evidence-
 
 ## ADDED Requirements
 
-### Requirement: Match a TV only to an exact compatibility profile
-The system MUST match a profile using its declared model identity, webOS SDK version, and firmware version. Missing identity fields or any mismatch MUST result in an unknown profile.
+### Requirement: Select only a scope-correct reviewed settings map
+The system MUST select the narrowest manually reviewed map supported by the available device identity. An exact device profile MUST match its declared model, SDK, firmware, and platform. A shared platform map MUST require an explicitly supported B/C/G model code and an installed webOS platform identified by the SDK/browser-engine agreement. A model overlay MUST match every model and software field published by its source; any unpublished identity field MUST remain visible as a limitation.
 
-#### Scenario: Exact profile match
-- **WHEN** all required identity fields match a registered profile
-- **THEN** the app identifies that profile and its evidence status
+#### Scenario: Exact device profile match
+- **WHEN** all required model, SDK, firmware, and platform fields match an exact device profile
+- **THEN** the app identifies that profile and its device evidence status
 
-#### Scenario: Unknown or changed firmware
-- **WHEN** the model, SDK version, or firmware differs from every registered profile
-- **THEN** the app identifies the device as unmapped
+#### Scenario: Shared platform map match
+- **WHEN** the TV has a supported B/C/G model code and its SDK agrees with the detected installed webOS platform
+- **THEN** the app selects that platform map, marks its keys as candidates, and still requires a readable value from the current TV
+
+#### Scenario: Exact model/software overlay match
+- **WHEN** every model and software field published for a reviewed overlay matches the current TV
+- **THEN** the app adds only that overlay's controls and displays any missing source identity, such as an unpublished firmware version
+
+#### Scenario: Unknown model or platform signal
+- **WHEN** model identity is missing/unsupported or the SDK and browser-engine platform do not agree
+- **THEN** the app selects no settings map and keeps all controls read-only
+
+#### Scenario: Exact profile firmware mismatch
+- **WHEN** firmware differs from an exact device/firmware profile but the TV matches a separately reviewed platform map
+- **THEN** the exact profile does not match and only the narrower platform map may apply
 
 ### Requirement: Restrict writes to mapped controls
 The system MUST enable a setting write only when the current device matches a profile that maps that control and the current value is readable. An unmapped control MUST remain read-only.
@@ -27,6 +39,33 @@ The system MUST enable a setting write only when the current device matches a pr
 #### Scenario: Unmapped control or unreadable value
 - **WHEN** a profile does not map a control or the current value cannot be read
 - **THEN** the app shows the control as read-only or unavailable and blocks the write and preset action
+
+### Requirement: Constrain candidate settings with the TV's firmware key index
+When readable, the TV's firmware key index MUST filter reviewed candidates and supply the category for reads and writes. Missing or multiply categorized keys MUST remain unavailable. If the index cannot be read, the app MAY use the reviewed profile's category and make a one-key live read.
+
+#### Scenario: Firmware index confirms a reviewed key
+- **WHEN** a reviewed profile maps a key and the local firmware index lists it in one category
+- **THEN** the app requests that key from the indexed category and still requires a recognized current value before enabling a write
+
+#### Scenario: Firmware index omits a reviewed candidate
+- **WHEN** a profile maps a candidate but the readable firmware index omits that key
+- **THEN** the app shows it as unavailable and makes no read or write request for it
+
+#### Scenario: Firmware index assigns conflicting categories
+- **WHEN** the same reviewed key appears in more than one category
+- **THEN** the app keeps that key unavailable and makes no read or write request for it
+
+#### Scenario: Firmware index is unavailable
+- **WHEN** the file cannot be read or parsed
+- **THEN** the app keeps the manually reviewed category, checks the key individually through the live service, and still requires current-value readback
+
+
+### Requirement: Treat firmware metadata as presence evidence only
+The firmware key index MUST NOT add controls or establish privacy effect, current value, or write behavior. Default-value files MUST NOT be treated as current state.
+
+#### Scenario: Defaults file contains a candidate value
+- **WHEN** the defaults file contains a value for a reviewed key
+- **THEN** the app does not report that value as the TV's current setting
 
 ### Requirement: Explain compatibility status
 The system MUST show the matched profile, evidence level, and control availability in the TV details view. An unknown profile MUST explain that controls are read-only because its settings map has not been validated.
@@ -46,16 +85,24 @@ The system MUST maintain public evidence for the B1–B6, C1–C6, and G1–G6 s
 - **WHEN** a TV matches a family with public community observations but no exact PrivacyShield profile
 - **THEN** the app shows the matching family and relevant public evidence while settings remain read-only and unwritable
 
-### Requirement: Keep public evidence separate from writable profiles
-The system MUST keep public findings separate from PrivacyShield compatibility profiles. Another project's result MUST NOT unlock a PrivacyShield write.
+### Requirement: Review public evidence before adding a settings map
+The system MUST keep source records separate from the manually reviewed compatibility registry. A public finding or report MUST NOT change the registry automatically. A manually reviewed SettingsService map MAY define a source-mapped platform or model overlay, but MUST retain its original scope and MUST NOT claim PrivacyShield physical validation.
 
-#### Scenario: A community-tested model has no PrivacyShield profile
-- **WHEN** a TV matches a model family with public community observations but no exact PrivacyShield profile
-- **THEN** the app does not enable settings, presets, or restore actions for that TV
+#### Scenario: A community-tested model has no model-specific PrivacyShield overlay
+- **WHEN** a TV matches a model family with public observations but no reviewed model-specific overlay
+- **THEN** no model-only controls are added; separately reviewed platform maps may still enable their own readable candidate keys
+
+#### Scenario: Maintainer reviews a model-specific SettingsService map
+- **WHEN** a maintainer verifies the source scope, category/key, value domain, and effect and adds a model/software overlay
+- **THEN** only that overlay's controls are eligible, remain labeled source-mapped, and require live readback for each change
 
 #### Scenario: A public report matches software but not the model variant
 - **WHEN** a community row has the same SDK and firmware but a different size or regional model code
 - **THEN** the app shows it as a comparison row and does not treat it as an exact PrivacyShield profile
+
+#### Scenario: A root preference script does not establish an app setter
+- **WHEN** a model-specific source writes a key directly to a preference file but does not document the SettingsService category, app access, or readback
+- **THEN** the app may show an allowlisted current value as read-only status, but MUST NOT enable a write from that evidence alone
 
 #### Scenario: A community source has conflicting or incomplete metadata
 - **WHEN** a source's declared device count disagrees with its tested-model table, or a row omits firmware, model code, or reports partial behavior

@@ -9,7 +9,7 @@
   const SAVE_KEY = "privacyshield.saved-controls.v1";
   const state = {
     settings: {}, agreements: null, model: null, profile: null, network: null, root: null,
-    controlReads: {}, apiAccess: {}, errors: []
+    referenceSettings: {}, firmwareSettingsMap: null, controlReads: {}, apiAccess: {}, errors: []
   };
   let toastTimer;
   let agreementReviewRequested = false;
@@ -18,6 +18,11 @@
 
   const $ = (selector, parent) => (parent || document).querySelector(selector);
   const $$ = (selector, parent) => Array.from((parent || document).querySelectorAll(selector));
+
+  function replaceContent(node, children = []) {
+    while (node.firstChild) node.removeChild(node.firstChild);
+    for (const child of children) node.appendChild(child);
+  }
 
   function responseValue(response, key) {
     return Model.pickValue(response, key);
@@ -217,12 +222,6 @@
     });
   }
 
-  function settingValues(response, keys) {
-    const out = {};
-    for (const key of keys) out[key] = Model.pickValue(response, key);
-    return out;
-  }
-
   function infoModel(response) {
     const model = response && (response.modelName || response.model || response.modelNameText);
     const sdk = response && (response.sdkVersion || response.webOSVersion || response.version);
@@ -244,6 +243,59 @@
     return Model.snapshotSettings(parseRootSnapshot(state.root));
   }
 
+  function snapshotReferenceSettings() {
+    const snapshot = parseRootSnapshot(state.root);
+    const source = snapshot && snapshot.referenceSettings;
+    return source && typeof source === "object" ? source : {};
+  }
+
+  function firmwareSettingsMapFromSnapshot() {
+    const snapshot = parseRootSnapshot(state.root);
+    const source = snapshot && snapshot.firmwareSettingsMap;
+    if (!source || source.available !== true || !source.settings || typeof source.settings !== "object" || Array.isArray(source.settings)) return null;
+    const allowedKeys = new Set([
+      ...Model.CONTROLS.map(({ key }) => key),
+      "sportsAlarm", "webOSPromotionVideo", "promotionStreamer", "allowMobileDeviceAccess",
+      "watchedListCollection", "usageCare", "dbgLogUpload", "faultLogUpload"
+    ]);
+    const settings = Object.fromEntries(Object.entries(source.settings).filter(([key, category]) =>
+      allowedKeys.has(key) && typeof category === "string" && /^[A-Za-z][A-Za-z0-9_]{0,63}$/.test(category)
+    ));
+    const ambiguous = Array.isArray(source.ambiguous)
+      ? source.ambiguous.filter((key) => allowedKeys.has(key)) : [];
+    for (const key of ambiguous) delete settings[key];
+    return { available: true, settings, ambiguous };
+  }
+
+  function firmwareMapEntry(key) {
+    const map = state.firmwareSettingsMap;
+    if (!map) return { available: false, category: null, ambiguous: false };
+    if (map.ambiguous.includes(key)) return { available: true, category: null, ambiguous: true };
+    return { available: true, category: map.settings[key] || null, ambiguous: false };
+  }
+
+  function deviceControlStatus(key) {
+    const status = Compatibility.controlStatus(state.profile, key);
+    if (!status.mapped || !state.firmwareSettingsMap) return status;
+    const firmwareEntry = firmwareMapEntry(key);
+    if (firmwareEntry.ambiguous) {
+      return { mapped: false, writable: false, reason: "This TV's firmware map assigns the setting to more than one category. It stays unavailable." };
+    }
+    const category = firmwareEntry.category;
+    if (!category) {
+      return { mapped: false, writable: false, reason: "This setting is not listed in this TV's firmware map. It stays unavailable." };
+    }
+    return { ...status, firmwareCategory: category };
+  }
+
+  function controlForDevice(control) {
+    if (!control || !deviceControlStatus(control.key).mapped) return null;
+    return {
+      ...control,
+      category: deviceControlStatus(control.key).firmwareCategory || control.category
+    };
+  }
+
   function paintAgreementState() {
     for (const entry of Model.featureConsentSummary(state.agreements)) {
       const row = $(`[data-agreement="${entry.id}"]`);
@@ -254,32 +306,46 @@
     }
   }
 
-  function setControl(key, value, mapped) {
+  function setControl(key, value, compatibility) {
     const checkbox = $(`[data-setting="${key}"]`);
     const meta = $(`#${key}-meta`);
     if (!checkbox) return;
     const normalized = Model.normalizeToggle(value);
     const switchLabel = checkbox.closest(".switch");
+    const mapped = Boolean(compatibility && compatibility.mapped);
     checkbox.checked = normalized === "on";
     checkbox.disabled = normalized === "unknown" || !mapped;
     if (normalized === "unknown" || !mapped) {
       switchLabel.tabIndex = 0;
       switchLabel.setAttribute("aria-disabled", "true");
       switchLabel.dataset.lockReason = !mapped
-        ? "This model and software version have not been mapped. Controls are read-only."
-        : "Changes are locked because the current value could not be read.";
+        ? (compatibility && compatibility.reason) || "No setting is available for this control on this TV. It is read-only."
+        : "The TV did not return a current value. This control is read-only.";
     } else {
       switchLabel.removeAttribute("tabindex");
       switchLabel.removeAttribute("aria-disabled");
       delete switchLabel.dataset.lockReason;
     }
     const stateNode = $(".switch-state", switchLabel);
-    stateNode.textContent = !mapped ? "Not mapped" : normalized === "unknown" ? "Can't read" : normalized === "on" ? "On" : "Off";
+    stateNode.textContent = !mapped ? "Not available" : normalized === "unknown" ? "Unavailable" : normalized === "on" ? "On" : "Off";
     if (meta) meta.textContent = !mapped
-      ? "Read-only: this model and software version have not been mapped."
+      ? (compatibility && compatibility.reason) || "No setting is available for this TV."
       : normalized === "unknown"
-        ? "Current value could not be read. Changes are locked."
+        ? "The TV did not return a current value. This control is read-only."
         : `Current value: ${normalized === "on" ? "On" : "Off"}`;
+  }
+
+  function mappedControls() {
+    return Model.CONTROLS.map(controlForDevice).filter(Boolean);
+  }
+
+  function privacyPresetForProfile() {
+    const readable = new Set(Model.CONTROLS
+      .filter(({ key }) => Model.normalizeToggle(state.settings[key]) !== "unknown")
+      .map(({ key }) => key));
+    return Model.privacyPreset().filter(({ key }) =>
+      deviceControlStatus(key).mapped && readable.has(key)
+    );
   }
 
   function getConsentFlag(key) {
@@ -291,15 +357,19 @@
   }
 
   function paintOverview() {
-    const counts = Model.countRecommendedControls(state.settings);
-    const profileAllowsPreset = Compatibility.canApplyPreset(state.profile, Model.privacyPreset());
-    $("#privacy-preset").disabled = !profileAllowsPreset || !Model.canApplyPrivacyPreset(state.settings);
-    const value = !state.profile ? "Device map not verified" : counts.unknown ? "Some values unavailable" : counts.recommended === counts.total ? "Recommended values set" : "Review privacy settings";
+    const availableControls = mappedControls();
+    const counts = Model.countRecommendedControls(state.settings, availableControls);
+    const preset = privacyPresetForProfile();
+    const profileAllowsPreset = Compatibility.canApplyPreset(state.profile, preset);
+    $("#privacy-preset").disabled = !profileAllowsPreset || !Model.canApplyPrivacyPreset(state.settings, preset);
+    const value = !state.profile ? "Controls read-only" : !availableControls.length ? "No controls available" : counts.unknown ? "Some values unavailable" : counts.recommended === counts.total ? "Recommended settings set" : "Review settings";
     $("#posture-value").textContent = value;
     $("#posture-detail").textContent = !state.profile
-      ? "Settings are read-only until this model and software version are mapped."
+      ? "No controls are available for this model and software version."
+      : !availableControls.length
+      ? "No privacy controls are available for this software version."
       : counts.unknown
-      ? `${counts.recommended} of ${counts.total} settings match recommendations; ${counts.unknown} could not be read`
+      ? `${counts.recommended} of ${counts.total} available settings match the recommendations; ${counts.unknown} values are unavailable.`
       : `${counts.recommended} of ${counts.total} settings match the recommended values`;
 
     const viewing = Model.normalizeToggle(state.settings.livePlus);
@@ -308,7 +378,7 @@
 
     const voiceOff = Model.normalizeToggle(state.settings.voiceLongDistance) === "off" && Model.normalizeToggle(state.settings.turnOnByVoice) === "off";
     const voiceOn = Model.normalizeToggle(state.settings.voiceLongDistance) === "on" || Model.normalizeToggle(state.settings.turnOnByVoice) === "on";
-    $("#summary-voice").textContent = voiceOff ? "Hands-free voice and voice wake are off" : voiceOn ? "At least one voice setting is on" : "Voice settings unavailable";
+    $("#summary-voice").textContent = voiceOff ? "Hands-free voice and voice wake are off" : voiceOn ? "Voice wake or hands-free listening is on" : "Voice settings unavailable";
     $("#dot-voice").className = `state-dot ${voiceOff ? "is-safe" : voiceOn ? "is-on" : ""}`;
 
     const connected = state.network && (state.network.isInternetConnectionAvailable === true || state.network.isInternetConnectionAvailable === "true");
@@ -320,7 +390,6 @@
     $("#model-name").textContent = data.model || "Unavailable";
     $("#webos-version").textContent = [
       data.platformVersion ? `webOS ${data.platformVersion}` : "",
-      data.sdk && `SDK ${data.sdk}`,
       data.firmware && `firmware ${data.firmware}`
     ].filter(Boolean).join(" · ") || "Unavailable";
     $("#network-name").textContent = connected ? "Connected" : state.network ? "Not connected" : "Unavailable";
@@ -340,27 +409,27 @@
   function paintEvidence() {
     const root = state.root;
     if (!root) {
-      $("#evidence-processes").textContent = "Could not read local service status. Check Homebrew Channel permissions.";
-      $("#evidence-apps").textContent = "Could not list installed apps. Check Homebrew Channel permissions.";
-      $("#diagnostics-status").textContent = "Could not read diagnostics settings. Check Homebrew Channel permissions.";
+      $("#evidence-processes").textContent = "Local service details are unavailable. Check Homebrew Channel access.";
+      $("#evidence-apps").textContent = "Installed app details are unavailable. Check Homebrew Channel access.";
+      $("#diagnostics-status").textContent = "Diagnostics status is unavailable. Check Homebrew Channel access.";
       return;
     }
     const payload = parseRootSnapshot(root);
     if (!payload) {
-      $("#evidence-processes").textContent = "Local service status could not be read. Refresh to try again.";
+      $("#evidence-processes").textContent = "Local service details could not be read. Refresh to try again.";
       $("#evidence-apps").textContent = "Installed app details could not be read.";
-      $("#diagnostics-status").textContent = "Diagnostics settings could not be read.";
+      $("#diagnostics-status").textContent = "Diagnostics status could not be read.";
       return;
     }
     const voice = Array.isArray(payload.voiceProcesses) ? payload.voiceProcesses : [];
     $("#evidence-processes").textContent = voice.length
-      ? `Voice services running: ${voice.join(", ")}. A running service does not show whether audio was recorded or sent.`
-      : "No voice service was found. Voice features may use other TV services.";
+      ? `Voice services running: ${voice.join(", ")}. This does not show whether audio was recorded or sent.`
+      : "No listed voice service is running. Other services may provide voice features.";
     const apps = Array.isArray(payload.apps) ? payload.apps : [];
     $("#evidence-apps").textContent = apps.length
       ? `${apps.length} Homebrew ${apps.length === 1 ? "app" : "apps"} installed.`
       : "No Homebrew apps found.";
-    $("#app-inventory").replaceChildren(...apps.slice(0, 12).map((app) => {
+    replaceContent($("#app-inventory"), apps.slice(0, 12).map((app) => {
       const li = document.createElement("li");
       li.textContent = `${app.title || app.id}${app.version ? ` ${app.version}` : ""}`;
       return li;
@@ -372,50 +441,172 @@
     const uploadStatus = autoUpload == null ? "Unavailable" : autoUpload ? "enabled" : "disabled";
     const faultStatus = diagnostics.faultLogUpload == null ? "Unavailable" : diagnostics.faultLogUpload ? "On" : "Off";
     const debugStatus = diagnostics.debugLogUpload == null ? "Unavailable" : diagnostics.debugLogUpload ? "On" : "Off";
-    $("#diagnostics-status").textContent = `Local diagnostics processes: ${serviceStatus}. Automatic uploads configured: ${uploadStatus}. Fault logs: ${faultStatus}. Debug logs: ${debugStatus}. Past uploads are not listed.`;
+    $("#diagnostics-status").textContent = `Diagnostics services: ${serviceStatus}. Automatic uploads: ${uploadStatus}. Fault log upload: ${faultStatus}. Debug log upload: ${debugStatus}. Past uploads are not listed.`;
   }
 
   function paintCompatibility() {
     const model = state.model || {};
-    const identity = [model.model, model.platformVersion && `webOS ${model.platformVersion}`, model.sdk && `SDK ${model.sdk}`, model.firmware && `firmware ${model.firmware}`]
+    const firmwareEvidence = Compatibility.firmwareArchiveEvidence(model);
+    const firmwareStatus = $("#firmware-source-status");
+    if (firmwareStatus) {
+      firmwareStatus.textContent = firmwareEvidence
+        ? window.PrivacyShieldFirmwareCatalog.describe(firmwareEvidence)
+        : "No firmware package match is listed. Privacy settings are checked on the TV.";
+    }
+    const identity = [model.model, model.platformVersion && `webOS ${model.platformVersion}`, model.firmware && `firmware ${model.firmware}`]
       .filter((value) => value && !/unavailable/i.test(value)).join(" · ");
     $("#compatibility-device").textContent = identity || "Model or software version unavailable";
     if (state.profile) {
-      const mappedCount = Object.values(state.profile.controls || {}).filter((control) => control.mapping === "source-mapped").length;
+      const mappedCount = Object.values(state.profile.controls || {}).length;
       const writeVerifiedCount = Object.values(state.profile.controls || {}).filter((control) => control.priorWriteReadback).length;
-      statusPill($("#compatibility-status"), `Mapped · ${state.profile.sampleCount} sample`, "neutral");
-      $("#compatibility-summary").textContent = `${mappedCount} settings are mapped for this exact model, SDK, and firmware. Prior app-side write/readback checks are recorded for ${writeVerifiedCount}. This map uses one C6 sample; the public references below do not add PrivacyShield write support. Every change still requires current TV readback.`;
+      const locallyPresentCount = Model.CONTROLS.filter((control) =>
+        state.profile.controls && state.profile.controls[control.key] && deviceControlStatus(control.key).mapped
+      ).length;
+      const firmwareNote = state.firmwareSettingsMap
+        ? ` The TV lists ${locallyPresentCount} of these ${mappedCount} settings. Each current value is checked separately; a listed setting may still not work as expected.`
+        : " The TV's setting list could not be read. Each current value must still be checked before use.";
+      if (state.profile.mappingScope === "exact-device-firmware") {
+        statusPill($("#compatibility-status"), "C6H settings", "neutral");
+        $("#compatibility-summary").textContent = `${mappedCount} settings are documented for this model and software. ${writeVerifiedCount} changes were previously confirmed through PrivacyShield.${firmwareNote} Current values are checked before switches are enabled.`;
+      } else {
+        statusPill($("#compatibility-status"), `${state.profile.cohort} · webOS ${state.profile.platformVersion}`, "neutral");
+        const modelMapNote = state.profile.sampleNote
+          ? ` ${state.profile.sampleNote}`
+          : " Published sources have not been checked on this exact TV.";
+        $("#compatibility-summary").textContent = `${mappedCount} settings are documented for webOS ${state.profile.platformVersion}.${modelMapNote}${firmwareNote} A switch is enabled only when this TV returns its current value. Changes are checked afterward.`;
+      }
     } else {
-      statusPill($("#compatibility-status"), "Not mapped", "unknown");
-      $("#compatibility-summary").textContent = "Privacy settings are read-only because PrivacyShield has no exact settings map for this model, SDK, and firmware. Public model reports and menu references below provide background, not a verified control map. A compatibility report stays on this TV.";
+      statusPill($("#compatibility-status"), "Read-only", "unknown");
+      $("#compatibility-summary").textContent = "No controls are available for this model and software version. A compatibility report stays on this TV until shared.";
     }
+    paintMappedSettings(state.profile);
     paintPublicReferences(model);
+  }
+
+  function mapSourceLabel(source) {
+    const labels = {
+      glasshouse: "Glasshouse SettingsService map",
+      "glasshouse-webos24": "Glasshouse webOS 9.2 map",
+      "glasshouse-c2-webos22-fixture": "Glasshouse C2/webOS 22 sample fixture",
+      "glasshouse-dashboard-c2": "Glasshouse dashboard · C2/webOS 22 root map",
+      "glasshouse-c5": "Glasshouse C5 firmware map",
+      "own-your-glass-b5": "own-your-glass B5 audit",
+      "level1techs-g5": "Level1Techs G5 preference-file report",
+      "webos-lockout-c5": "webos_lockout OLED77C51LA root report",
+      "level1techs-g5+glasshouse": "Level1Techs G5 keys + Glasshouse SettingsService definitions",
+      "webos-debloat-webos26": "webOS Debloat webOS 26 key list",
+      "glasshouse+model-guide": "Glasshouse key map and model menu guide",
+      "glasshouse+webos-debloat": "Glasshouse and webOS Debloat maps",
+      "privacyshield-c6": "PrivacyShield C6H device map"
+    };
+    return labels[source] || String(source || "Published SettingsService map");
+  }
+
+  function paintMappedSettings(profile) {
+    const scope = $("#mapped-settings-scope");
+    const list = $("#mapped-settings-list");
+    const readOnlyList = $("#research-only-setting-list");
+    const readOnlySection = $("#research-only-setting-details");
+    replaceContent(list);
+    replaceContent(readOnlyList);
+    readOnlySection.hidden = true;
+    if (!profile) {
+      scope.textContent = "No settings are available for this model and software version. Controls are read-only.";
+      return;
+    }
+    const profileControls = Model.CONTROLS.filter((control) => profile.controls && profile.controls[control.key]);
+    const locallyPresentCount = profileControls.filter((control) => deviceControlStatus(control.key).mapped).length;
+    const firmwareNote = state.firmwareSettingsMap
+      ? ` This TV lists ${locallyPresentCount} of ${profileControls.length} settings. A listed setting may still have no effect.`
+      : " This TV's setting list could not be read; each setting is checked separately.";
+    if (profile.mappingScope === "exact-device-firmware") {
+      scope.textContent = `Settings documented for this C6H software version. Three changes were previously confirmed through PrivacyShield. The standard C6 family guide below does not cover C6H.${firmwareNote}`;
+    } else {
+      scope.textContent = `Settings documented for webOS ${profile.platformVersion}. A setting must be listed by the TV and return a current value before its switch is enabled. Changes are checked afterward.${firmwareNote}`;
+    }
+    if (!profileControls.length) {
+      const item = document.createElement("li");
+      item.textContent = "No settings are available.";
+      list.append(item);
+    } else {
+      for (const control of profileControls) {
+        const evidence = profile.controls[control.key];
+        const compatibility = deviceControlStatus(control.key);
+        const firmwareEntry = firmwareMapEntry(control.key);
+        const category = compatibility.mapped ? compatibility.firmwareCategory || control.category : control.category;
+        const item = document.createElement("li");
+        const name = document.createElement("strong");
+        const key = document.createElement("code");
+        name.textContent = control.label;
+        key.textContent = control.writer === "admanager"
+          ? "com.webos.service.admanager/updateDNS"
+          : `${category}.${control.key}`;
+        const firmwareStatus = !firmwareEntry.available
+          ? " The TV firmware map was unavailable."
+          : compatibility.mapped ? " Present in this TV's firmware map; current value is read separately."
+            : ` ${compatibility.reason}`;
+        item.append(name, key, document.createTextNode(`${mapSourceLabel(evidence.source)}.${firmwareStatus}`));
+        list.append(item);
+      }
+    }
+
+    for (const reference of profile.referenceSettings || []) {
+      const item = document.createElement("li");
+      const name = document.createElement("strong");
+      const key = document.createElement("code");
+      name.textContent = reference.label;
+      const firmwareEntry = firmwareMapEntry(reference.key);
+      key.textContent = `${firmwareEntry.category || reference.category}.${reference.key}`;
+      const value = Model.normalizeToggle(state.referenceSettings[reference.key]);
+      const current = firmwareEntry.available && !firmwareEntry.category
+        ? "Not listed in this TV's firmware map; no value was read."
+        : value === "unknown" ? "Status unavailable." : `Current value: ${value === "on" ? "On" : "Off"}.`;
+      item.append(name, key, document.createTextNode(`${current} Read only. ${reference.reason} ${mapSourceLabel(reference.source)}`));
+      readOnlyList.append(item);
+    }
+    readOnlySection.hidden = !(profile.referenceSettings && profile.referenceSettings.length);
   }
 
   function paintPublicReferences(model) {
     const statusLabels = {
       "upstream-confirmed": "project report",
       "user-reported": "owner report",
-      "maintainer-tested": "maintainer test",
+      "maintainer-tested": "project test",
       "maintainer-baseline": "project baseline",
       "network-measured": "network capture",
-      "firmware-analyzed": "firmware analysis"
+      "firmware-analyzed": "firmware analysis",
+      "owner-audited": "owner audit"
     };
     const cohort = PublicReferences.cohortForModel(model && model.model);
     const cohortNode = $("#community-cohort");
+    const guideNode = $("#community-model-guide");
+    const discoveryNode = $("#community-device-discovery");
     const microphoneNode = $("#community-microphone");
     const microphoneSwitchNode = $("#community-microphone-switch");
     const samplesNode = $("#community-samples");
-    samplesNode.replaceChildren();
+    replaceContent(samplesNode);
+    replaceContent(guideNode);
     if (!cohort) {
-      cohortNode.textContent = "No B1–G6 OLED family was identified in this model name.";
+      cohortNode.textContent = "This model is not listed in the B/C/G OLED references.";
+      guideNode.textContent = "No matching model-family privacy guide is listed.";
+      discoveryNode.textContent = "No matching model-specific network-discovery entry is available.";
       microphoneNode.textContent = "Published built-in microphone evidence is not available for this model.";
       microphoneSwitchNode.textContent = "Physical microphone switch: no model-specific report is available.";
     } else {
+      const guide = PublicReferences.modelGuideForModel(model && model.model);
       const samples = PublicReferences.samplesForCohort(cohort.series);
       const sampleCounts = PublicReferences.sampleCountsForCohort(cohort.series);
       const sourceCounts = Object.entries(sampleCounts).map(([source, count]) => `${count} ${source}`).join(", ");
-      cohortNode.textContent = `${cohort.series} · ${cohort.year} model family · listed launch platform webOS ${cohort.launchWebOS} · listed sizes ${cohort.sizes.join(", ")} inches. Public entries: ${samples.length}${sourceCounts ? ` (${sourceCounts})` : ""}.`;
+      cohortNode.textContent = `${cohort.series} · ${cohort.year} OLED family · launch version webOS ${cohort.launchWebOS} · listed screen sizes: ${cohort.sizes.join(", ")} inches. Reports: ${samples.length}${sourceCounts ? ` (${sourceCounts})` : ""}.`;
+      if (guide) {
+        guideNode.append(document.createTextNode("Model-family guide: "));
+        const link = document.createElement("a");
+        link.href = guide.url;
+        link.rel = "noopener noreferrer";
+        link.textContent = `LG ${guide.series} (${guide.year}) privacy guide`;
+        guideNode.append(link, document.createTextNode(` ${guide.scopeNote}`));
+      }
+      discoveryNode.textContent = "LG says these TVs look for compatible devices on the home network. The cited guides list no setting to stop this. They do not show that the device list is sent to LG. A guest network can limit local access.";
       const microphoneLabels = {
         present: "Listed by the cited manufacturer source",
         absent: "Listed as absent by the cited manufacturer source",
@@ -427,14 +618,14 @@
       };
       const exactC6H = cohort.series === "C6" && /C6H/i.test(model.model || "");
       const exactMicStatus = exactC6H ? "C6H variant not covered" : microphoneLabels[cohort.microphone.status] || "Unknown";
-      microphoneNode.textContent = `Built-in microphone: ${exactMicStatus}. ${cohort.microphone.summary} This evidence does not identify or control a physical microphone switch.`;
+      microphoneNode.textContent = `Built-in microphone: ${exactMicStatus}. ${cohort.microphone.summary} Software cannot identify or control a physical switch.`;
       const switchEvidence = PublicReferences.microphoneSwitchForCohort(cohort.series);
       if (switchEvidence) {
-        microphoneSwitchNode.textContent = `Physical microphone switch: reported for ${cohort.series}, ${switchEvidence.webOS}. Read paths: ${switchEvidence.method} ${switchEvidence.observation} ${switchEvidence.limit}`;
+        microphoneSwitchNode.textContent = `Physical microphone switch: reported for ${cohort.series} on ${switchEvidence.webOS}. ${switchEvidence.observation} ${switchEvidence.limit}`;
       } else if (cohort.series === "C6") {
         microphoneSwitchNode.textContent = "Physical microphone switch: no C6-specific report is included. The C5 switch finding does not establish a switch on a C6 or C6H.";
       } else {
-        microphoneSwitchNode.textContent = `Physical microphone switch: no ${cohort.series}-specific report is included. This catalog does not establish whether one is present.`;
+        microphoneSwitchNode.textContent = `Physical microphone switch: no report confirms one on this ${cohort.series} model family.`;
       }
       if (!samples.length) {
         const item = document.createElement("li");
@@ -447,20 +638,20 @@
           const displayModel = sample.displayModel || sample.model || `${sample.series} family`;
           const panel = sample.panel ? `; ${sample.panel}` : "";
           heading.textContent = `${displayModel} · ${sample.project} (${statusLabels[sample.status] || "reported"})`;
-          item.append(heading, document.createTextNode(`Reported webOS/SDK version ${sample.webOS}; firmware ${sample.firmware || "not listed"}${panel}. ${sample.note}`));
+          item.append(heading, document.createTextNode(`Reported webOS version ${sample.webOS}; firmware ${sample.firmware || "not listed"}${panel}. ${sample.note}`));
           samplesNode.append(item);
         }
       }
     }
 
     const menuNode = $("#menu-reference-list");
-    menuNode.replaceChildren();
+    replaceContent(menuNode);
     const menuEntries = model && model.platformVersion
       ? PublicReferences.menuForPlatform(model.platformVersion)
       : [];
     $("#menu-reference-status").textContent = model && model.platformVersion
-      ? `webOS ${model.platformVersion} · ${menuEntries.length} documented menu locations.`
-      : "Installed webOS could not be identified from this runtime. No menu path is shown.";
+      ? `webOS ${model.platformVersion} · ${menuEntries.length} documented menu paths.`
+      : "The installed webOS version is unavailable. No menu paths are shown.";
     for (const entry of menuEntries) {
       const item = document.createElement("li");
       const heading = document.createElement("strong");
@@ -471,7 +662,7 @@
     }
 
     const findingsNode = $("#community-control-findings");
-    findingsNode.replaceChildren();
+    replaceContent(findingsNode);
     for (const finding of PublicReferences.PUBLIC_CONTROL_FINDINGS) {
       const item = document.createElement("li");
       const heading = document.createElement("strong");
@@ -481,14 +672,14 @@
     }
 
     const unassignedNode = $("#community-unassigned-samples");
-    unassignedNode.replaceChildren();
+    replaceContent(unassignedNode);
     for (const sample of PublicReferences.unassignedSamples()) {
       const item = document.createElement("li");
       const heading = document.createElement("strong");
       heading.textContent = `${sample.displayModel || "Model not published"} · ${sample.project} (${statusLabels[sample.status] || "reported"})`;
       const panel = sample.panel ? `; ${sample.panel}` : "";
       const webOS = sample.webOS === "Not recorded" ? "not recorded" : sample.webOS;
-      item.append(heading, document.createTextNode(` Platform version: ${webOS}; firmware: ${sample.firmware || "not listed"}${panel}. ${sample.note}`));
+      item.append(heading, document.createTextNode(` webOS version: ${webOS}; firmware: ${sample.firmware || "not listed"}${panel}. ${sample.note}`));
       unassignedNode.append(item);
     }
   }
@@ -509,95 +700,123 @@
   }
 
   async function loadState() {
-    $("#runtime-mode").textContent = "Reading TV information…";
+    $("#runtime-mode").textContent = "Reading TV status…";
     state.settings = Object.fromEntries(Model.CONTROLS.map(({ key }) => [key, "unknown"]));
     state.model = null;
     state.profile = null;
     state.controlReads = {};
     state.apiAccess = {};
+    state.referenceSettings = {};
+    state.firmwareSettingsMap = null;
     state.errors = [];
-    for (const control of Model.CONTROLS) setControl(control.key, "unknown", false);
+    for (const control of Model.CONTROLS) {
+      setControl(control.key, "unknown", { mapped: false, reason: "A TV profile has not been selected yet." });
+    }
     $("#privacy-preset").disabled = true;
     $("#restore-button").disabled = true;
-    const optionKeys = Model.CONTROLS.filter(({ category }) => category === "option").map(({ key }) => key);
-    const generalKeys = Model.CONTROLS.filter(({ category }) => category === "general").map(({ key }) => key);
-    const otherKeys = Model.CONTROLS.filter(({ category }) => category === "other").map(({ key }) => key);
-    const networkKeys = Model.CONTROLS.filter(({ category }) => category === "network").map(({ key }) => key);
     const results = await Promise.allSettled([
-      Api.getSettings("option", optionKeys),
-      Api.getSettings("general", generalKeys),
-      Api.getSettings("other", otherKeys),
-      Api.getSettings("network", networkKeys),
       Api.getAgreements(),
       Api.getSystemInfo(),
       Api.getNetworkStatus(),
       rootSnapshot()
     ]);
-    const [option, general, other, networkSettings, agreements, model, network, root] = results;
+    const [agreements, model, network, root] = results;
     state.root = root.status === "fulfilled" ? root.value : null;
-    const rootSettings = snapshotSettings();
-    const observedSettings = {};
-    const privateQueryErrors = [];
-
-    if (option.status === "fulfilled") Object.assign(observedSettings, settingValues(option.value, optionKeys));
-    else privateQueryErrors.push(option.reason.message);
-    if (general.status === "fulfilled") Object.assign(observedSettings, settingValues(general.value, generalKeys));
-    else privateQueryErrors.push(general.reason.message);
-    if (other.status === "fulfilled") Object.assign(observedSettings, settingValues(other.value, otherKeys));
-    else privateQueryErrors.push(other.reason.message);
-    if (networkSettings.status === "fulfilled") Object.assign(observedSettings, settingValues(networkSettings.value, networkKeys));
-    else privateQueryErrors.push(networkSettings.reason.message);
-    for (const control of Model.CONTROLS) {
-      if (Model.normalizeToggle(observedSettings[control.key]) === "unknown") observedSettings[control.key] = rootSettings[control.key];
-    }
+    state.firmwareSettingsMap = firmwareSettingsMapFromSnapshot();
     const directAgreements = agreements.status === "fulfilled" ? agreementRecord(agreements.value) : null;
     const rootAgreements = parseRootSnapshot(state.root)?.agreements || null;
     state.agreements = Model.hasAgreementRecord(directAgreements) ? directAgreements : rootAgreements;
     state.model = model.status === "fulfilled" ? infoModel(model.value) : null;
     if (model.status === "rejected") state.errors.push(model.reason.message);
     state.profile = Compatibility.matchProfile(state.model);
+
+    // Read only keys in the selected source map. A missing key therefore fails
+    // only its own request instead of hiding every control in the category.
+    const candidates = mappedControls();
+    const settingResults = await Promise.allSettled(candidates.map((control) =>
+      Api.getSettings(control.category, [control.key])
+    ));
+    const rootSettings = snapshotSettings();
+    const observedSettings = Object.fromEntries(Model.CONTROLS.map(({ key }) => [key, "unknown"]));
+    const directSuccesses = settingResults.filter((result) => result.status === "fulfilled").length;
+    const directFailures = settingResults.length - directSuccesses;
+    for (let index = 0; index < candidates.length; index += 1) {
+      const control = candidates[index];
+      const result = settingResults[index];
+      let value = result.status === "fulfilled"
+        ? Model.normalizeToggle(Model.pickValue(result.value, control.key))
+        : "unknown";
+      if (value === "unknown") value = rootSettings[control.key];
+      observedSettings[control.key] = value;
+    }
+
+    const referenceSettings = state.profile && state.profile.referenceSettings || [];
+    const referenceCandidates = referenceSettings.map((setting) => {
+      const firmwareEntry = firmwareMapEntry(setting.key);
+      if (firmwareEntry.available && !firmwareEntry.category) return null;
+      return firmwareEntry.category ? { ...setting, category: firmwareEntry.category } : setting;
+    }).filter(Boolean);
+    const referenceResults = await Promise.allSettled(referenceCandidates.map((setting) =>
+      Api.getSettings(setting.category, [setting.key])
+    ));
+    const rootReferenceSettings = snapshotReferenceSettings();
+    for (let index = 0; index < referenceCandidates.length; index += 1) {
+      const setting = referenceCandidates[index];
+      const result = referenceResults[index];
+      const directValue = result.status === "fulfilled"
+        ? Model.normalizeToggle(Model.pickValue(result.value, setting.key))
+        : "unknown";
+      state.referenceSettings[setting.key] = directValue === "unknown"
+        ? Model.normalizeToggle(rootReferenceSettings[setting.key])
+        : directValue;
+    }
+    for (const setting of referenceSettings) {
+      if (!referenceCandidates.some((candidate) => candidate.key === setting.key)) state.referenceSettings[setting.key] = "unknown";
+    }
+
     state.controlReads = {};
     for (const control of Model.CONTROLS) {
-      state.controlReads[control.key] = Model.normalizeToggle(observedSettings[control.key]) !== "unknown";
+      state.controlReads[control.key] = deviceControlStatus(control.key).mapped
+        && Model.normalizeToggle(observedSettings[control.key]) !== "unknown";
     }
-    state.settings = state.profile
-      ? observedSettings
-      : Object.fromEntries(Model.CONTROLS.map(({ key }) => [key, "unknown"]));
-    const successfulSettingsQueries = [option, general, other, networkSettings].filter((result) => result.status === "fulfilled").length;
+    state.settings = observedSettings;
     state.apiAccess = {
       systemInfo: model.status === "fulfilled",
-      settingsService: successfulSettingsQueries === 4 ? "available" : successfulSettingsQueries > 0 ? "partial" : "unavailable",
+      settingsService: candidates.length > 0 && directFailures === 0
+        ? "available" : directSuccesses > 0 ? "partial" : "unavailable",
       hbcSnapshot: Boolean(parseRootSnapshot(state.root)),
+      firmwareSettingsMap: Boolean(state.firmwareSettingsMap),
       controlReads: state.controlReads
     };
     if (!Model.hasAgreementRecord(state.agreements) && agreements.status === "rejected") state.errors.push(agreements.reason.message);
-    if (state.profile && Model.CONTROLS.some((control) => Model.normalizeToggle(state.settings[control.key]) === "unknown")) {
-      state.errors.push(...privateQueryErrors);
-      if (!privateQueryErrors.length) state.errors.push("Some privacy settings could not be read");
+    if (candidates.some((control) => Model.normalizeToggle(state.settings[control.key]) === "unknown")) {
+      state.errors.push("Some mapped privacy settings are unavailable");
     }
     state.network = network.status === "fulfilled" ? network.value : null;
     if (network.status === "rejected") state.errors.push(network.reason.message);
     if (root.status === "rejected") state.errors.push(root.reason.message);
 
     for (const control of Model.CONTROLS) {
-      setControl(control.key, state.settings[control.key], Compatibility.controlStatus(state.profile, control.key).mapped);
+      setControl(control.key, state.settings[control.key], deviceControlStatus(control.key));
     }
     paintAgreementState();
     paintOverview();
     paintEvidence();
     paintCompatibility();
     $("#restore-button").disabled = !canRestoreSaved(savedControls());
-    $("#runtime-mode").textContent = state.errors.length ? "Some TV information unavailable" : "TV information updated";
+    $("#runtime-mode").textContent = state.errors.length ? "Some TV status unavailable" : "TV status updated";
+    $("#app-version").textContent = Compatibility.APP_VERSION;
     if (!state.profile) {
-      $("#write-access-note span").textContent = "No settings were changed. This model and software version are not mapped, so all privacy controls remain read-only.";
+      $("#write-access-note span").textContent = "No settings were changed. No controls are available for this model and software version.";
     } else if (state.errors.length) {
       const rootDenied = root.status === "rejected" && /Denied method call ["']exec["']/.test(root.reason.message || "");
       const controlsUnknown = Model.CONTROLS.some((control) => Model.normalizeToggle(state.settings[control.key]) === "unknown");
       $("#write-access-note span").textContent = rootDenied
-        ? `The Homebrew Channel did not allow local TV checks. Check its app permissions and refresh. ${controlsUnknown ? "Settings that could not be read remain locked." : "Privacy settings are available; local TV details are not."}`
+        ? `The Homebrew Channel blocked local TV checks. Check its permissions and refresh. ${controlsUnknown ? "Unreadable settings remain locked." : "Privacy settings are available; local details are not."}`
         : `Some TV information could not be read. Refresh to try again. ${controlsUnknown ? "Settings without a readable value remain locked." : "Readable settings are still available."}`;
     } else {
-      $("#write-access-note span").textContent = "The preset changes ten settings. Other choices remain separate because they affect LG's ad service, HbbTV, Bluetooth wake, or Sleep on Absence. Each change is read back before success is shown.";
+      const preset = privacyPresetForProfile();
+      $("#write-access-note span").textContent = `The preset includes ${preset.length} available settings. Other switches remain separate. The TV confirms each change.`;
     }
   }
 
@@ -610,7 +829,7 @@
     const entries = Object.entries(saved.settings);
     return entries.length > 0 && entries.every(([key, target]) => {
       return ["on", "off"].includes(target)
-        && Compatibility.canWrite(state.profile, key)
+        && deviceControlStatus(key).mapped
         && Model.normalizeToggle(state.settings[key]) !== "unknown";
     });
   }
@@ -628,27 +847,28 @@
   }
 
   async function applyOne(control, value) {
-    if (!control || !Compatibility.canWrite(state.profile, control.key)) {
-      throw new Error("This model and software version have not been mapped; privacy settings are read-only.");
+    const mappedControl = controlForDevice(control);
+    if (!mappedControl) {
+      throw new Error("No controls are available for this model and software version; settings are read-only.");
     }
-    if (Model.normalizeToggle(state.settings[control.key]) === "unknown") {
-      throw new Error("The current setting value could not be read; no change was attempted.");
+    if (Model.normalizeToggle(state.settings[mappedControl.key]) === "unknown") {
+      throw new Error("The current value could not be read; no change was attempted.");
     }
     const target = value === "on" ? "on" : "off";
     let directError = null;
     try {
-      if (control.writer === "admanager") await Api.setDoNotSell(target);
+      if (mappedControl.writer === "admanager") await Api.setDoNotSell(target);
       else {
-        const serviceTarget = control.writer === "thirdPartyCookie"
+        const serviceTarget = mappedControl.writer === "thirdPartyCookie"
           ? (target === "on" ? "onByUser" : "offByUser")
           : target;
-        await Api.setSetting(control.category, control.key, serviceTarget);
+        await Api.setSetting(mappedControl.category, mappedControl.key, serviceTarget);
       }
     }
     catch (error) { directError = error; }
 
     let actual = await readControl(control);
-    if (actual !== target && control.writer === "admanager" && !directError) {
+    if (actual !== target && mappedControl.writer === "admanager" && !directError) {
       await new Promise((resolve) => window.setTimeout(resolve, 350));
       actual = await readControl(control);
     }
@@ -663,20 +883,23 @@
       actual = await readControl(control);
     }
     if (actual !== target) throw new Error(`The TV still reports ${actual}; the change was not applied.`);
-    state.settings[control.key] = actual;
-    state.controlReads[control.key] = true;
-    setControl(control.key, actual, true);
+    state.settings[mappedControl.key] = actual;
+    state.controlReads[mappedControl.key] = true;
+    setControl(mappedControl.key, actual, deviceControlStatus(mappedControl.key));
   }
 
   async function readControl(control) {
+    const mappedControl = controlForDevice(control);
+    if (!mappedControl) return "unknown";
     try {
-      const response = await Api.getSettings(control.category, [control.key]);
-      const direct = Model.normalizeToggle(Model.pickValue(response, control.key));
+      const response = await Api.getSettings(mappedControl.category, [mappedControl.key]);
+      const direct = Model.normalizeToggle(Model.pickValue(response, mappedControl.key));
       if (direct !== "unknown") return direct;
     } catch (_) { /* try the privileged, allowlisted local snapshot below */ }
     try {
       state.root = await rootSnapshot();
-      return Model.snapshotSettings(parseRootSnapshot(state.root))[control.key];
+      state.firmwareSettingsMap = firmwareSettingsMapFromSnapshot();
+      return Model.snapshotSettings(parseRootSnapshot(state.root))[mappedControl.key];
     } catch (_) {
       return "unknown";
     }
@@ -723,14 +946,15 @@
 
   async function applyPreset() {
     if (pendingActions.size > 0 || pendingSettings.size > 0) return;
-    if (!Compatibility.canApplyPreset(state.profile, Model.privacyPreset())) {
-      $("#control-status").textContent = "This model and software version have not been mapped. Settings are read-only.";
-      showToast("No settings changed. This model and software version have not been mapped.");
+    const preset = privacyPresetForProfile();
+    if (!preset.length || !preset.every(({ key }) => deviceControlStatus(key).mapped)) {
+      $("#control-status").textContent = "No recommended settings are available for this TV.";
+      showToast("No settings changed. No recommended settings are available for this TV.");
       return;
     }
-    if (!Model.canApplyPrivacyPreset(state.settings)) {
-      $("#control-status").textContent = "Read the recommended settings before applying them.";
-      showToast("No settings changed. One or more current values could not be read.");
+    if (!Model.canApplyPrivacyPreset(state.settings, preset)) {
+      $("#control-status").textContent = "Some current values are unavailable. Refresh before applying settings.";
+      showToast("No settings changed. Some current values are unavailable.");
       return;
     }
     const button = $("#privacy-preset");
@@ -741,7 +965,7 @@
     $("#control-status").textContent = "Applying recommended privacy settings…";
     const failures = [];
     try {
-      for (const item of Model.privacyPreset()) {
+      for (const item of preset) {
         const control = Model.CONTROLS.find((entry) => entry.key === item.key);
         if (Model.normalizeToggle(state.settings[item.key]) === item.value) continue;
         try { await applyOne(control, item.value); } catch (error) { failures.push({ control, error }); }
@@ -795,14 +1019,14 @@
   async function restoreSettings() {
     if (pendingActions.size > 0 || pendingSettings.size > 0) return;
     if (!state.profile) {
-      $("#control-status").textContent = "This model and software version have not been mapped. Settings are read-only.";
-      showToast("No settings changed. This model and software version have not been mapped.");
+      $("#control-status").textContent = "No settings are available for this model and software version.";
+      showToast("No settings changed. These settings are read-only for this TV.");
       return;
     }
     const saved = savedControls();
     if (!canRestoreSaved(saved)) {
-      $("#control-status").textContent = "Current TV values could not be read. Refresh before restoring settings.";
-      showToast("No settings changed. Current TV values could not be read.");
+      $("#control-status").textContent = "Current TV values are unavailable. Refresh before restoring settings.";
+      showToast("No settings changed. Current TV values are unavailable.");
       return;
     }
     const button = $("#restore-button");

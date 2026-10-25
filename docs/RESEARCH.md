@@ -26,20 +26,60 @@ source-aware voice commands may need Viewing Information. Accept only the
 agreements needed for the desired features. The Privacy Policy and Terms of
 Use are required for smart services such as Netflix and YouTube.
 
-PrivacyShield exposes 15 settings traced to LG's Settings UI: Live Plus / ACR,
-two voice controls, Limit Ad Tracking, Do Not Sell, Screen Saver Promotion,
-Home menu ads, Live Promotion, Home content recommendations, four HbbTV
-controls, Bluetooth wake, and Sleep on Absence. The full handlers, effects,
-permission boundary, one-time ID actions, and unmapped candidates are in
-[TV-PRIVACY-CAPABILITY-MAP.md](TV-PRIVACY-CAPABILITY-MAP.md).
+PrivacyShield's control catalog has 17 settings traced to LG's Settings UI:
+Live Plus / ACR, two voice controls, Limit Ad Tracking, Do Not Sell, Screen
+Saver Promotion, Home menu ads, Live Promotion, Home content recommendations,
+four HbbTV controls, Bluetooth wake, Sleep on Absence, and two Smart Tips
+controls. The two Smart Tips keys are mapped on C2/webOS 22 and webOS 24. C2/webOS 22
+also uses the dashboard's root-side `general.lmt` write/readback evidence; its
+OLED42C24LA test row is not directly linked to that code test. The exact
+OLED55B56LA / SDK 10.3.1 B5 map adds `aiNudge` and three HbbTV controls. The
+exact `OLED65G5WUA` / webOS 10.2.1 report supplies keys for `aiNudge`,
+`screenSaverAd`, and `homePromotion`; five option preferences are read-only
+because the source edits files directly and does not test the app-side setter.
+The numerical G5 firmware is not published. The exact C6H profile has 15
+reviewed candidates, filtered by a read-only capture of that TV's firmware key
+index: 14 are listed and `hbbTvDnt` is absent. Other model profiles use
+narrower published platform/cohort maps, then check the installed firmware's
+key index and current value before enabling each control.
+The full handlers, effects, permission boundary, one-time ID actions, and
+unmapped candidates are in [TV-PRIVACY-CAPABILITY-MAP.md](TV-PRIVACY-CAPABILITY-MAP.md)
+and [DEVICE-COMPATIBILITY.md](DEVICE-COMPATIBILITY.md).
+
+The per-firmware category/key index is stored on rooted sets at
+`/etc/palm/description.categorykeysmap.json`. PrivacyShield filters this local
+index to reviewed candidates and uses its category for reads and writes. This
+lets the app discover the installed firmware's registered keys on first use
+without shipping a speculative per-size map. A missing key remains
+unavailable. Key presence does not establish its privacy effect or prove a
+write; current values and changes still require live readback.
+
+For offline research, LG publishes model support downloads with firmware ZIPs
+and applicable-model guides. The EPK Firmware Archive's `processed_fw.json`
+adds checksummed ZIP/EPK identities and model/OTA relationships; the repository
+now pins 405 package builds for 525 exact B/C/G OLED model codes. The catalog
+does not include rootfs contents or SettingsService maps. The community
+`epk2extract` tool supports LG EPK and filesystem extraction, but encrypted
+EPK v2/v3 packages need AES/RSA material from a running TV. Newer webOS
+packages can nest rootfs in `super.pak`. A 2026-10-25 range probe read the ZIP
+directory but found a single 1.81 GB DEFLATE-compressed EPK member with no
+published seek index; earlier full-download attempts ran at about 20–50 kB/s.
+The repeatable importer, `scripts/import_firmware_keymap.py`, now verifies the
+actual EPK SHA-256 against the catalog and marks extraction as not independently
+reproduced. No additional B/C/G registry has been extracted; the C6H capture
+remains the only device-specific firmware-index fixture. The current 0.4.0 IPK
+was validated headlessly and was not installed or launched on the TV. See
+[DEVICE-COMPATIBILITY.md](DEVICE-COMPATIBILITY.md) for the process and limits.
 
 The Settings bundle handles Do Not Sell through
 `com.webos.service.admanager/updateDNS` with a `status` value. PrivacyShield
 uses that same method rather than writing the cached preference directly.
 Other confirmed switches use their SettingsService category and key. Each
-change is read back before the app reports success. The ten-setting preset
-leaves Do Not Sell, the HbbTV master switch, HbbTV cookies, Bluetooth wake, and
-Sleep on Absence for separate user action.
+change is read back before the app reports success. On the exact C6H profile,
+the preset applies at most nine reviewed values because this firmware's local
+index omits HbbTV Do Not Track. It leaves Do Not Sell, the HbbTV master
+switch, HbbTV cookies, Bluetooth wake, and Sleep on Absence for separate user
+action. Family/platform profiles apply only the subset in their published map.
 
 Turning off hands-free recognition and voice wake does not electrically
 disconnect a microphone. Deliberate Magic Remote push-to-talk is a separate
@@ -58,10 +98,11 @@ disconnect.
 ## webOS 26 and Homebrew access
 
 PrivacyShield queries SettingsService and falls back to a root snapshot that
-reads only the 15 supported setting values, seven agreement flags, selected
-diagnostic flags, service names, and Homebrew app metadata. The snapshot does
-not return raw preference files. Local app/process inventory and the fallback
-require the Homebrew Channel `exec` API. On webOS 26, the application declares
+reads only reviewed setting values listed in the TV's firmware key index,
+seven agreement flags, selected diagnostic flags, service names, and Homebrew
+app metadata. The snapshot does not return raw preference files. Local
+app/process inventory and the fallback require the Homebrew Channel `exec`
+API. On webOS 26, the application declares
 `lunabus.query`, and the installed HBC service also needs an API-permission
 mapping for that group. Before repair, HBC 0.7.3 on the test TV lacked it, and
 the service returned `Denied method call "exec" for category "/"`. The map and
@@ -75,8 +116,8 @@ root identity and the v0.1.4 snapshot returned the original three toggle
 values and seven agreement flags. The v0.1.4 allowlisted writer completed
 idempotent `off` write/readback for those three controls. A later v0.1.5 app
 session toggled Live Plus off and on; its other added settings were not
-individually tested live. The current v0.1.6 package has not been installed or
-run on the TV. Its expanded settings were read over SSH only; no settings or
+individually tested live. The v0.1.6 package was not installed or run on the
+TV; its expanded settings were read over SSH only. No settings or
 agreement choices were changed during this map work. Direct SettingsService
 option/general/agreement requests remain denied on this firmware, so the app
 uses the HBC snapshot fallback. System information and network status calls

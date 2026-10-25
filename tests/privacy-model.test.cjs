@@ -27,7 +27,7 @@ test("privacy preset applies only reviewed reversible choices", () => {
     "homePromotion", "livePromotion", "contentRecommendation", "hbbTvDnt", "hbbTvDeviceId"
   ]);
   assert.deepEqual(preset.map((entry) => entry.value), ["off", "off", "off", "on", "off", "off", "off", "off", "on", "off"]);
-  assert.ok(!preset.some((entry) => ["doNotSellMyPersonalInformation", "hbbTV"].includes(entry.key)));
+  assert.ok(!preset.some((entry) => ["doNotSellMyPersonalInformation", "hbbTV", "aiNudge", "aiSettingsNudge"].includes(entry.key)));
 });
 
 test("requires verified settings before applying the privacy preset", () => {
@@ -38,8 +38,8 @@ test("requires verified settings before applying the privacy preset", () => {
 });
 
 test("counts unknown settings separately from enabled settings", () => {
-  assert.deepEqual(model.countPrivacyControls({ livePlus: "off", voiceLongDistance: "on" }), { off: 1, on: 1, unknown: 13 });
-  assert.deepEqual(model.countRecommendedControls({ livePlus: "off", voiceLongDistance: "on" }), { recommended: 1, total: 15, unknown: 13 });
+  assert.deepEqual(model.countPrivacyControls({ livePlus: "off", voiceLongDistance: "on" }), { off: 1, on: 1, unknown: 15 });
+  assert.deepEqual(model.countRecommendedControls({ livePlus: "off", voiceLongDistance: "on" }), { recommended: 1, total: 17, unknown: 15 });
 });
 
 test("uses only allowlisted values from a privileged settings snapshot", () => {
@@ -59,6 +59,8 @@ test("uses only allowlisted values from a privileged settings snapshot", () => {
     thirdPartyCookie: "onByUser",
     bleAdvertisingOnOff: "off",
     homeSenseAbsence: "off",
+    aiNudge: "off",
+    aiSettingsNudge: "on",
     unrelated: "on"
   } }), {
     livePlus: "off",
@@ -75,7 +77,9 @@ test("uses only allowlisted values from a privileged settings snapshot", () => {
     contentRecommendation: "off",
     thirdPartyCookie: "on",
     bleAdvertisingOnOff: "off",
-    homeSenseAbsence: "off"
+    homeSenseAbsence: "off",
+    aiNudge: "off",
+    aiSettingsNudge: "on"
   });
   assert.deepEqual(model.snapshotSettings(null), Object.fromEntries(model.CONTROLS.map(({ key }) => [key, "unknown"])));
 });

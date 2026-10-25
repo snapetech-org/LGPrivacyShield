@@ -14,6 +14,8 @@
     { key: "homePromotion", category: "general", group: "Advertising", label: "Home menu ads", safeValue: "off", feature: "Sponsored advertisements in the Home menu" },
     { key: "livePromotion", category: "option", group: "Advertising", label: "Live Promotion", safeValue: "off", feature: "Custom ads and services while watching content; available when Live Plus is on" },
     { key: "contentRecommendation", category: "other", group: "Recommendations", label: "Home content recommendations", safeValue: "off", feature: "Recommendation categories in the Home menu" },
+    { key: "aiNudge", category: "general", group: "Recommendations", label: "Smart tips", safeValue: "off", preset: false, feature: "Suggestions for TV features while watching or using apps" },
+    { key: "aiSettingsNudge", category: "general", group: "Recommendations", label: "Smart tips in Settings", safeValue: "off", preset: false, feature: "Suggested settings shown in LG's Settings menu" },
     { key: "hbbTvDnt", category: "option", group: "Broadcast services", label: "HbbTV Do Not Track", safeValue: "on", feature: "HbbTV apps are asked to disable user tracking" },
     { key: "hbbTvDeviceId", category: "option", group: "Broadcast services", label: "HbbTV Device ID", safeValue: "off", feature: "HbbTV apps may receive a unique HbbTV-only identifier" },
     { key: "thirdPartyCookie", category: "option", group: "Broadcast services", label: "HbbTV third-party cookies", safeValue: "off", writer: "thirdPartyCookie", preset: false, feature: "Third-party cookies used by HbbTV services" },
@@ -60,8 +62,8 @@
     return item.accepted ? "accepted" : "withdrawn";
   }
 
-  function countPrivacyControls(settings) {
-    const values = CONTROLS.map(({ key }) => normalizeToggle(settings && settings[key]));
+  function countPrivacyControls(settings, controls = CONTROLS) {
+    const values = controls.map(({ key }) => normalizeToggle(settings && settings[key]));
     return {
       off: values.filter((value) => value === "off").length,
       on: values.filter((value) => value === "on").length,
@@ -69,11 +71,11 @@
     };
   }
 
-  function countRecommendedControls(settings) {
+  function countRecommendedControls(settings, controls = CONTROLS) {
     const source = settings && typeof settings === "object" ? settings : {};
-    const known = CONTROLS.filter(({ key }) => normalizeToggle(source[key]) !== "unknown");
+    const known = controls.filter(({ key }) => normalizeToggle(source[key]) !== "unknown");
     const recommended = known.filter(({ key, safeValue }) => normalizeToggle(source[key]) === safeValue).length;
-    return { recommended, total: CONTROLS.length, unknown: CONTROLS.length - known.length };
+    return { recommended, total: controls.length, unknown: controls.length - known.length };
   }
 
   function featureConsentSummary(record) {
@@ -97,8 +99,9 @@
       .map(({ key, category, safeValue }) => ({ key, category, value: safeValue }));
   }
 
-  function canApplyPrivacyPreset(settings) {
-    return privacyPreset().every(({ key }) => normalizeToggle(settings && settings[key]) !== "unknown");
+  function canApplyPrivacyPreset(settings, preset = privacyPreset()) {
+    return Array.isArray(preset) && preset.length > 0
+      && preset.every(({ key }) => normalizeToggle(settings && settings[key]) !== "unknown");
   }
 
   return Object.freeze({

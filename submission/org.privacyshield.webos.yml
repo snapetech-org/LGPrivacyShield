@@ -6,13 +6,12 @@ pool: main
 requirements:
   webosRelease: '>=6.0'
 description: |
-  Review 15 privacy settings, agreement status, local services, and installed
-  Homebrew apps. Settings can be changed only on the validated OLED77C6HUP
-  running SDK 11.2.0 and firmware 43.21.79. Other model and firmware
-  combinations remain read-only until their settings maps are verified.
-  Owners can prepare a sanitized compatibility report for another model and
-  submit it to the project. Reports do not unlock settings writes.
-  PrivacyShield does not upload TV settings or viewing activity.
+  Review 17 privacy settings, LG agreement status, local services, installed
+  apps, diagnostic upload settings, and model references. Controls vary by
+  model and webOS version. A switch is enabled only when the TV returns a
+  readable value; each change is confirmed by readback. Unsupported settings
+  remain read-only. PrivacyShield does not send setting values or viewing
+  activity. A sanitized compatibility report can be shared by user action.
   Support development on [Ko-fi](https://ko-fi.com/snapetech).
 funding:
   ko_fi: [snapetech]

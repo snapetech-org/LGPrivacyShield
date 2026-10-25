@@ -15,7 +15,7 @@
           <div class="brand-mark" aria-hidden="true"><span></span></div>
           <div>
             <p class="brand-name">PrivacyShield</p>
-            <p class="brand-subtitle">TV privacy settings and activity</p>
+            <p class="brand-subtitle">TV privacy settings and status</p>
           </div>
         </div>
         <div class="device-chip" id="device-summary">Reading TV…</div>
@@ -26,6 +26,7 @@
         <button class="tab" type="button" data-view="controls">Controls</button>
         <button class="tab" type="button" data-view="agreements">LG agreements</button>
         <button class="tab" type="button" data-view="evidence">TV details</button>
+        <button class="tab" type="button" data-view="about">About</button>
       </nav>
 
       <main id="main-content" tabindex="-1">
@@ -34,7 +35,7 @@
             <div class="hero-copy">
               <p class="eyebrow">Status</p>
               <h1 id="overview-title">TV privacy settings</h1>
-              <p class="hero-note">Review privacy settings, LG agreements, diagnostics, and installed Homebrew apps. PrivacyShield does not upload TV settings or viewing activity.</p>
+              <p class="hero-note">Review privacy settings, LG agreements, and local TV status. Settings and viewing activity are not uploaded.</p>
             </div>
             <div class="posture" id="posture-card">
               <div class="posture-orbit" aria-hidden="true"><div class="posture-core">PS</div></div>
@@ -71,8 +72,8 @@
                 </div>
                 <span class="status-pill status-unknown" id="mic-status">Check TV</span>
               </div>
-              <p>The manual shows a microphone switch on some C6 layouts, but does not identify which layout has this model. Software voice controls do not disconnect the microphone.</p>
-              <p class="micro-note" id="mic-note">Check the bottom edge of the TV. PrivacyShield cannot read a physical switch.</p>
+              <p>LG's manual shows a microphone switch on some C6 layouts, but does not identify this TV's layout. Voice settings do not disconnect the microphone.</p>
+              <p class="micro-note" id="mic-note">Check the TV's bottom edge. Software cannot read a physical switch.</p>
             </section>
             <section class="panel connection-panel" aria-labelledby="connection-title">
               <div class="panel-heading">
@@ -101,7 +102,7 @@
           <div class="section-intro">
             <p class="eyebrow">TV settings</p>
             <h1 id="controls-title">Privacy settings</h1>
-            <p>Each switch changes one TV setting and checks the value afterward. A setting stays locked if its current value cannot be read.</p>
+            <p>Each switch changes one TV setting and confirms the new value. A switch stays locked if the TV does not return its current value.</p>
           </div>
           <div class="control-toolbar">
             <button class="button button-primary" type="button" id="privacy-preset" disabled>Apply recommended settings</button>
@@ -110,11 +111,11 @@
           </div>
           <div class="control-list" id="control-list">
             <article class="control-row" data-control="livePlus">
-              <div class="control-copy"><span class="control-category">Viewing</span><h2>Live Plus (ACR)</h2><p>Uses audio fingerprints to identify programs for viewing features. Turning it off can remove Live Plus recommendations. Agreement status does not control this switch.</p><span class="control-meta" id="livePlus-meta">Checking…</span></div>
+              <div class="control-copy"><span class="control-category">Viewing</span><h2>Live Plus (ACR)</h2><p>Uses audio fingerprints to identify programs on screen. Turning it off may remove Live Plus recommendations. This switch is separate from LG agreements.</p><span class="control-meta" id="livePlus-meta">Checking…</span></div>
               <label class="switch" role="group"><span class="sr-only">Live Plus</span><input type="checkbox" data-setting="livePlus" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
             </article>
             <article class="control-row" data-control="voiceLongDistance">
-              <div class="control-copy"><span class="control-category">Voice</span><h2>Hands-free voice recognition</h2><p>Allows voice commands without pressing the remote. Off disables hands-free commands; it does not disconnect the built-in or remote microphone.</p><span class="control-meta" id="voiceLongDistance-meta">Checking…</span></div>
+              <div class="control-copy"><span class="control-category">Voice</span><h2>Hands-free voice recognition</h2><p>Allows voice commands without pressing the remote. Off disables hands-free commands; it does not disconnect either microphone.</p><span class="control-meta" id="voiceLongDistance-meta">Checking…</span></div>
               <label class="switch" role="group"><span class="sr-only">Hands-free voice recognition</span><input type="checkbox" data-setting="voiceLongDistance" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
             </article>
             <article class="control-row" data-control="turnOnByVoice">
@@ -126,7 +127,7 @@
               <label class="switch" role="group"><span class="sr-only">Limit Ad Tracking</span><input type="checkbox" data-setting="lmt" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
             </article>
             <article class="control-row" data-control="doNotSellMyPersonalInformation">
-              <div class="control-copy"><span class="control-category">Advertising</span><h2>Do Not Sell My Personal Information</h2><p>Asks LG to tell its third-party providers to stop commercializing personal information. Some ad-supported services may remain. This uses LG's ad service; it does not block network traffic.</p><span class="control-meta" id="doNotSellMyPersonalInformation-meta">Checking…</span></div>
+              <div class="control-copy"><span class="control-category">Advertising</span><h2>Do Not Sell My Personal Information</h2><p>Asks LG's third-party providers to stop selling personal information. Some ad-supported services may remain. This does not block network traffic.</p><span class="control-meta" id="doNotSellMyPersonalInformation-meta">Checking…</span></div>
               <label class="switch" role="group"><span class="sr-only">Do Not Sell My Personal Information</span><input type="checkbox" data-setting="doNotSellMyPersonalInformation" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
             </article>
             <article class="control-row" data-control="screenSaverAd">
@@ -145,6 +146,14 @@
               <div class="control-copy"><span class="control-category">Recommendations</span><h2>Home content recommendations</h2><p>Controls recommendation categories in the Home menu. Turning this off hides those categories; availability varies by country.</p><span class="control-meta" id="contentRecommendation-meta">Checking…</span></div>
               <label class="switch" role="group"><span class="sr-only">Home content recommendations</span><input type="checkbox" data-setting="contentRecommendation" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
             </article>
+            <article class="control-row" data-control="aiNudge">
+              <div class="control-copy"><span class="control-category">Recommendations</span><h2>Smart tips</h2><p>Shows suggestions for TV features while watching or using apps. Off hides these prompts; it does not change what the TV collects.</p><span class="control-meta" id="aiNudge-meta">Checking…</span></div>
+              <label class="switch" role="group"><span class="sr-only">Smart tips</span><input type="checkbox" data-setting="aiNudge" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
+            </article>
+            <article class="control-row" data-control="aiSettingsNudge">
+              <div class="control-copy"><span class="control-category">Recommendations</span><h2>Smart tips in Settings</h2><p>Shows suggested settings in LG's Settings menu. Off hides these prompts; it does not change the selected TV settings.</p><span class="control-meta" id="aiSettingsNudge-meta">Checking…</span></div>
+              <label class="switch" role="group"><span class="sr-only">Smart tips in Settings</span><input type="checkbox" data-setting="aiSettingsNudge" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
+            </article>
             <article class="control-row" data-control="hbbTvDnt">
               <div class="control-copy"><span class="control-category">Broadcast services</span><h2>HbbTV Do Not Track</h2><p>Asks HbbTV apps and services to disable user tracking. This applies only when HbbTV services are used.</p><span class="control-meta" id="hbbTvDnt-meta">Checking…</span></div>
               <label class="switch" role="group"><span class="sr-only">HbbTV Do Not Track</span><input type="checkbox" data-setting="hbbTvDnt" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
@@ -162,7 +171,7 @@
               <label class="switch" role="group"><span class="sr-only">HbbTV interactive services</span><input type="checkbox" data-setting="hbbTV" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
             </article>
             <article class="control-row" data-control="bleAdvertisingOnOff">
-              <div class="control-copy"><span class="control-category">Connections</span><h2>Bluetooth wake</h2><p>Lets a supported mobile device turn on the TV over Bluetooth. Turning this on can increase standby energy use.</p><span class="control-meta" id="bleAdvertisingOnOff-meta">Checking…</span></div>
+              <div class="control-copy"><span class="control-category">Connections</span><h2>Bluetooth wake</h2><p>Lets a supported mobile device turn on the TV over Bluetooth. On may increase standby power use.</p><span class="control-meta" id="bleAdvertisingOnOff-meta">Checking…</span></div>
               <label class="switch" role="group"><span class="sr-only">Bluetooth wake</span><input type="checkbox" data-setting="bleAdvertisingOnOff" disabled><span class="switch-track"><span class="switch-knob"></span></span><span class="switch-state">Checking</span></label>
             </article>
             <article class="control-row" data-control="homeSenseAbsence">
@@ -172,7 +181,7 @@
           </div>
           <div class="notice notice-info" id="write-access-note">
             <strong>About these changes</strong>
-            <span>The preset changes ten settings. Other choices remain separate because they affect LG's ad service, HbbTV, Bluetooth wake, or Sleep on Absence. Each change is read back before success is shown.</span>
+            <span>The preset includes available privacy settings. LG's ad preference, HbbTV, Bluetooth wake, and Sleep on Absence remain separate. Every change is confirmed by the TV.</span>
           </div>
         </section>
 
@@ -180,7 +189,7 @@
           <div class="section-intro">
             <p class="eyebrow">Consent and services</p>
             <h1 id="agreements-title">LG agreements</h1>
-            <p>Check the recorded choices below, then open LG User Agreements to review and change them.</p>
+            <p>Review the recorded choices below. Use LG User Agreements to change them.</p>
           </div>
           <div class="agreement-list" id="agreement-list">
             <article class="agreement-row" data-agreement="S_ADG"><div><h2>Viewing Information Agreement</h2><p>Some context-aware voice commands may require the agreement. Live Plus is controlled separately.</p></div><span class="status-pill status-unknown">Checking</span></article>
@@ -205,7 +214,7 @@
           <div class="section-intro">
             <p class="eyebrow">Current status</p>
             <h1 id="evidence-title">TV details</h1>
-            <p>These are local settings and service checks. They do not show what an encrypted network connection contains.</p>
+            <p>These checks show local settings and services. They cannot read encrypted network traffic.</p>
           </div>
           <div class="evidence-grid">
             <article class="evidence-card">
@@ -229,17 +238,32 @@
           <section class="compatibility-panel" aria-labelledby="compatibility-title">
             <div class="compatibility-heading">
               <div>
-                <p class="eyebrow">Settings map</p>
+              <p class="eyebrow">Model and software</p>
                 <h2 id="compatibility-title">Device compatibility</h2>
               </div>
               <span class="status-pill status-unknown" id="compatibility-status">Checking</span>
             </div>
             <p id="compatibility-device">Reading model and software versions…</p>
-            <p id="compatibility-summary">Privacy controls stay locked until PrivacyShield matches a reviewed model and firmware map.</p>
+            <p id="compatibility-summary">Checking which settings are available on this TV…</p>
+            <p><strong>Firmware archive:</strong> <span id="firmware-source-status">Checking package records…</span></p>
+            <details class="map-inspector" id="mapped-settings-details">
+              <summary>Technical setting details</summary>
+              <p id="mapped-settings-scope">Reading the selected map…</p>
+              <ul id="mapped-settings-list" class="reference-list"></ul>
+              <section class="research-only-settings" id="research-only-setting-details" aria-labelledby="research-only-setting-title" hidden>
+                <h4 id="research-only-setting-title">Other settings · read only</h4>
+                <p>Published reports list these settings, but their effects or change behavior are not established.</p>
+                <ul id="research-only-setting-list" class="reference-list"></ul>
+              </section>
+            </details>
+            <details class="research-details" id="research-details">
+              <summary>Model and source references</summary>
             <div class="community-reference-grid" aria-label="Public model and menu references">
               <section class="community-reference-block" aria-labelledby="community-model-title">
-                <h3 id="community-model-title">Public model reports</h3>
+                <h3 id="community-model-title">Reports for this model family</h3>
                 <p id="community-cohort">Reading model family…</p>
+                <p id="community-model-guide">Reading model guide…</p>
+                <p id="community-device-discovery">Reading network-discovery evidence…</p>
                 <p id="community-microphone">Reading published microphone evidence…</p>
                 <p id="community-microphone-switch">Reading physical microphone-switch evidence…</p>
                 <ul id="community-samples" class="reference-list"></ul>
@@ -248,19 +272,20 @@
                 <h3 id="menu-reference-title">Documented menu locations</h3>
                 <p id="menu-reference-status">Reading webOS platform…</p>
                 <ul id="menu-reference-list" class="reference-list"></ul>
-                <p id="menu-reference-scope" class="reference-scope">These paths reflect LG guides indexed by Opt Out Of. Public reports combine tested-TV rows, owner reports, firmware research, and network observations. They do not show current values or expand PrivacyShield write support.</p>
+                <p id="menu-reference-scope" class="reference-scope">These paths reflect LG guides indexed by Opt Out Of. Public reports combine tested-TV rows, owner reports, firmware research, and network observations. The TV's current settings are checked separately.</p>
               </section>
             </div>
             <section class="community-findings-block" aria-labelledby="community-findings-title">
-              <h3 id="community-findings-title">Public control findings</h3>
-              <p>Other projects publish useful control and service evidence. Their model coverage and root access differ; these findings do not enable controls here.</p>
+              <h3 id="community-findings-title">Published control findings</h3>
+              <p>These findings come from other TVs and do not change the controls available here.</p>
               <ul id="community-control-findings" class="reference-list"></ul>
             </section>
             <section class="community-findings-block" aria-labelledby="community-unassigned-title">
-              <h3 id="community-unassigned-title">Evidence without an exact TV model</h3>
-              <p>These reports and firmware analyses do not identify an exact TV model, so they are shown separately from model-specific B, C, and G findings.</p>
+              <h3 id="community-unassigned-title">Reports without a model number</h3>
+              <p>The source did not identify an exact TV model for these reports.</p>
               <ul id="community-unassigned-samples" class="reference-list"></ul>
             </section>
+            </details>
             <button class="button button-primary" type="button" id="prepare-compatibility-report">Prepare compatibility report</button>
             <p id="compatibility-report-status" role="status">The report stays on this TV. PrivacyShield does not upload it.</p>
             <section id="compatibility-report-share" class="report-share" aria-label="Share compatibility report" hidden>
@@ -275,10 +300,10 @@
                 </div>
               </div>
               <div>
-                <h3>Send a test report</h3>
-                <p>Use your phone to scan both codes. Paste the copied report into the form.</p>
+                <h3>Share device compatibility details</h3>
+                <p>Scan both codes with a phone. Paste the copied report into the form.</p>
                 <p class="report-issue-url">github.com/snapetech-org/PrivacyShield/issues/new?template=compatibility-report.yml</p>
-                <p>The code contains model and software versions plus read-access results. It contains no setting values and is not uploaded by the TV.</p>
+                <p>The report contains model, software, and read-access results. It contains no setting values. Nothing is uploaded automatically.</p>
               </div>
             </section>
             <textarea id="compatibility-report-output" aria-label="Sanitized compatibility report" rows="9" readonly hidden></textarea>
@@ -288,9 +313,41 @@
             <span id="diagnostics-status">Checking diagnostics settings…</span>
           </div>
           <details class="evidence-method">
-            <summary>Data collection</summary>
-            <p>PrivacyShield does not record audio or screenshots, upload settings, or install a background service. Changing Do Not Sell calls LG's ad service. Router and DNS logs are outside this app.</p>
+            <summary>What this app can see</summary>
+            <p>PrivacyShield does not record audio or screenshots, upload settings, or install a background service. Do Not Sell uses LG's ad service. Router and DNS logs are separate.</p>
           </details>
+        </section>
+
+        <section class="view" id="view-about" aria-labelledby="about-title" hidden>
+          <div class="section-intro">
+            <p class="eyebrow">Information</p>
+            <h1 id="about-title">About PrivacyShield</h1>
+            <p>Version <span id="app-version">Checking…</span></p>
+          </div>
+          <div class="about-grid">
+            <section class="panel" aria-labelledby="about-purpose-title">
+              <h2 id="about-purpose-title">Scope</h2>
+              <p>Privacy settings, LG agreement status, local service checks, and model references. Unsupported settings remain read-only.</p>
+              <p>PrivacyShield does not send setting values or viewing activity. A compatibility report is prepared only when selected.</p>
+            </section>
+            <section class="panel" aria-labelledby="about-license-title">
+              <h2 id="about-license-title">License</h2>
+              <p>Copyright © 2026 PrivacyShield contributors. Licensed under the GNU Affero General Public License, version 3. No warranty is provided.</p>
+              <p>The full license is included in this app package and the source repository.</p>
+              <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener noreferrer">Read the GNU AGPL-3.0</a>
+            </section>
+            <section class="panel" aria-labelledby="about-source-title">
+              <h2 id="about-source-title">Source and support</h2>
+              <p>Source code and documentation</p>
+              <a href="https://github.com/snapetech-org/PrivacyShield" target="_blank" rel="noopener noreferrer">PrivacyShield on GitHub</a>
+              <p>Optional support</p>
+              <a href="https://ko-fi.com/snapetech" target="_blank" rel="noopener noreferrer">Ko-fi · snapetech</a>
+            </section>
+            <section class="panel" aria-labelledby="about-data-title">
+              <h2 id="about-data-title">Firmware data</h2>
+              <p>The firmware catalog identifies published package versions and checksums. It does not contain setting maps or prove that a setting works on a TV.</p>
+            </section>
+          </div>
         </section>
       </main>
 
@@ -300,6 +357,8 @@
     <script src="src/privacy-model.js"></script>
     <script src="src/device-api.js"></script>
     <script src="src/remote-navigation.js"></script>
+    <script src="src/firmware-catalog-data.js"></script>
+    <script src="src/firmware-catalog.js"></script>
     <script src="src/compatibility.js"></script>
     <script src="src/community-data.js"></script>
     <script src="src/community-reference.js"></script>

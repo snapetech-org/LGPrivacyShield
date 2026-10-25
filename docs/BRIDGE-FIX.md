@@ -142,10 +142,11 @@ fix. The group gate is shared by clients with that ACG, not bound to the
 PrivacyShield app ID. HBC's elevated `exec` method is security-sensitive.
 
 PrivacyShield uses the bridge only with app-owned script paths and allowlisted
-setting keys and values. Its snapshot returns only 15 privacy settings,
-seven explicit agreement flags, selected local process names, diagnostic
-upload flags, and installed Homebrew app IDs/titles/versions. The permission
-map does not add a background service, change EULA consent, or alter DNS.
+setting keys and values. Its snapshot returns only reviewed privacy settings
+present in the firmware key index, seven explicit agreement flags, selected
+local process names, diagnostic upload flags, and installed Homebrew app
+IDs/titles/versions. The permission map does not add a background service,
+change EULA consent, or alter DNS.
 Review this scope before
 installing the app on a rooted TV.
 

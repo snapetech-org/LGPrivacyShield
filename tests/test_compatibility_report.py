@@ -28,10 +28,39 @@ class CompatibilityReportTests(unittest.TestCase):
         report["compatibility"] = {
             "profileId": None,
             "evidenceLevel": "unmapped",
+            "mappingScope": "unmapped",
             "sampleCount": 0,
             "mappedControlCount": 0,
         }
         self.assertEqual(validator.validate_report(report)["mappedControlCount"], 0)
+
+    def test_accepts_a_platform_map_without_claiming_a_device_sample(self):
+        report = json.loads(json.dumps(self.example))
+        report["device"] = {
+            "model": "OLED65B6HUP",
+            "sdkVersion": "11.2.0",
+            "firmwareVersion": "43.20.00",
+        }
+        report["compatibility"] = {
+            "profileId": "lg-oled-b6-webos-26",
+            "evidenceLevel": "platform-source-mapped",
+            "mappingScope": "model-family-platform",
+            "sampleCount": 0,
+            "mappedControlCount": 6,
+        }
+        self.assertEqual(validator.validate_report(report)["evidenceLevel"], "platform-source-mapped")
+
+    def test_exact_device_map_requires_a_read_sample(self):
+        report = json.loads(json.dumps(self.example))
+        report["compatibility"]["sampleCount"] = 0
+        with self.assertRaisesRegex(ValueError, "exact device profile requires"):
+            validator.validate_report(report)
+
+    def test_rejects_non_string_mapping_scope(self):
+        report = json.loads(json.dumps(self.example))
+        report["compatibility"]["mappingScope"] = {"unexpected": "object"}
+        with self.assertRaisesRegex(ValueError, "mappingScope is not recognized"):
+            validator.validate_report(report)
 
     def test_rejects_unknown_fields_including_identifiers(self):
         report = json.loads(json.dumps(self.example))

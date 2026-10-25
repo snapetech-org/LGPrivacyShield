@@ -5,18 +5,26 @@ This map covers controls and observable state traced on an LG C6 running webOS
 manager actions and other keys whose full behavior is not yet verified. A key,
 process, or endpoint alone does not prove that data was collected or sent.
 
-The only registered compatibility profile is the exact
-`OLED77C6HUP` / SDK `11.2.0` / firmware `43.21.79` sample. Its mappings are
-source-traced from one set; they are not cross-validated across C6 sizes,
-regional model suffixes, other firmware builds, or B/G sets. PrivacyShield
-locks controls on any other identity. See
-[DEVICE-COMPATIBILITY.md](DEVICE-COMPATIBILITY.md) for the full B/C/G coverage
-matrix and the evidence process for adding profiles. Public records from
+The exact
+`OLED77C6HUP` / SDK `11.2.0` / firmware `43.21.79` profile contains 15
+reviewed control candidates. The TV-local firmware key index lists 14; it does
+not list `hbbTvDnt`, so that candidate is unavailable on this build. Other
+B/C/G families use narrower installed-platform maps
+assembled from the published sources listed below. They do not claim that
+every control exists on every TV: PrivacyShield checks each mapped key and
+keeps unreadable or missing settings locked. See
+[DEVICE-COMPATIBILITY.md](DEVICE-COMPATIBILITY.md) for the family/platform
+maps. Public records from
 Glasshouse, CleanYourTV, webOS Unclutter, own-your-glass, tv-home, the LG TV
 Blocklist, firmware ACR research, and the IMC ACR study are consolidated in
 [COMMUNITY-EVIDENCE.md](COMMUNITY-EVIDENCE.md), with each record's model scope
-and access level. Those records inform mapping work but do not extend this C6
-profile.
+and access level. They support the shared platform maps but do not extend the
+full exact-device C6H profile to other TVs. The exact OLED55B56LA B5 owner map
+adds Smart Tips and HbbTV controls only for its reported model/SDK match; its
+firmware version was not published. A separate OLED65G5WUA / webOS 10.2.1
+guide supplies three model-specific promotion-key candidates and five
+read-only option values; its numeric firmware is not published, and its root
+preference script is not an app-permission test.
 
 ## Evidence and limits
 
@@ -47,39 +55,86 @@ payload contents when traffic is encrypted.
 
 ## Settings traced to LG's Settings app
 
-Fourteen switches use SettingsService category and key names traced to the
-bundled LG UI. Do Not Sell uses LG's separate ad-manager method. PrivacyShield
-reads each value back before showing a successful change.
+Sixteen switches use SettingsService category and key names in the current
+catalog. Do Not Sell uses LG's separate ad-manager method. PrivacyShield reads
+each value back before showing a successful change. The exact C6H profile
+contains 15 reviewed candidates, and the local firmware index lists 14 of
+them. Smart Tips are optional and
+outside the preset: both are mapped on C2/webOS 22 and webOS 24, while
+`general.aiNudge` is also mapped for the exact B5 model/SDK overlay.
 
-All fifteen values were read on the current C6. A live app write followed by
-matching TV readback was previously confirmed for Live Plus and the two voice
-controls. The other twelve controls are source-traced and covered by headless
-service-bridge simulations, but their app-side writes have not been recorded on
-the physical TV. The compatibility screen and registry keep this distinction
-visible; a headless pass is not device validation.
+The current C6 firmware map was read without changing settings. It lists 24 of
+25 reviewed control/reference keys and omits `hbbTvDnt`. That key is no longer
+requested or writable in the app on this build, even though a saved preference
+entry exists; the map does not establish that the preference is an active
+SettingsService control. A live app write followed by matching TV readback was
+previously confirmed for Live Plus and the two voice controls. Other candidates
+remain unverified for app-side writes on this physical TV. The compatibility
+screen and registry keep this distinction visible; a headless pass is not
+device validation.
 
 | Setting | LG path | PrivacyShield action | Feature effect or limit | Confidence |
 |---|---|---|---|---|
 | Live Plus / ACR | `option.livePlus` | Preset: `off` | Disables the Live Plus viewing-recognition feature. Related recommendations and some viewing-based features may be unavailable. LG describes ACR as audio fingerprinting; this switch does not show agreement status. | High |
 | Hands-free voice recognition | `general.voiceLongDistance` | Preset: `off` | Stops far-field voice commands. It does not disconnect the built-in or remote microphone. | High |
 | Voice wake | `option.turnOnByVoice` | Preset: `off` | Stops voice commands from waking the TV from standby. The power button and remote remain available. | High |
-| Limit Ad Tracking | `general.lmt` | Preset: `on` | Limits advertising-related use of personal data. Ad personalization may change; ads remain. | High |
+| Limit Ad Tracking | `general.lmt` | Preset: `on` | Limits advertising-related use of personal data. Ad personalization may change; ads remain. The C2/webOS 22 source list also includes a root-side C2 write/readback route. | High |
 | Do Not Sell My Personal Information | Settings UI stores `general.doNotSellMyPersonalInformation` and calls `com.webos.service.admanager/updateDNS` with `status: on/off` | Separate switch through LG's ad-manager method | LG says this asks third-party providers to stop commercializing personal information. Some ad-supported services may remain. This does not change network DNS settings. | High for UI path; live effect not tested |
 | Screen Saver Promotion | `general.screenSaverAd` | Preset: `off` | Hides promotions in supported screen savers and apps. Other TV ads may remain. | High |
 | Home menu ads | `general.homePromotion` | Preset: `off` | Hides sponsored advertisements in the Home menu. It does not remove all TV ads. | High |
 | Live Promotion | `option.livePromotion` | Preset: `off` | Disables custom ads and services while watching content. LG makes this option available when Live Plus is on. | High |
 | Home content recommendations | `other.contentRecommendation` | Preset: `off` | Hides recommendation categories in the Home menu. LG notes availability can vary by country. | High |
-| HbbTV Do Not Track | `option.hbbTvDnt` | Preset: `on` | Asks HbbTV services to disable user tracking. It applies only when HbbTV is used. | High |
+| Smart tips | `general.aiNudge` | Optional; not in preset | Hides suggestions for TV features shown while watching or using an app. Glasshouse maps this as `on`/`off` on webOS 9.2; the source does not say it changes data collection. | Moderate; C2/webOS 22, webOS 24, exact B5 owner map, and exact G5 key report combined with Glasshouse values |
+| Smart tips in Settings | `general.aiSettingsNudge` | Optional; not in preset | Hides suggested settings in LG Settings. Glasshouse maps this as `on`/`off` on webOS 9.2; the source does not say it changes data collection. | Moderate; C2/webOS 22 and webOS 24 maps |
+| HbbTV Do Not Track | `option.hbbTvDnt` | Candidate only where the TV's firmware index lists it; absent on this C6H build | Asks HbbTV services to disable user tracking. It applies only when HbbTV is used. | High for the B5 source mapping; unavailable on the current C6H firmware |
 | HbbTV Device ID | `option.hbbTvDeviceId` | Preset: `off` | Controls sharing of a distinct HbbTV-only ID. It has no effect while HbbTV is off. | High |
 | HbbTV third-party cookies | `option.thirdPartyCookie` | Separate switch; writes `onByUser` or `offByUser` | Controls third-party cookies on HbbTV. Turning them off may affect sign-in or interactive app features. | High |
 | HbbTV interactive services | `option.hbbTV` | Separate switch; recommended `off` | Disables broadcast-linked interactive services. Broadcaster apps and interactive features can be unavailable. | High |
 | Bluetooth wake | `network.bleAdvertisingOnOff` | Separate switch; recommended `off` | Lets a supported mobile device turn on the TV over Bluetooth. LG warns that enabling it can increase energy use in networked standby. | High for UI path |
 | Sleep on Absence | `option.homeSenseAbsence` | Separate switch; recommended `off` | Can turn off the TV after LG detects that the user is away. LG describes a one-week learning period and a requirement that the TV and mobile device not share a network for an hour. | High for UI path |
 
-The preset applies ten values: Live Plus off, both voice settings off, Limit Ad
-Tracking on, Screen Saver Promotion off, Home menu ads off, Live Promotion
-off, Home content recommendations off, HbbTV Do Not Track on, and HbbTV
-Device ID off. It leaves Do Not Sell, HbbTV interactive services, HbbTV
+For the exact OLED55B56LA / SDK 10.3.1 B5 profile, the owner audit additionally
+maps `option.hbbTV`, `option.hbbTvDnt`, and `option.hbbTvDeviceId`. These are the
+same HbbTV controls already defined in the app; the source scope is limited to
+that model and SDK, and its firmware number is not published. The app also
+shows `network.allowMobileDeviceAccess` as read-only status there because the
+audit found the local SSAP service still reachable when the setting was off.
+
+For the exact `OLED65G5WUA` / webOS 10.2.1 overlay, the Level1Techs root guide
+names `general.aiNudge`, `general.screenSaverAd`, and `general.homePromotion`.
+PrivacyShield uses those as source-mapped candidates with Glasshouse's shared
+SettingsService definitions; the app still requires a readable current value
+and matching readback on the TV. The guide omits numerical firmware and writes
+preference files directly, so its five option keys (`watchedListCollection`,
+`usageCare`, `dbgLogUpload`, `faultLogUpload`, `thirdPartyCookie`) are status
+only. The guide also writes cached agreement state; PrivacyShield leaves that
+in the native webOS consent flow.
+
+Glasshouse also publishes a C5/webOS 10.3.1 key-reader investigation. PrivacyShield
+uses the `voiceLongDistance` and `thirdPartyCookie` findings as candidates only
+on C5 devices reporting SDK 10.3.1 / webOS 25. It shows `watchedListCollection`,
+`usageCare`, `dbgLogUpload`, and `faultLogUpload` as read-only status for that
+same software cohort. The report does not publish the scanned set's exact SKU
+or numeric firmware. `usageCare` is a Family Care menu setting in the report,
+not a demonstrated collection control. The Glasshouse source reports some
+readers but does not establish PrivacyShield app permissions or the result of
+writing these values.
+
+The `webos_lockout` project adds a narrower C5 row: it identifies
+`OLED77C51LA` running Rockhopper 10.3.1-3006 and sets `usageCare`,
+`dbgLogUpload`, and `faultLogUpload` to false in the option preference file.
+PrivacyShield attributes those three read-only status values to that exact
+model/software row. The project does not publish a numeric firmware version or
+test the packaged app's setter. It describes `usageCare` as usage data, while
+Glasshouse found a Family Care menu effect and no collection behavior; its
+effect remains unresolved.
+
+The standard profile's preset contains up to ten values: Live Plus off, both
+voice settings off, Limit Ad Tracking on, Screen Saver Promotion off, Home
+menu ads off, Live Promotion off, Home content recommendations off, HbbTV Do
+Not Track on, and HbbTV Device ID off. The current C6H firmware index omits
+HbbTV Do Not Track, so that TV's preset contains at most nine of these values.
+The preset leaves Do Not Sell, HbbTV interactive services, HbbTV
 third-party cookies, Bluetooth wake, and Sleep on Absence for separate choice.
 
 ## LG agreement choices

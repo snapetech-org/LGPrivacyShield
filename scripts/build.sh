@@ -27,6 +27,8 @@ rm -f "${build_package}"
 rm -rf "${staged_app}"
 mkdir -p "${staged_app}"
 cp -a "${repo_root}/webos-app/." "${staged_app}/"
+cp "${repo_root}/LICENSE" "${staged_app}/LICENSE"
+cp "${repo_root}/THIRD-PARTY-NOTICES.md" "${staged_app}/THIRD-PARTY-NOTICES.md"
 
 while IFS= read -r -d '' source_file; do
   relative_path="${source_file#"${repo_root}/webos-app/"}"

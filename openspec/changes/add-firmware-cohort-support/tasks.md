@@ -3,7 +3,7 @@
 ## 1. Compatibility profile and evidence map
 
 - [x] 1.1 Add an exact-match profile module for the C6 model/software tuple and per-control mapping status; verify exact match, missing identity, firmware mismatch, and model mismatch with unit tests.
-- [x] 1.2 Update the capability map with evidence grades and a B1–B6/C1–C6/G1–G6 matrix; verify the document labels only the existing C6 cohort as mapped and all other cohorts as unverified.
+- [x] 1.2 Update the capability map with evidence grades and a B1–B6/C1–C6/G1–G6 matrix; distinguish the exact C6 device profile, source-mapped platform candidates, and physical-validation gaps.
 
 ## 2. Fail-closed UI and write path
 
@@ -18,7 +18,7 @@
 ## 4. Community validation workflow
 
 - [x] 4.1 Add the offline report validator and tests for valid, malformed, unknown-field, and prohibited-identifier reports; verify it prints a summary without changing profiles.
-- [x] 4.2 Document evidence grades, the per-cohort reverse-engineering checklist, report contribution steps, and source/community references; verify every untested B/C/G cohort remains marked unsupported.
+- [x] 4.2 Document evidence grades, the per-cohort reverse-engineering checklist, report contribution steps, and source/community references; mark untested B/C/G devices as not physically validated and keep unsupported controls locked.
 
 ## 5. Integrated verification and package
 
@@ -64,3 +64,29 @@
 - [x] 10.5 Revalidate OpenSpec, run the full local suite once, rebuild the local IPK, and audit its manifest and contents. Do not install, launch, or publish it.
 - [x] 10.6 Add pinned LG firmware ACR analysis as model-unassigned evidence and distinguish component/path presence from runtime activation and observed transmission in the app and documentation.
 - [x] 10.7 Add the C5 owner privacy audit and boot hook with model/software limits, agreement-state observations, microphone-path details, and firmware-update impact.
+
+## 11. Integrate model guides and expand source-backed keys
+
+- [x] 11.1 Add direct links and scope notes for every available B1–B6, C1–C6, and G1–G6 privacy guide; explicitly exclude the C6H variant from the standard C6 guide's microphone claim.
+- [x] 11.2 Show the selected profile's actual SettingsService category/key entries and their map sources in the app, separate from model-family menu and hardware evidence.
+- [x] 11.3 Add webOS 22–26 Limit AD Tracking, C2/webOS 22 and webOS 24 Smart Tips, the OLED55B56LA B5/SDK 10.3.1 overlay, and read-only status for unverified promotion keys.
+- [x] 11.4 Extend unit/headless tests, documentation, compatibility reports, and package version for the expanded map; run the full suite and package checks without launching a TV app or publishing.
+- [x] 11.5 Add the Glasshouse dashboard's C2/webOS 9.2 `general.lmt` route as cohort-scoped evidence; preserve the missing exact-SKU correlation and test its map label without broadening exact-model write support.
+- [x] 11.6 Add the exact `OLED65G5WUA` / webOS 10.2.1 preference-key report; limit the control overlay to three general keys, display five option keys read-only, preserve native consent handling, and verify direct plus HBC-fallback behavior in headless tests.
+
+## 12. Use the TV-local firmware key index
+
+- [x] 12.1 Research the firmware-local category/key index, capture the current C6 index read-only, and preserve only an allowlisted test fixture with exact model/software/hash provenance.
+- [x] 12.2 Filter the root snapshot to reviewed keys present in the local index, use indexed categories for reads and writes, and fail closed for absent or ambiguous keys; keep the static reviewed map as fallback only when the firmware index is unavailable.
+- [x] 12.3 Show per-device key-index availability in TV details without implying that key presence proves current value, privacy effect, or write success; never use firmware defaults as current state.
+- [x] 12.4 Test exact C6H key presence, absent hbbTvDnt behavior, category selection, no-read/no-write behavior for omitted keys, and index-unavailable fallback in Python and headless browser fixtures.
+- [x] 12.5 Backfill compatibility, research, and evidence docs with the exact C6H index result and the remaining SKU/semantic-validation gap; preserve the distinction between the synthetic 108-profile matrix and physical-device validation.
+- [x] 12.6 Run the full unit/headless suite, OpenSpec validation, IPK build and audit; keep the TV app closed and do not publish to Homebrew.
+
+## 13. Index and import model-specific firmware key registries
+
+- [x] 13.1 Parse the EPK Firmware Archive index into checksummed B/C/G package records; preserve exact model names, OTA IDs, firmware versions, and regional variants without claiming that the archive index contains key maps.
+- [x] 13.2 Include B1's `W21U` package family, verify all 18 B/C/G cohorts have package records, and connect the exact C6H model/software tuple to its indexed archive package.
+- [x] 13.3 Add a deterministic importer for extracted `description.categorykeysmap.json` files that requires an exact model/firmware/OTA match plus the matching EPK SHA-256, drops values and unreviewed keys, and records that the extraction relationship was not independently reproduced.
+- [x] 13.4 Show archive package matches in TV details as firmware identity evidence only; do not use archive metadata to add or enable a setting.
+- [x] 13.5 Run unit, Python, headless, and IPK tests; review the final package and OpenSpec status without opening the TV app or publishing to Homebrew.

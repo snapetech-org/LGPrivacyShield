@@ -1,131 +1,86 @@
 # PrivacyShield
 
-PrivacyShield is a local-first webOS Homebrew app for checking privacy settings,
-optional LG agreement status, and observable local service/app state.
+PrivacyShield reads LG webOS privacy settings, LG agreement status, and selected
+local TV status. It can change a setting only when its model/software profile
+supports that setting and the TV returns a readable current value. Each change
+is read back from the TV before success is shown.
 
-It does not record audio, inspect packet payloads, add a boot hook, change DNS,
-or upload TV settings or viewing activity. Its control screen covers 15
-settings for viewing recognition, voice, advertising, recommendations, HbbTV,
-Bluetooth wake, and presence features. Each change is read back before success
-is shown. A local restore point is stored in the app's `localStorage`.
+## What it shows and changes
 
-## Current scope
+- 17 privacy controls covering Live Plus, voice, advertising, recommendations,
+  HbbTV, Bluetooth wake, and Sleep on Absence. Available controls depend on the
+  model, webOS version, and keys exposed by the TV.
+- A recommended settings preset and a local restore point. The preset leaves
+  separate ad preferences, broadcast features, and presence features unchanged.
+- LG agreement status. Changes open LG's native User Agreements screen. The app
+  does not accept EULA terms or edit saved agreement records.
+- Model and software details, local service and installed-app status, LG
+  diagnostic-upload settings, documented menu paths, and published model
+  reports.
+- An optional compatibility report. It contains model/software identity and
+  read-access results, not current setting values. It remains local until the
+  user copies or scans it and submits it.
 
-- **Controls:** Live Plus, hands-free voice, voice wake, Limit Ad Tracking,
-  Do Not Sell, Screen Saver Promotion, Home menu ads, Live Promotion, Home
-  content recommendations, four HbbTV settings, Bluetooth wake, and Sleep on
-  Absence. Ten reviewed settings are available in the recommended preset.
-- **Agreements:** status and likely feature impact for viewing, voice, ads,
-  marketing, data partners, and the required Privacy Policy and Terms of Use.
-  The Agreements screen opens LG's native User Agreements flow; the app never
-  edits cached acceptance flags.
-- **Evidence:** model/network status, optional agreement readback, process
-  presence, diagnostics upload configuration, and installed Homebrew apps.
-- **Limits:** network destinations and payloads are not visible from a normal
-  TV app. Use router or Pi-hole logs for DNS evidence and packet capture for
-  bounded network testing. A process being present does not prove that it is
-  capturing audio or sending data.
-- **Remote use:** the app supports the LG remote's five-way arrows and OK
-  button. The focus ring stays visible while navigating; Back returns to
-  Overview and a second Back uses webOS's normal exit prompt.
+The app does not record audio or screenshots, run a background service, inspect
+encrypted network traffic, or upload TV settings or viewing activity. Network
+destination history requires separate router or DNS logs. A software voice
+switch does not disconnect a physical microphone; the TV does not expose a
+verified microphone-disconnect control to this app.
 
-The physical microphone switch is shown as **Check TV**. The official manual
-for the OLED77C6HUP family shows one bottom-control layout with a mic switch and
-another without one; it does not identify which layout is fitted to this set.
-Software voice controls do not electrically disconnect a microphone.
+## Model support
 
-## Development
+Profile selection covers the B1–B6, C1–C6, and G1–G6 OLED families and their
+installed webOS versions. Profile data comes from published source code,
+community reports, LG menu guides, and model-specific settings reports. Extra
+controls are restricted to the model/software scope of their source. These
+profiles do not mean that each physical TV has been tested.
 
-Requirements: Node.js 22+, npm, Python 3, Chromium, and the official
-`@webos-tools/cli` package. The project pins the CLI version used to build the
-IPK. Chromium runs the app in a local headless browser for remote-control and
-service-bridge tests; set `CHROMIUM_BIN` if its executable is not on `PATH`.
+The exact OLED77C6HUP / webOS 26 profile contains 15 reviewed control entries.
+The checked firmware key list contains 14 of them; `hbbTvDnt` is absent and
+remains unavailable. The two Smart Tips controls are not part of this profile.
+Three C6H settings have prior app write/readback checks. Every current switch
+still requires a fresh readable value, and every write requires readback.
+
+The firmware archive data lists package identity and checksums. It does not
+contain extracted settings maps and never enables a control. See
+[model compatibility](docs/DEVICE-COMPATIBILITY.md),
+[public evidence](docs/COMMUNITY-EVIDENCE.md), and the
+[privacy capability map](docs/TV-PRIVACY-CAPABILITY-MAP.md) for sources and
+limits.
+
+## Build and headless checks
+
+Requirements: Node.js, Python 3, Chromium, `ar`, and the pinned webOS CLI in the
+project dependencies.
 
 ```sh
 npm ci
 npm test
 npm run package
+npm run test:ipk
 ```
 
-The installable package is written to `dist/`. A successful build does not
-prove service access on every firmware. PrivacyShield reads private settings
-through SettingsService when allowed and uses a minimal root snapshot as a
-fallback. Local app/process inventory always requires the Homebrew Channel
-`exec` service. On webOS 26, HBC must also register the `lunabus.query` API
-permission map. The exact map, service-manifest entry, and guarded root-only
-repair/rollback helper are documented in [docs/BRIDGE-FIX.md](docs/BRIDGE-FIX.md).
-The helper is for maintainers on a rooted TV and is not included in the IPK;
-the app never patches HBC's system files. Without the map, private controls and
-agreements show as unavailable and stay locked.
+`npm test` runs the JavaScript, Python, and Chromium headless suites. The UI
+tests emulate the remote, SettingsService responses, HBC access, supported and
+unsupported settings, errors, and model/software profile selection. They do not
+emulate private firmware code or replace physical-TV checks. The package is
+written to `dist/org.privacyshield.webos_0.4.0_all.ipk`.
 
-The 0.1.1 IPK installed on the test TV. During bridge validation, we found that
-`ls-control scan-services` left an already-running HBC service advertising its
-old access groups. The active `exec` permissions must be confirmed with
-`ls-monitor`, and a stale HBC registration must be restarted before app-context
-access can work; see [the permission map notes](docs/BRIDGE-FIX.md). Version
-0.1.2 fixed remote focus movement and kept unreadable switches navigable while
-locked. Version 0.1.3 revised on-screen wording. Version 0.1.4 keeps each
-switch focused during a write, so consecutive remote OK presses toggle it
-without moving away and back. Version 0.1.5 adds six traced settings, diagnostic
-upload status, and a button that opens LG's agreement screen. Version 0.1.6
-adds six more settings traced through LG's Settings app and expands the
-recommended preset to ten settings. Version 0.1.7 adds exact model, SDK, and
-firmware matching, read-only behavior for unmapped sets, and a local compatibility
-report with an offline validator. Version 0.1.10 consolidates the canonical
-Glasshouse table (49 rows; its page declares 48 TVs), the full ten-row
-CleanYourTV table, and separate C1/G1 network, G4 app, C5 root-audit, unassigned
-webOS 26 settings and 2021 webOS 6 owner evidence, plus an LG firmware ACR
-analysis pinned to build 43.21.73. The C5 microphone-switch reports retain
-their separate model and software limits.
-Version 0.1.11 compiles the packaged JavaScript for Chromium 79, the web engine
-used by webOS 6. This allows the evidence and read-only views to load on 2021
-sets; settings writes remain restricted to the exact validated C6H profile.
-Version 0.1.12 adds two local QR codes for carrying a sanitized compatibility
-report to a phone and opening the public report form. See
-[how to test PrivacyShield on your TV](docs/TEST-ON-YOUR-TV.md).
-The public catalog covers all 18 B1–B6, C1–C6, and G1–G6 family labels, with
-source-scoped device reports, privacy-control paths, model/menu references,
-and limits. Twelve family labels have at least one matching community row in
-these pinned sources. This makes the public evidence broader than the set we
-own without claiming tests we have not run. The current source set has no
-matching row for B1, B2, B3, B5, B6, or G6; model and menu references are still
-shown for them. Community evidence is read-only research: root-run tools do not
-grant the packaged app access or enable writes. The only writable profile is
-the exact OLED77C6HUP / SDK 11.2.0 / firmware 43.21.79 sample. Every other
-model/software cohort remains unsupported until its exact map is reviewed. See
-[the public evidence catalog](docs/COMMUNITY-EVIDENCE.md) and
-[the coverage matrix](docs/DEVICE-COMPATIBILITY.md) for source revisions,
-model scope, conflicting reports, and the verification workflow. The headless
-suite drives the app in Chromium at 1920×1080 against simulated success, HBC
-fallback, denied-service, and unmapped-device cases. It checks D-pad navigation,
-all 15 controls, repeated toggles, agreement-screen launch and refresh, report
-privacy, evidence rendering, and locked-control behavior. This does not verify
-the live TV bridge or physical remote delivery; those remain separate device
-checks. See [docs/HEADLESS-QA.md](docs/HEADLESS-QA.md).
+For QA coverage and limits, see [headless QA](docs/HEADLESS-QA.md). For a
+physical TV test, see [the TV test guide](docs/TEST-ON-YOUR-TV.md).
 
-## Packaging and publication
+## Release status
 
-The public repository is
-[snapetech-org/PrivacyShield](https://github.com/snapetech-org/PrivacyShield).
-The current package version is v0.1.12. Its IPK and matching manifest are
-attached to the [GitHub release](https://github.com/snapetech-org/PrivacyShield/releases/tag/v0.1.12).
-The Homebrew catalog submission is [PR #296](https://github.com/webosbrew/apps-repo/pull/296);
-the central catalog will list the app after upstream maintainers merge it. The
-listing includes a clickable Ko-fi link and the catalog's `funding.ko_fi` entry.
+The source tree is at version 0.4.0 and is not published as a release. The last
+published release is [v0.1.12](https://github.com/snapetech-org/PrivacyShield/releases/tag/v0.1.12).
+The existing Homebrew catalog submission has not been updated by this source
+change. A release or Homebrew submission requires project-owner signoff; see
+[release preparation](RELEASE.md).
 
-## Privacy and permissions
+## License and support
 
-The UI calls SettingsService, system information, network status,
-Application Manager, LG's public ad-manager method, and HBC's root bridge. On
-webOS TV 26+, the app declares the corresponding ACG groups, including
-`applications.launcher` for the user-selected native agreement screen and
-`lunabus.query` for the Homebrew root bridge. Older webOS releases ignore ACG
-declarations. Settings and agreement status use the root snapshot only when
-direct service queries are denied and the HBC bridge is available. The bridge
-permission is security-sensitive: the upstream map grants `lunabus.query`
-access to all methods exposed by HBC's elevated service. Review
-[docs/BRIDGE-FIX.md](docs/BRIDGE-FIX.md) before enabling it.
+PrivacyShield is licensed under the GNU Affero General Public License, version
+3. See [LICENSE](LICENSE) and
+[third-party notices](THIRD-PARTY-NOTICES.md).
 
-Any root command is assembled from fixed app-owned paths and a strict setting
-allowlist. No textbox or network input is passed to the root execution
-service. Review the package source before installing it on a rooted TV.
+[Ko-fi: snapetech](https://ko-fi.com/snapetech)

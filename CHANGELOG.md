@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.0 (unreleased)
+## 0.4.0 (2026-10-25)
 
 - Added source-scoped settings profiles for B, C, and G OLED families across
   supported webOS versions, with model/software overlays for published reports.

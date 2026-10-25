@@ -15,7 +15,7 @@ test("Homebrew listing describes the current app and includes support details", 
   assert.match(normalizedMetadata, /Review LG TV privacy settings and agreement choices/);
   assert.match(normalizedMetadata, /save settings to restore later/);
   assert.match(normalizedMetadata, /LGPrivacyShield runs locally; the app and TV send no data during normal use/);
-  assert.match(normalizedMetadata, /scan one QR code with a phone to open a prefilled GitHub form/);
+  assert.match(normalizedMetadata, /Scan one QR code with a phone to open a prefilled GitHub form/);
   assert.doesNotMatch(metadata, /installed apps|diagnostic upload settings|model references/i);
   assert.doesNotMatch(metadata, /only on the validated OLED77C6HUP/);
   assert.match(metadata, /webosRelease: '\>=6\.0'/);

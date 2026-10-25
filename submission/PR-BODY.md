@@ -33,6 +33,8 @@ the TV's model, software, firmware, and permissions.
 - License: AGPL-3.0-only
 - Listing: `packages/org.privacyshield.webos.yml`
 
+I also included my Ko-fi link for support: [ko-fi.com/snapetech](https://ko-fi.com/snapetech).
+
 I used AI tools extensively for research, implementation, documentation, and
 tests. I set the product and privacy requirements, directed revisions,
 reviewed app behavior and wording, and supplied observations from my TV. I take

@@ -138,4 +138,4 @@
   });
   root.LGPrivacyShieldDeviceApi = api;
   if (typeof module === "object" && module.exports) module.exports = api;
-})(typeof globalThis !== "undefined" ? globalThis : this);
+})(typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : this);

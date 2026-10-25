@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.2 (unreleased)
+
+- Keep runtime API use within ES2017 so the webOS 6.4 compatibility check passes without polyfills.
+
 ## 0.4.1 (2026-10-25)
 
 - Restrict the app's Homebrew root bridge to its bundled snapshot and allowlisted setting scripts.

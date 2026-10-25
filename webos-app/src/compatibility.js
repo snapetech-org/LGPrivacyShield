@@ -4,10 +4,10 @@
     : null;
   if (typeof module === "object" && module.exports) module.exports = factory(profiles, root);
   else root.LGPrivacyShieldCompatibility = factory(root.LGPrivacyShieldDeviceProfiles, root);
-})(typeof globalThis !== "undefined" ? globalThis : this, function (profileData, globalRoot) {
+})(typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : this, function (profileData, globalRoot) {
   "use strict";
 
-  const APP_VERSION = "0.4.1";
+  const APP_VERSION = "0.4.2";
   const CONTROL_KEYS = Object.freeze([
     "livePlus", "voiceLongDistance", "turnOnByVoice", "lmt",
     "doNotSellMyPersonalInformation", "screenSaverAd", "homePromotion",
@@ -17,6 +17,19 @@
   ]);
   const PREVIOUSLY_WRITE_TESTED = new Set(["livePlus", "voiceLongDistance", "turnOnByVoice"]);
   const C6H_CONTROL_KEYS = Object.freeze(CONTROL_KEYS.filter((key) => key !== "aiNudge" && key !== "aiSettingsNudge"));
+
+  function objectFromEntries(entries) {
+    const result = {};
+    entries.forEach(([key, value]) => {
+      Object.defineProperty(result, key, {
+        value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    });
+    return result;
+  }
 
   // These shared maps describe settings whose key, category and on/off values
   // are published by the cited projects. A map only nominates a setting; a TV
@@ -163,7 +176,7 @@
       evidenceLevel: "source-mapped",
       sampleCount: 1,
       sourceIds: Object.freeze(["glasshouse", "webosDebloat", "privacyshield-c6"]),
-      controls: Object.freeze(Object.fromEntries(C6H_CONTROL_KEYS.map((key) => [key, Object.freeze({
+      controls: Object.freeze(objectFromEntries(C6H_CONTROL_KEYS.map((key) => [key, Object.freeze({
         mapping: "source-mapped",
         source: "privacyshield-c6",
         readEvidence: "device-read-verified",
@@ -252,7 +265,7 @@
         sdkVersion: modelMap.sdkVersion,
         firmwarePublished: false
       }) : null,
-      controls: Object.freeze(Object.fromEntries(Object.entries(controls).map(([key, evidence]) => [key, Object.freeze({
+      controls: Object.freeze(objectFromEntries(Object.entries(controls).map(([key, evidence]) => [key, Object.freeze({
         ...evidence,
         readEvidence: "must-read-on-device",
         priorWriteReadback: false

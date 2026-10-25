@@ -17,6 +17,26 @@
   const pendingSettings = new Set();
   const pendingActions = new Set();
 
+  function objectFromEntries(entries) {
+    const result = {};
+    entries.forEach(([key, value]) => {
+      Object.defineProperty(result, key, {
+        value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    });
+    return result;
+  }
+
+  function allSettled(promises) {
+    return Promise.all(promises.map((promise) => Promise.resolve(promise).then(
+      (value) => ({ status: "fulfilled", value }),
+      (reason) => ({ status: "rejected", reason })
+    )));
+  }
+
   const $ = (selector, parent) => (parent || document).querySelector(selector);
   const $$ = (selector, parent) => Array.from((parent || document).querySelectorAll(selector));
 
@@ -320,7 +340,7 @@
     const source = snapshot && snapshot.firmwareSettingsMap;
     if (!source || source.available !== true || !source.settings || typeof source.settings !== "object" || Array.isArray(source.settings)) return null;
     const allowedKeys = new Set(Model.CONTROLS.map(({ key }) => key));
-    const settings = Object.fromEntries(Object.entries(source.settings).filter(([key, category]) =>
+    const settings = objectFromEntries(Object.entries(source.settings).filter(([key, category]) =>
       allowedKeys.has(key) && typeof category === "string" && /^[A-Za-z][A-Za-z0-9_]{0,63}$/.test(category)
     ));
     const ambiguous = Array.isArray(source.ambiguous)
@@ -527,7 +547,7 @@
     runtimeStatus.dataset.state = "reading";
     runtimeStatus.hidden = false;
     runtimeStatus.textContent = "Reading TV status…";
-    state.settings = Object.fromEntries(Model.CONTROLS.map(({ key }) => [key, "unknown"]));
+    state.settings = objectFromEntries(Model.CONTROLS.map(({ key }) => [key, "unknown"]));
     state.model = null;
     state.profile = null;
     state.controlReads = {};
@@ -541,7 +561,7 @@
     $("#privacy-preset").disabled = true;
     $("#save-settings-button").disabled = true;
     $("#restore-button").disabled = true;
-    const results = await Promise.allSettled([
+    const results = await allSettled([
       Api.getAgreements(),
       Api.getSystemInfo(),
       rootSnapshot()
@@ -559,11 +579,11 @@
     // Read only keys in the selected source map. A missing key therefore fails
     // only its own request instead of hiding every control in the category.
     const candidates = mappedControls();
-    const settingResults = await Promise.allSettled(candidates.map((control) =>
+    const settingResults = await allSettled(candidates.map((control) =>
       Api.getSettings(control.category, [control.key])
     ));
     const rootSettings = snapshotSettings();
-    const observedSettings = Object.fromEntries(Model.CONTROLS.map(({ key }) => [key, "unknown"]));
+    const observedSettings = objectFromEntries(Model.CONTROLS.map(({ key }) => [key, "unknown"]));
     const directSuccesses = settingResults.filter((result) => result.status === "fulfilled").length;
     const directFailures = settingResults.length - directSuccesses;
     for (let index = 0; index < candidates.length; index += 1) {

@@ -1,7 +1,7 @@
 (function (root, factory) {
   if (typeof module === "object" && module.exports) module.exports = factory();
   else root.LGPrivacyShieldModel = factory();
-})(typeof globalThis !== "undefined" ? globalThis : this, function () {
+})(typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : this, function () {
   "use strict";
 
   const CONTROLS = Object.freeze([
@@ -170,7 +170,11 @@
 
   function snapshotSettings(snapshot) {
     const source = snapshot && snapshot.settings && typeof snapshot.settings === "object" ? snapshot.settings : {};
-    return Object.fromEntries(CONTROLS.map(({ key }) => [key, normalizeToggle(source[key])]));
+    const result = {};
+    CONTROLS.forEach(({ key }) => {
+      result[key] = normalizeToggle(source[key]);
+    });
+    return result;
   }
 
   function hasAgreementRecord(record) {

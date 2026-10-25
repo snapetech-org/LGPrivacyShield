@@ -1,6 +1,6 @@
 {
   "name": "lgprivacyshield-webos",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "private": true,
   "description": "Local-first privacy controls and evidence for rooted LG webOS TVs",
   "license": "AGPL-3.0-only",

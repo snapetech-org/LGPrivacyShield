@@ -2,7 +2,7 @@
   const profiles = factory();
   if (typeof module === "object" && module.exports) module.exports = profiles;
   else root.LGPrivacyShieldDeviceProfiles = profiles;
-})(typeof globalThis !== "undefined" ? globalThis : this, function () {
+})(typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : this, function () {
   "use strict";
 
   const SDK_MAJOR_TO_WEBOS = Object.freeze({

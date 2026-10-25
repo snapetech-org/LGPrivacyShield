@@ -30,7 +30,7 @@ readability; it excludes setting values and agreement choices.
 - [ ] No AI tools were used.
 - [ ] AI tools were used for limited assistance (for example, explanations, small snippets, or editing).
 - [ ] AI tools were used for research or planning; the application was developed by a human.
-- [ ] AI coding agents were used; an experienced developer has reviewed and tested all generated code.
+- [x] AI coding agents were used; an experienced developer has reviewed and tested all generated code.
 - [ ] The application was produced primarily by AI without meaningful human development or review.
 - [x] Other (please describe below).
 

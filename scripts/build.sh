@@ -29,9 +29,17 @@ mkdir -p "${staged_app}"
 cp -a "${repo_root}/webos-app/." "${staged_app}/"
 cp "${repo_root}/LICENSE" "${staged_app}/LICENSE"
 cp "${repo_root}/THIRD-PARTY-NOTICES.md" "${staged_app}/THIRD-PARTY-NOTICES.md"
+rm -f \
+  "${staged_app}/src/community-data.js" \
+  "${staged_app}/src/community-reference.js" \
+  "${staged_app}/src/firmware-catalog-data.js" \
+  "${staged_app}/src/firmware-catalog.js"
 
 while IFS= read -r -d '' source_file; do
   relative_path="${source_file#"${repo_root}/webos-app/"}"
+  case "${relative_path}" in
+    src/community-data.js|src/community-reference.js|src/firmware-catalog-data.js|src/firmware-catalog.js) continue ;;
+  esac
   output_file="${staged_app}/${relative_path}"
   mkdir -p "$(dirname "${output_file}")"
   "${repo_root}/node_modules/.bin/esbuild" "${source_file}" \

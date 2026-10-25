@@ -2,6 +2,7 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 const model = require("../webos-app/src/privacy-model.js");
 const compatibility = require("../webos-app/src/compatibility.js");
+const deviceProfiles = require("../webos-app/src/device-profiles.js");
 const publicReferences = require("../webos-app/src/community-reference.js");
 
 const C6 = { model: "OLED77C6HUP", sdk: "11.2.0", firmware: "43.21.79" };
@@ -52,12 +53,7 @@ test("maps every B/C/G cohort against each supported installed webOS profile", (
       assert.equal(profile.sampleCount, 0, "a platform map does not claim a device read sample");
       assert.deepEqual(Object.keys(profile.controls).sort(), expectedKeys.sort(), `${cohort.series} / webOS ${platform.version} control keys`);
       assert.ok(Object.values(profile.controls).every((control) => control.readEvidence === "must-read-on-device" && !control.priorWriteReadback));
-      const expectedReferenceKeys = platform.version === "26"
-        ? ["sportsAlarm", "webOSPromotionVideo", "promotionStreamer"]
-        : cohort.series === "C5" && platform.version === "25" && platform.sdk === "10.3.1"
-          ? ["watchedListCollection", "usageCare", "dbgLogUpload", "faultLogUpload"]
-          : [];
-      assert.deepEqual(profile.referenceSettings.map(({ key }) => key), expectedReferenceKeys, `${cohort.series} / webOS ${platform.version} read-only research keys`);
+      assert.equal(profile.referenceSettings, undefined, "unmapped research keys are not part of the app profile");
     }
   }
   assert.equal(compatibility.matchProfile({ model: "OLED65B5HNA", sdk: C6.sdk, firmware: C6.firmware }), null, "the installed platform is required");
@@ -74,8 +70,8 @@ test("matches only catalogued B/C/G sizes and preserves real regional model suff
   ];
   for (const cohort of publicReferences.COHORTS) {
     for (const size of cohort.sizes) {
-      assert.equal(publicReferences.cohortForModel(`OLED${size}${cohort.series}SIM`).series, cohort.series);
-      assert.equal(publicReferences.cohortForModel(`LG OLED${size}${cohort.series}HUP`).series, cohort.series);
+      assert.equal(deviceProfiles.cohortForModel(`OLED${size}${cohort.series}SIM`).series, cohort.series);
+      assert.equal(deviceProfiles.cohortForModel(`LG OLED${size}${cohort.series}HUP`).series, cohort.series);
       for (const platform of platforms) {
         const profile = compatibility.matchProfile({
           model: `OLED${size}${cohort.series}SIM`, sdk: platform.sdk,
@@ -88,9 +84,9 @@ test("matches only catalogued B/C/G sizes and preserves real regional model suff
   for (const sample of publicReferences.COMMUNITY_SAMPLES.filter((entry) => entry.model && entry.series)) {
     assert.equal(publicReferences.cohortForModel(sample.model).series, sample.series, `${sample.model} should resolve to ${sample.series}`);
   }
-  assert.equal(publicReferences.cohortForModel("OLED99C1HUP"), null, "unknown size variants stay unmapped");
-  assert.equal(publicReferences.cohortForModel("unrelated-OLED65C6HUP"), null, "a family-like substring is not a model identity");
-  assert.equal(publicReferences.cohortForModel("OLED600C6HUP"), null, "three-digit parses must still use a listed size");
+  assert.equal(deviceProfiles.cohortForModel("OLED99C1HUP"), null, "unknown size variants stay unmapped");
+  assert.equal(deviceProfiles.cohortForModel("unrelated-OLED65C6HUP"), null, "a family-like substring is not a model identity");
+  assert.equal(deviceProfiles.cohortForModel("OLED600C6HUP"), null, "three-digit parses must still use a listed size");
 });
 
 test("allows only control keys declared by the matched profile", () => {
@@ -133,28 +129,14 @@ test("allows only control keys declared by the matched profile", () => {
   assert.equal(compatibility.canWrite(c5, "voiceLongDistance"), true);
   assert.equal(compatibility.canWrite(c5, "thirdPartyCookie"), true);
   assert.equal(compatibility.canWrite(c5, "turnOnByVoice"), false);
-  assert.match(c5.sampleNote, /does not identify the exact TV or firmware/);
-  assert.deepEqual(c5.referenceSettings.map(({ category, key }) => `${category}.${key}`), [
-    "option.watchedListCollection", "option.usageCare", "option.dbgLogUpload", "option.faultLogUpload"
-  ]);
-  assert.ok(c5.referenceSettings.every(({ reason }) => reason && reason.length > 0));
+  assert.equal(c5.referenceSettings, undefined);
+  for (const key of ["watchedListCollection", "usageCare", "dbgLogUpload", "faultLogUpload"]) {
+    assert.equal(compatibility.canWrite(c5, key), false, `${key} is not an app control`);
+  }
   const c5DifferentSdk = compatibility.matchProfile({ model: "OLED77C57LA", sdk: "10.2.1", firmware: "33.30.00", platformVersion: "25" });
   assert.equal(compatibility.canWrite(c5DifferentSdk, "voiceLongDistance"), false, "the C5 research map is scoped to its reported SDK");
-  assert.deepEqual(c5DifferentSdk.referenceSettings, [], "read-only C5 findings do not transfer across SDK versions");
   const c5Exact = compatibility.matchProfile({ model: "OLED77C51LA", sdk: "10.3.1", firmware: "SIM-UNPUBLISHED", platformVersion: "25" });
-  assert.equal(c5Exact.modelSpecificReferenceMap.model, "OLED77C51LA");
-  assert.equal(c5Exact.modelSpecificReferenceMap.firmwarePublished, false);
-  assert.ok(c5Exact.sourceIds.includes("webosLockout"));
-  assert.deepEqual(c5Exact.referenceSettings.map(({ category, key }) => `${category}.${key}`), [
-    "option.watchedListCollection", "option.usageCare", "option.dbgLogUpload", "option.faultLogUpload"
-  ]);
-  for (const key of ["usageCare", "dbgLogUpload", "faultLogUpload"]) {
-    const exactReference = c5Exact.referenceSettings.find((setting) => setting.key === key);
-    assert.equal(exactReference.source, "webos-lockout-c5");
-    assert.match(exactReference.reason, /exact-model (?:root|startup) script/);
-  }
-  assert.match(c5Exact.sampleNote, /firmware number is not published/);
-  assert.ok(!c5Exact.sourceIds.includes("level1techsG5"));
+  assert.equal(c5Exact.referenceSettings, undefined);
   const b5 = compatibility.matchProfile({ model: "OLED55B56LA", sdk: "10.3.1", firmware: "SIM-UNPUBLISHED", platformVersion: "25" });
   assert.equal(b5.id, "lg-oled-b5-webos-25-own-your-glass-b5-oled55b56la-sdk10.3.1");
   assert.equal(compatibility.canWrite(b5, "aiNudge"), true, "the exact B5/webOS 25 report maps Smart Tips");
@@ -167,16 +149,11 @@ test("allows only control keys declared by the matched profile", () => {
   for (const key of ["livePlus", "screenSaverAd", "livePromotion", "lmt"]) {
     assert.equal(b5.controls[key].source, "own-your-glass-b5", `the exact B5 report includes ${key}`);
   }
-  assert.deepEqual(b5.referenceSettings.map(({ category, key }) => `${category}.${key}`), ["network.allowMobileDeviceAccess"]);
-  assert.equal(b5.referenceSettings[0].source, "own-your-glass-b5");
-  assert.match(b5.referenceSettings[0].reason, /did not close the local SSAP service/);
-  assert.match(b5.sampleNote, /did not list the firmware version/);
   assert.ok(b5.sourceIds.includes("ownYourGlass"));
   const b5Sibling = compatibility.matchProfile({ model: "OLED65B56LA", sdk: "10.3.1", firmware: "33.30.70", platformVersion: "25" });
   assert.equal(compatibility.canWrite(b5Sibling, "aiNudge"), false, "the B5 owner map does not transfer to another size variant");
   assert.equal(compatibility.canWrite(b5Sibling, "hbbTV"), false);
   assert.ok(!b5Sibling.sourceIds.includes("ownYourGlass"));
-  assert.deepEqual(b5Sibling.referenceSettings, [], "the B5 mobile-access observation does not transfer to another size variant");
   const b5WrongSdk = compatibility.matchProfile({ model: "OLED55B56LA", sdk: "10.2.0", firmware: "33.30.70", platformVersion: "25" });
   assert.equal(compatibility.canWrite(b5WrongSdk, "hbbTV"), false, "the model overlay is limited to the reported SDK");
 
@@ -192,13 +169,7 @@ test("allows only control keys declared by the matched profile", () => {
   assert.equal(g5.controls.homePromotion.source, "level1techs-g5+glasshouse");
   assert.equal(g5.controls.livePlus.source, "glasshouse", "model overlays must not relabel unrelated platform evidence");
   assert.equal(g5.controls.livePromotion.source, "glasshouse", "the G5 source does not name Live Promotion");
-  assert.deepEqual(g5.referenceSettings.map(({ category, key }) => `${category}.${key}`), [
-    "option.watchedListCollection", "option.usageCare", "option.dbgLogUpload",
-    "option.faultLogUpload", "option.thirdPartyCookie"
-  ]);
-  assert.ok(g5.referenceSettings.every(({ reason }) => /does not (show|verify)|does not publish/i.test(reason)));
   assert.equal(compatibility.canWrite(g5, "thirdPartyCookie"), false, "the root script does not prove an app-side setter");
-  assert.match(g5.sampleNote, /omits the firmware version/);
   assert.ok(g5.sourceIds.includes("level1techsG5"));
   assert.ok(!g5.sourceIds.includes("ownYourGlass"));
   const g5WrongSdk = compatibility.matchProfile({ model: "OLED65G5WUA", sdk: "10.3.1", firmware: "33.30.69", platformVersion: "25" });
@@ -208,13 +179,8 @@ test("allows only control keys declared by the matched profile", () => {
   const g5Sibling = compatibility.matchProfile({ model: "OLED83G5WUA", sdk: "10.2.1", firmware: "SIM-OTHER", platformVersion: "25" });
   assert.equal(g5Sibling.modelSpecificMap, null, "the G5 overlay does not transfer across size variants");
   assert.equal(compatibility.canWrite(g5Sibling, "aiNudge"), false);
-  assert.deepEqual(g5Sibling.referenceSettings, []);
 
   const b6 = compatibility.matchProfile({ model: "OLED65B6SIM", sdk: "11.2.0", firmware: "SIM-26", platformVersion: "26" });
-  assert.deepEqual(b6.referenceSettings.map(({ category, key }) => `${category}.${key}`), [
-    "general.sportsAlarm", "option.webOSPromotionVideo", "option.promotionStreamer"
-  ]);
-  assert.ok(b6.referenceSettings.every(({ reason }) => reason && reason.length > 0));
   assert.equal(compatibility.canWrite(b6, "sportsAlarm"), false, "ambiguous key maps stay read-only");
   assert.equal(compatibility.canWrite(b6, "promotionStreamer"), false, "ambiguous key maps stay read-only");
   assert.equal(compatibility.canWrite(compatibility.matchProfile(C6), "aiNudge"), false, "the exact C6H profile remains limited to its 15 observed controls");

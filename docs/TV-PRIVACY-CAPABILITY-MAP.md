@@ -13,8 +13,9 @@ reviewed control candidates. The TV-local firmware key index lists 14; it does
 not list `hbbTvDnt`, so that candidate is unavailable on this build. Other
 B/C/G families use narrower installed-platform maps
 assembled from the published sources listed below. They do not claim that
-every control exists on every TV: PrivacyShield checks each mapped key and
-keeps unreadable or missing settings locked. See
+every control exists on every TV: PrivacyShield lists only settings in the
+selected profile and the TV's firmware map. A listed switch remains read-only
+until the TV returns a recognized value. See
 [DEVICE-COMPATIBILITY.md](DEVICE-COMPATIBILITY.md) for the family/platform
 maps. Public records from
 Glasshouse, CleanYourTV, webOS Unclutter, own-your-glass, tv-home, the LG TV
@@ -48,12 +49,13 @@ Evidence records from the Ghidra session:
 - `doSetSystemSettings` pseudocode: `ev_9fd626f6fe4448e43e757b6b0f2dfe812d7f4ed32b5812ebda3f772c33f2f2a6`
 - `cbSetSystemSettings` pseudocode: `ev_70d4d1783c1a51c6fdaff25541b83c94a8331508ee5db07eae918e891d803fb5`
 
-The app can show settings, saved agreement flags, selected local service
-names, diagnostics upload configuration, and installed Homebrew apps. It does
-not inspect network payloads, identify the owner of an encrypted connection,
-or list past reports/uploads. Router DNS logs can show destination names;
-bounded packet capture is needed to study network traffic. Neither proves
-payload contents when traffic is encrypted.
+The app reads settings exposed by local webOS services, the firmware map for
+those controls, and saved agreement choices. It does not scan process names or
+installed Homebrew apps or inspect diagnostic-upload configuration. It also
+does not inspect network payloads, identify the owner of an encrypted
+connection, or list past reports/uploads. Router DNS logs can show destination
+names; bounded packet capture is needed to study network traffic. Neither
+proves payload contents when traffic is encrypted.
 
 ## Settings traced to LG's Settings app
 
@@ -66,14 +68,11 @@ outside the preset: both are mapped on C2/webOS 22 and webOS 24, while
 `general.aiNudge` is also mapped for the exact B5 model/SDK overlay.
 
 The current C6 firmware map was read without changing settings. It lists 24 of
-25 reviewed control/reference keys and omits `hbbTvDnt`. That key is no longer
-requested or writable in the app on this build, even though a saved preference
-entry exists; the map does not establish that the preference is an active
-SettingsService control. A live app write followed by matching TV readback was
-previously confirmed for Live Plus and the two voice controls. Other candidates
-remain unverified for app-side writes on this physical TV. The compatibility
-screen and registry keep this distinction visible; a headless pass is not
-device validation.
+25 reviewed control and research keys and omits `hbbTvDnt`. The app does not
+request that setting on this build. A live app write followed by matching TV
+readback was previously confirmed for Live Plus and the two voice controls.
+Other candidates remain unverified for app-side writes on this physical TV; a
+headless pass is not device validation.
 
 | Setting | LG path | PrivacyShield action | Feature effect or limit | Confidence |
 |---|---|---|---|---|
@@ -98,38 +97,35 @@ device validation.
 For the exact OLED55B56LA / SDK 10.3.1 B5 profile, the owner audit additionally
 maps `option.hbbTV`, `option.hbbTvDnt`, and `option.hbbTvDeviceId`. These are the
 same HbbTV controls already defined in the app; the source scope is limited to
-that model and SDK, and its firmware number is not published. The app also
-shows `network.allowMobileDeviceAccess` as read-only status there because the
-audit found the local SSAP service still reachable when the setting was off.
+that model and SDK, and its firmware number is not published. The owner's
+`network.allowMobileDeviceAccess` observation remains research evidence; the
+app does not read or display it.
 
 For the exact `OLED65G5WUA` / webOS 10.2.1 overlay, the Level1Techs root guide
 names `general.aiNudge`, `general.screenSaverAd`, and `general.homePromotion`.
 PrivacyShield uses those as source-mapped candidates with Glasshouse's shared
 SettingsService definitions; the app still requires a readable current value
 and matching readback on the TV. The guide omits numerical firmware and writes
-preference files directly, so its five option keys (`watchedListCollection`,
-`usageCare`, `dbgLogUpload`, `faultLogUpload`, `thirdPartyCookie`) are status
-only. The guide also writes cached agreement state; PrivacyShield leaves that
-in the native webOS consent flow.
+preference files directly. Its five other option keys are research evidence;
+the app does not read or display them. The guide also writes cached agreement
+state; PrivacyShield leaves that in the native webOS consent flow.
 
 Glasshouse also publishes a C5/webOS 10.3.1 key-reader investigation. PrivacyShield
 uses the `voiceLongDistance` and `thirdPartyCookie` findings as candidates only
-on C5 devices reporting SDK 10.3.1 / webOS 25. It shows `watchedListCollection`,
-`usageCare`, `dbgLogUpload`, and `faultLogUpload` as read-only status for that
-same software cohort. The report does not publish the scanned set's exact SKU
-or numeric firmware. `usageCare` is a Family Care menu setting in the report,
-not a demonstrated collection control. The Glasshouse source reports some
-readers but does not establish PrivacyShield app permissions or the result of
-writing these values.
+on C5 devices reporting SDK 10.3.1 / webOS 25. The other four keys remain in
+the source research and are not read or displayed by the app. The report does
+not publish the scanned set's exact SKU or numeric firmware. `usageCare` is a
+Family Care menu setting in the report, not a demonstrated collection control.
+The Glasshouse source reports some readers but does not establish PrivacyShield
+app permissions or the result of writing these values.
 
 The `webos_lockout` project adds a narrower C5 row: it identifies
 `OLED77C51LA` running Rockhopper 10.3.1-3006 and sets `usageCare`,
 `dbgLogUpload`, and `faultLogUpload` to false in the option preference file.
-PrivacyShield attributes those three read-only status values to that exact
-model/software row. The project does not publish a numeric firmware version or
-test the packaged app's setter. It describes `usageCare` as usage data, while
-Glasshouse found a Family Care menu effect and no collection behavior; its
-effect remains unresolved.
+The project does not publish a numeric firmware version or test the packaged
+app's setter. PrivacyShield does not read or display these values. It describes
+`usageCare` as usage data, while Glasshouse found a Family Care menu effect and
+no collection behavior; its effect remains unresolved.
 
 The standard profile's preset contains up to ten values: Live Plus off, both
 voice settings off, Limit Ad Tracking on, Screen Saver Promotion off, Home
@@ -206,7 +202,7 @@ write/read/effect path is not yet established. They are not app controls.
 | `motionRecognition`, `absenceRecognition`, `personalRecommend` | Preference keys found during inspection, without a fully traced current UI handler. | Find the user-facing label, service handler, and effect on this firmware. |
 | `adCookie`, `customizedAd`, `nativeConsentAd` | Advertising-related preferences. | Determine whether these are managed by another UI or reflect consent-derived state before considering writes. |
 | `webOSPromotionVideo`, `promotionStreamer` | Promotion-related preferences. | Trace the actual UI and visible feature effect. |
-| `faultLogUpload`, `dbgLogUpload`, `autoUpload` | Diagnostic flags and local diagnostic services/configuration. PrivacyShield shows selected status. | Map the user-facing controls and past-report visibility. The current app cannot enumerate past uploads or report contents. |
+| `faultLogUpload`, `dbgLogUpload`, `autoUpload` | Diagnostic flags and local diagnostic services/configuration. The current app does not read or display these values. | Map the user-facing controls and past-report visibility. The current app cannot enumerate past uploads or report contents. |
 | `enableIpControl`, `enableSDDP` | Network/device-control preferences. | Determine discovery exposure and compatibility effects before recommending changes. |
 
 ## PrivacyShield service permissions
@@ -215,7 +211,6 @@ write/read/effect path is not yet established. They are not app controls.
 |---|---|---|
 | `com.webos.settingsservice/getSystemSettings` | `settings.query` | Read the supported setting values and agreement records. |
 | `com.webos.service.tv.systemproperty/getSystemInfo` | `systemconfig.query` | Read model and software version. |
-| `com.palm.connectionmanager/getStatus` | `network.query` | Read internet connection status. |
 | `com.webos.applicationManager/launch` | `applications.launcher` | Open LG User Agreements after the user selects the button. |
 | `com.webos.service.admanager/updateDNS` | Public method on the inspected firmware | Apply Do Not Sell through LG's ad-manager route. |
 | HBC `exec` | `lunabus.query` plus HBC's Luna API map | Run the fixed-path local snapshot and allowlisted writer. This is privileged and is not a general shell field. |
@@ -231,8 +226,8 @@ history.
 
 LG's C6-family owner manual shows two bottom-control layouts: Type A has a
 microphone switch and Type B does not. The manual does not identify which
-layout is fitted to the exact TV. PrivacyShield therefore says **Check TV**.
-Software voice settings disable recognition features; they do not electrically
+layout is fitted to the exact TV. Check the switch on the TV itself. Software
+voice settings disable recognition features; they do not electrically
 disconnect a microphone.
 
 Public C5 reports from Glasshouse and tv-home describe a physical microphone

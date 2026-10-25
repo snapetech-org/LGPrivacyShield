@@ -44,16 +44,19 @@ also uses the dashboard's root-side `general.lmt` write/readback evidence; its
 OLED42C24LA test row is not directly linked to that code test. The exact
 OLED55B56LA / SDK 10.3.1 B5 map adds `aiNudge` and three HbbTV controls. The
 exact `OLED65G5WUA` / webOS 10.2.1 report supplies keys for `aiNudge`,
-`screenSaverAd`, and `homePromotion`; five option preferences are read-only
-because the source edits files directly and does not test the app-side setter.
+`screenSaverAd`, and `homePromotion`; five other option preferences remain
+source research because the report does not test the app-side setter.
 The numerical G5 firmware is not published. The exact C6H profile has 15
 reviewed candidates, filtered by a read-only capture of that TV's firmware key
 index: 14 are listed and `hbbTvDnt` is absent. Other model profiles use
 narrower published platform/cohort maps, then check the installed firmware's
 key index and current value before enabling each control.
-The full handlers, effects, permission boundary, one-time ID actions, and
-unmapped candidates are in [TV-PRIVACY-CAPABILITY-MAP.md](TV-PRIVACY-CAPABILITY-MAP.md)
-and [DEVICE-COMPATIBILITY.md](DEVICE-COMPATIBILITY.md).
+The app exposes mapped controls after the TV returns a readable current value.
+Research keys without an app-side SettingsService path remain in the
+repository and are excluded from the TV package. Full handler and effect
+notes, permission boundaries, one-time ID actions, and unmapped candidates are
+in [TV-PRIVACY-CAPABILITY-MAP.md](TV-PRIVACY-CAPABILITY-MAP.md) and
+[DEVICE-COMPATIBILITY.md](DEVICE-COMPATIBILITY.md).
 
 The per-firmware category/key index is stored on rooted sets at
 `/etc/palm/description.categorykeysmap.json`. PrivacyShield filters this local
@@ -76,9 +79,13 @@ published seek index; earlier full-download attempts ran at about 20–50 kB/s.
 The repeatable importer, `scripts/import_firmware_keymap.py`, now verifies the
 actual EPK SHA-256 against the catalog and marks extraction as not independently
 reproduced. No additional B/C/G registry has been extracted; the C6H capture
-remains the only device-specific firmware-index fixture. The current 0.4.0 IPK
-was validated headlessly and was not installed or launched on the TV. See
-[DEVICE-COMPATIBILITY.md](DEVICE-COMPATIBILITY.md) for the process and limits.
+remains the only device-specific firmware-index fixture.
+
+The 0.4.0 IPK built for this revision was installed and launched on an
+`OLED77C6HUP` running webOS 26 / firmware 43.21.79. This confirms install and
+startup on that TV; setting behavior still depends on its live firmware index
+and readback. See [DEVICE-COMPATIBILITY.md](DEVICE-COMPATIBILITY.md) for the
+process and limits.
 
 The Settings bundle handles Do Not Sell through
 `com.webos.service.admanager/updateDNS` with a `status` value. PrivacyShield
@@ -100,18 +107,15 @@ captured or transmitted.
 The official owner manual for OLED77C6HUP is shared across multiple model
 variants. It depicts two bottom-control layouts: Type A has a microphone
 switch; Type B does not. The manual does not identify which layout is fitted
-to the installed unit, so PrivacyShield displays **Check TV**. The software
-controls above turn off voice features; they do not replace a hardware
-disconnect.
+to the installed unit. Check the switch on the TV itself. The software
+controls disable voice features; they do not replace a hardware disconnect.
 
 ## webOS 26 and Homebrew access
 
 PrivacyShield queries SettingsService and falls back to a root snapshot that
-reads only reviewed setting values listed in the TV's firmware key index,
-seven agreement flags, selected diagnostic flags, service names, and Homebrew
-app metadata. The snapshot does not return raw preference files. Local
-app/process inventory and the fallback require the Homebrew Channel `exec`
-API. On webOS 26, the application declares
+returns reviewed setting values, the TV's filtered firmware key map, and saved
+agreement choices. It does not inspect running processes, installed apps, or
+diagnostic-upload preferences. On webOS 26, the application declares
 `lunabus.query`, and the installed HBC service also needs an API-permission
 mapping for that group. Before repair, HBC 0.7.3 on the test TV lacked it, and
 the service returned `Denied method call "exec" for category "/"`. The map and
@@ -129,8 +133,9 @@ individually tested live. The v0.1.6 package was not installed or run on the
 TV; its expanded settings were read over SSH only. No settings or
 agreement choices were changed during this map work. Direct SettingsService
 option/general/agreement requests remain denied on this firmware, so the app
-uses the HBC snapshot fallback. System information and network status calls
-succeed directly.
+uses the HBC snapshot fallback. System-information reads succeeded directly.
+That historical session also confirmed a network-status API call, which the
+current app no longer requests.
 
 The upstream HBC change for webOS 26 adds a `lunabus.query` mapping to the
 elevated service by adding

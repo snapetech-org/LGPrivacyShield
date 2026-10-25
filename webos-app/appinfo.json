@@ -10,9 +10,8 @@
   "requiredACG": [
     "settings.query",
     "systemconfig.query",
-    "network.query",
     "lunabus.query",
     "applications.launcher"
   ],
-  "appDescription": "Review LG privacy settings, agreement status, and local TV status."
+  "appDescription": "Review LG privacy settings and saved agreement choices."
 }

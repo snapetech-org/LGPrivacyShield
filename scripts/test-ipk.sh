@@ -66,6 +66,15 @@ with tarfile.open(fileobj=io.BytesIO(data_bytes), mode="r:gz") as archive:
         raise SystemExit(f"IPK payload is missing {payload_path}")
     import json
     appinfo = json.load(appinfo_file)
+    excluded_research_files = (
+        f"{app_root}src/community-data.js",
+        f"{app_root}src/community-reference.js",
+        f"{app_root}src/firmware-catalog-data.js",
+        f"{app_root}src/firmware-catalog.js",
+    )
+    for packaged_path in excluded_research_files:
+        if packaged_path in files:
+            raise SystemExit(f"Research-only file must not be included in the TV package: {packaged_path}")
     required_files = {
         f"{app_root}LICENSE": f"{repo_root}/LICENSE",
         f"{app_root}THIRD-PARTY-NOTICES.md": f"{repo_root}/THIRD-PARTY-NOTICES.md",

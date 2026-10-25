@@ -5,12 +5,12 @@
   const Api = window.PrivacyShieldDeviceApi;
   const Remote = window.PrivacyShieldRemoteNavigation;
   const Compatibility = window.PrivacyShieldCompatibility;
-  const PublicReferences = window.PrivacyShieldCommunityReference;
+  const DeviceProfiles = window.PrivacyShieldDeviceProfiles;
   const SAVE_KEY = "privacyshield.saved-controls.v1";
   const THEME_KEY = "privacyshield.theme.v1";
   const state = {
-    settings: {}, agreements: null, model: null, profile: null, network: null, root: null,
-    referenceSettings: {}, firmwareSettingsMap: null, controlReads: {}, apiAccess: {}, errors: []
+    settings: {}, agreements: null, model: null, profile: null, root: null,
+    firmwareSettingsMap: null, controlReads: {}, apiAccess: {}, errors: []
   };
   let toastTimer;
   let agreementReviewRequested = false;
@@ -40,15 +40,6 @@
     button.addEventListener("click", () => {
       setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark", true);
     });
-  }
-
-  function replaceContent(node, children = []) {
-    while (node.firstChild) node.removeChild(node.firstChild);
-    for (const child of children) node.appendChild(child);
-  }
-
-  function responseValue(response, key) {
-    return Model.pickValue(response, key);
   }
 
   function showToast(message) {
@@ -173,7 +164,7 @@
     const track = $(".control-scroll-track");
     const fill = $("#control-scroll-progress");
     const frame = $("#control-scroll-frame");
-    const rows = $$("#control-list .control-row");
+    const rows = $$("#control-list .control-row:not([hidden])");
     if (!view || view.hidden || !view.classList.contains("is-visible") || !main || !range || !cue || !track || !fill || !frame || !rows.length) return;
 
     const mainRect = main.getBoundingClientRect();
@@ -194,6 +185,7 @@
 
     const reached = last + 1;
     fill.style.width = `${Math.round((reached / rows.length) * 100)}%`;
+    track.setAttribute("aria-valuemax", String(rows.length));
     track.setAttribute("aria-valuenow", String(reached));
     track.setAttribute("aria-valuetext", `${range.textContent}; ${above} above, ${below} below`);
   }
@@ -306,7 +298,7 @@
     const model = response && (response.modelName || response.model || response.modelNameText);
     const sdk = response && (response.sdkVersion || response.webOSVersion || response.version);
     const firmware = response && (response.firmwareVersion || response.firmware || response.softwareVersion);
-    const platform = PublicReferences.detectPlatform(window.navigator && window.navigator.userAgent, sdk || "");
+    const platform = DeviceProfiles.detectPlatform(window.navigator && window.navigator.userAgent, sdk || "");
     return {
       model: model || "Model unavailable",
       sdk: sdk || "Version unavailable",
@@ -323,21 +315,11 @@
     return Model.snapshotSettings(parseRootSnapshot(state.root));
   }
 
-  function snapshotReferenceSettings() {
-    const snapshot = parseRootSnapshot(state.root);
-    const source = snapshot && snapshot.referenceSettings;
-    return source && typeof source === "object" ? source : {};
-  }
-
   function firmwareSettingsMapFromSnapshot() {
     const snapshot = parseRootSnapshot(state.root);
     const source = snapshot && snapshot.firmwareSettingsMap;
     if (!source || source.available !== true || !source.settings || typeof source.settings !== "object" || Array.isArray(source.settings)) return null;
-    const allowedKeys = new Set([
-      ...Model.CONTROLS.map(({ key }) => key),
-      "sportsAlarm", "webOSPromotionVideo", "promotionStreamer", "allowMobileDeviceAccess",
-      "watchedListCollection", "usageCare", "dbgLogUpload", "faultLogUpload"
-    ]);
+    const allowedKeys = new Set(Model.CONTROLS.map(({ key }) => key));
     const settings = Object.fromEntries(Object.entries(source.settings).filter(([key, category]) =>
       allowedKeys.has(key) && typeof category === "string" && /^[A-Za-z][A-Za-z0-9_]{0,63}$/.test(category)
     ));
@@ -415,10 +397,6 @@
           paragraph.append(strong, " ", value);
           copy.append(paragraph);
         }
-        const evidence = document.createElement("p");
-        evidence.className = "agreement-evidence";
-        evidence.textContent = entry.evidence;
-        copy.append(evidence);
         const pill = document.createElement("span");
         pill.className = "status-pill status-unknown";
         pill.textContent = "Unavailable";
@@ -428,7 +406,6 @@
       if (!row) continue;
       $(".agreement-accepted", row).textContent = entry.acceptedEffect;
       $(".agreement-declined", row).textContent = entry.declinedEffect;
-      $(".agreement-evidence", row).textContent = entry.evidence;
       const pill = $(".status-pill", row);
       const label = entry.state === "accepted" ? "Accepted" : entry.state === "withdrawn" ? "Not accepted" : "Unavailable";
       statusPill(pill, label, entry.state === "accepted" ? "on" : entry.state === "withdrawn" ? "off" : "unknown");
@@ -439,9 +416,11 @@
     const checkbox = $(`[data-setting="${key}"]`);
     const meta = $(`#${key}-meta`);
     if (!checkbox) return;
+    const row = checkbox.closest(".control-row");
     const normalized = Model.normalizeToggle(value);
     const switchLabel = checkbox.closest(".switch");
     const mapped = Boolean(compatibility && compatibility.mapped);
+    if (row) row.hidden = !mapped;
     checkbox.checked = normalized === "on";
     checkbox.disabled = normalized === "unknown" || !mapped;
     if (normalized === "unknown" || !mapped) {
@@ -477,340 +456,60 @@
     );
   }
 
-  function getConsentFlag(key) {
-    const source = state.agreements;
-    if (!source) return undefined;
-    if (source.eulaStatus && Object.prototype.hasOwnProperty.call(source.eulaStatus, key)) return source.eulaStatus[key];
-    if (source.settings && source.settings.eulaStatus) return source.settings.eulaStatus[key];
-    return undefined;
+  function updateControlsView() {
+    const available = mappedControls();
+    const noControls = available.length === 0;
+    $("#control-toolbar").hidden = noControls;
+    $("#control-scroll-frame").hidden = noControls;
+    $("#control-list-frame").hidden = noControls;
+    $("#no-supported-controls").hidden = !noControls;
+    if (noControls) {
+      $("#no-supported-controls").textContent = !state.profile
+        ? "No privacy controls are mapped for this model and software version."
+        : "No supported controls are listed in this TV's firmware index.";
+    }
+  }
+
+  function updateCompatibilityPrompt() {
+    const candidates = state.profile
+      ? Model.CONTROLS.filter((control) => state.profile.controls && state.profile.controls[control.key])
+      : [];
+    const unavailable = !state.profile || !candidates.length || candidates.some((control) =>
+      !deviceControlStatus(control.key).mapped || Model.normalizeToggle(state.settings[control.key]) === "unknown"
+    );
+    const prompt = $("#compatibility-report-prompt");
+    prompt.hidden = !unavailable;
+    if (unavailable) {
+      $("#compatibility-report-reason").textContent = !state.profile
+        ? "This model and software version have no supported control profile."
+        : !candidates.length
+          ? "No supported controls are listed in this TV's firmware index."
+          : "Some mapped controls are unavailable or unreadable.";
+    }
   }
 
   function paintOverview() {
-    const availableControls = mappedControls();
-    const counts = Model.countRecommendedControls(state.settings, availableControls);
     const preset = privacyPresetForProfile();
     const profileAllowsPreset = Compatibility.canApplyPreset(state.profile, preset);
     $("#privacy-preset").disabled = !profileAllowsPreset || !Model.canApplyPrivacyPreset(state.settings, preset);
-    const value = !state.profile ? "Controls read-only" : !availableControls.length ? "No controls available" : counts.unknown ? "Some values unavailable" : counts.recommended === counts.total ? "Recommended settings set" : "Review settings";
-    $("#posture-value").textContent = value;
-    $("#posture-detail").textContent = !state.profile
-      ? "No controls are available for this model and software version."
-      : !availableControls.length
-      ? "No privacy controls are available for this software version."
-      : counts.unknown
-      ? `${counts.recommended} of ${counts.total} available settings match the recommendations; ${counts.unknown} values are unavailable.`
-      : `${counts.recommended} of ${counts.total} settings match the recommended values`;
 
     const viewing = Model.normalizeToggle(state.settings.livePlus);
-    $("#summary-viewing").textContent = viewing === "off" ? "Live Plus is off" : viewing === "on" ? "Live Plus is on" : "Live Plus status unavailable";
+    $("#summary-viewing").textContent = viewing === "off" ? "Off" : viewing === "on" ? "On" : "Unavailable";
     $("#dot-viewing").className = `state-dot ${viewing === "off" ? "is-safe" : viewing === "on" ? "is-on" : ""}`;
 
     const voiceOff = Model.normalizeToggle(state.settings.voiceLongDistance) === "off" && Model.normalizeToggle(state.settings.turnOnByVoice) === "off";
     const voiceOn = Model.normalizeToggle(state.settings.voiceLongDistance) === "on" || Model.normalizeToggle(state.settings.turnOnByVoice) === "on";
-    $("#summary-voice").textContent = voiceOff ? "Hands-free voice and voice wake are off" : voiceOn ? "Voice wake or hands-free listening is on" : "Voice settings unavailable";
+    $("#summary-voice").textContent = voiceOff ? "Voice controls are off" : voiceOn ? "Voice wake or hands-free voice is on" : "Unavailable";
     $("#dot-voice").className = `state-dot ${voiceOff ? "is-safe" : voiceOn ? "is-on" : ""}`;
 
-    const connected = state.network && (state.network.isInternetConnectionAvailable === true || state.network.isInternetConnectionAvailable === "true");
-    $("#summary-network").textContent = connected ? "Connected to the internet" : state.network ? "No internet connection" : "Connection status unavailable";
-    $("#dot-network").className = `state-dot ${state.network ? "" : ""}`;
-
     const data = state.model || {};
-    $("#device-summary").textContent = data.model || "LG webOS TV";
-    $("#model-name").textContent = data.model || "Unavailable";
+    $("#device-summary").textContent = data.model || "TV model unavailable";
     $("#webos-version").textContent = [
-      data.platformVersion ? `webOS ${data.platformVersion}` : "",
-      data.firmware && `firmware ${data.firmware}`
-    ].filter(Boolean).join(" · ") || "Unavailable";
-    $("#network-name").textContent = connected ? "Connected" : state.network ? "Not connected" : "Unavailable";
-    statusPill($("#connection-status"), connected ? "Connected" : state.network ? "Not connected" : "Unavailable", connected ? "on" : state.network ? "off" : "unknown");
-
-    $("#evidence-consent").textContent = state.agreements ? consentEvidenceText() : "Agreement status could not be read.";
-    $("#last-updated").textContent = `Updated ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
-  }
-
-  function consentEvidenceText() {
-    const voice = Model.agreementState(state.agreements, "S_VNG");
-    const viewing = Model.agreementState(state.agreements, "S_ADG");
-    const status = (value) => value === "accepted" ? "Accepted" : value === "withdrawn" ? "Not accepted" : "Unavailable";
-    return `Voice Information: ${status(voice)}. Viewing Information: ${status(viewing)}. Agreement status does not show whether data was sent.`;
-  }
-
-  function paintEvidence() {
-    const root = state.root;
-    if (!root) {
-      $("#evidence-processes").textContent = "Local service details are unavailable. Check Homebrew Channel access.";
-      $("#evidence-apps").textContent = "Installed app details are unavailable. Check Homebrew Channel access.";
-      $("#diagnostics-status").textContent = "Diagnostics status is unavailable. Check Homebrew Channel access.";
-      return;
-    }
-    const payload = parseRootSnapshot(root);
-    if (!payload) {
-      $("#evidence-processes").textContent = "Local service details could not be read. Refresh to try again.";
-      $("#evidence-apps").textContent = "Installed app details could not be read.";
-      $("#diagnostics-status").textContent = "Diagnostics status could not be read.";
-      return;
-    }
-    const voice = Array.isArray(payload.voiceProcesses) ? payload.voiceProcesses : [];
-    $("#evidence-processes").textContent = voice.length
-      ? `Voice services running: ${voice.join(", ")}. This does not show whether audio was recorded or sent.`
-      : "No listed voice service is running. Other services may provide voice features.";
-    const apps = Array.isArray(payload.apps) ? payload.apps : [];
-    $("#evidence-apps").textContent = apps.length
-      ? `${apps.length} Homebrew ${apps.length === 1 ? "app" : "apps"} installed.`
-      : "No Homebrew apps found.";
-    replaceContent($("#app-inventory"), apps.slice(0, 12).map((app) => {
-      const li = document.createElement("li");
-      li.textContent = `${app.title || app.id}${app.version ? ` ${app.version}` : ""}`;
-      return li;
-    }));
-    const diagnostics = payload.diagnostics || {};
-    const services = diagnostics.services || [];
-    const autoUpload = diagnostics.autoUpload;
-    const serviceStatus = services.length ? services.join(", ") : "none found";
-    const uploadStatus = autoUpload == null ? "Unavailable" : autoUpload ? "enabled" : "disabled";
-    const faultStatus = diagnostics.faultLogUpload == null ? "Unavailable" : diagnostics.faultLogUpload ? "On" : "Off";
-    const debugStatus = diagnostics.debugLogUpload == null ? "Unavailable" : diagnostics.debugLogUpload ? "On" : "Off";
-    $("#diagnostics-status").textContent = `Diagnostics services: ${serviceStatus}. Automatic uploads: ${uploadStatus}. Fault log upload: ${faultStatus}. Debug log upload: ${debugStatus}. Past uploads are not listed.`;
-  }
-
-  function paintCompatibility() {
-    const model = state.model || {};
-    const firmwareEvidence = Compatibility.firmwareArchiveEvidence(model);
-    const firmwareStatus = $("#firmware-source-status");
-    if (firmwareStatus) {
-      firmwareStatus.textContent = firmwareEvidence
-        ? window.PrivacyShieldFirmwareCatalog.describe(firmwareEvidence)
-        : "No firmware package match is listed. Privacy settings are checked on the TV.";
-    }
-    const identity = [model.model, model.platformVersion && `webOS ${model.platformVersion}`, model.firmware && `firmware ${model.firmware}`]
-      .filter((value) => value && !/unavailable/i.test(value)).join(" · ");
-    $("#compatibility-device").textContent = identity || "Model or software version unavailable";
-    if (state.profile) {
-      const mappedCount = Object.values(state.profile.controls || {}).length;
-      const writeVerifiedCount = Object.values(state.profile.controls || {}).filter((control) => control.priorWriteReadback).length;
-      const locallyPresentCount = Model.CONTROLS.filter((control) =>
-        state.profile.controls && state.profile.controls[control.key] && deviceControlStatus(control.key).mapped
-      ).length;
-      const firmwareNote = state.firmwareSettingsMap
-        ? ` The TV lists ${locallyPresentCount} of these ${mappedCount} settings. Each current value is checked separately; a listed setting may still not work as expected.`
-        : " The TV's setting list could not be read. Each current value must still be checked before use.";
-      if (state.profile.mappingScope === "exact-device-firmware") {
-        statusPill($("#compatibility-status"), "C6H settings", "neutral");
-        $("#compatibility-summary").textContent = `${mappedCount} settings are documented for this model and software. ${writeVerifiedCount} changes were previously confirmed through PrivacyShield.${firmwareNote} Current values are checked before switches are enabled.`;
-      } else {
-        statusPill($("#compatibility-status"), `${state.profile.cohort} · webOS ${state.profile.platformVersion}`, "neutral");
-        const modelMapNote = state.profile.sampleNote
-          ? ` ${state.profile.sampleNote}`
-          : " Published sources have not been checked on this exact TV.";
-        $("#compatibility-summary").textContent = `${mappedCount} settings are documented for webOS ${state.profile.platformVersion}.${modelMapNote}${firmwareNote} A switch is enabled only when this TV returns its current value. Changes are checked afterward.`;
-      }
-    } else {
-      statusPill($("#compatibility-status"), "Read-only", "unknown");
-      $("#compatibility-summary").textContent = "No controls are available for this model and software version. Send a compatibility report to us through GitHub so we can review this TV's read-access results.";
-    }
-    paintMappedSettings(state.profile);
-    paintPublicReferences(model);
-  }
-
-  function mapSourceLabel(source) {
-    const labels = {
-      glasshouse: "Glasshouse SettingsService map",
-      "glasshouse-webos24": "Glasshouse webOS 9.2 map",
-      "glasshouse-c2-webos22-fixture": "Glasshouse C2/webOS 22 sample fixture",
-      "glasshouse-dashboard-c2": "Glasshouse dashboard · C2/webOS 22 root map",
-      "glasshouse-c5": "Glasshouse C5 firmware map",
-      "own-your-glass-b5": "own-your-glass B5 audit",
-      "level1techs-g5": "Level1Techs G5 preference-file report",
-      "webos-lockout-c5": "webos_lockout OLED77C51LA root report",
-      "level1techs-g5+glasshouse": "Level1Techs G5 keys + Glasshouse SettingsService definitions",
-      "webos-debloat-webos26": "webOS Debloat webOS 26 key list",
-      "glasshouse+model-guide": "Glasshouse key map and model menu guide",
-      "glasshouse+webos-debloat": "Glasshouse and webOS Debloat maps",
-      "privacyshield-c6": "PrivacyShield C6H device map"
-    };
-    return labels[source] || String(source || "Published SettingsService map");
-  }
-
-  function paintMappedSettings(profile) {
-    const scope = $("#mapped-settings-scope");
-    const list = $("#mapped-settings-list");
-    const readOnlyList = $("#research-only-setting-list");
-    const readOnlySection = $("#research-only-setting-details");
-    replaceContent(list);
-    replaceContent(readOnlyList);
-    readOnlySection.hidden = true;
-    if (!profile) {
-      scope.textContent = "No settings are available for this model and software version. Controls are read-only.";
-      return;
-    }
-    const profileControls = Model.CONTROLS.filter((control) => profile.controls && profile.controls[control.key]);
-    const locallyPresentCount = profileControls.filter((control) => deviceControlStatus(control.key).mapped).length;
-    const firmwareNote = state.firmwareSettingsMap
-      ? ` This TV lists ${locallyPresentCount} of ${profileControls.length} settings. A listed setting may still have no effect.`
-      : " This TV's setting list could not be read; each setting is checked separately.";
-    if (profile.mappingScope === "exact-device-firmware") {
-      scope.textContent = `Settings documented for this C6H software version. Three changes were previously confirmed through PrivacyShield. The standard C6 family guide below does not cover C6H.${firmwareNote}`;
-    } else {
-      scope.textContent = `Settings documented for webOS ${profile.platformVersion}. A setting must be listed by the TV and return a current value before its switch is enabled. Changes are checked afterward.${firmwareNote}`;
-    }
-    if (!profileControls.length) {
-      const item = document.createElement("li");
-      item.textContent = "No settings are available.";
-      list.append(item);
-    } else {
-      for (const control of profileControls) {
-        const evidence = profile.controls[control.key];
-        const compatibility = deviceControlStatus(control.key);
-        const firmwareEntry = firmwareMapEntry(control.key);
-        const category = compatibility.mapped ? compatibility.firmwareCategory || control.category : control.category;
-        const item = document.createElement("li");
-        const name = document.createElement("strong");
-        const key = document.createElement("code");
-        name.textContent = control.label;
-        key.textContent = control.writer === "admanager"
-          ? "com.webos.service.admanager/updateDNS"
-          : `${category}.${control.key}`;
-        const firmwareStatus = !firmwareEntry.available
-          ? " The TV firmware map was unavailable."
-          : compatibility.mapped ? " Present in this TV's firmware map; current value is read separately."
-            : ` ${compatibility.reason}`;
-        item.append(name, key, document.createTextNode(`${mapSourceLabel(evidence.source)}.${firmwareStatus}`));
-        list.append(item);
-      }
-    }
-
-    for (const reference of profile.referenceSettings || []) {
-      const item = document.createElement("li");
-      const name = document.createElement("strong");
-      const key = document.createElement("code");
-      name.textContent = reference.label;
-      const firmwareEntry = firmwareMapEntry(reference.key);
-      key.textContent = `${firmwareEntry.category || reference.category}.${reference.key}`;
-      const value = Model.normalizeToggle(state.referenceSettings[reference.key]);
-      const current = firmwareEntry.available && !firmwareEntry.category
-        ? "Not listed in this TV's firmware map; no value was read."
-        : value === "unknown" ? "Status unavailable." : `Current value: ${value === "on" ? "On" : "Off"}.`;
-      item.append(name, key, document.createTextNode(`${current} Read only. ${reference.reason} ${mapSourceLabel(reference.source)}`));
-      readOnlyList.append(item);
-    }
-    readOnlySection.hidden = !(profile.referenceSettings && profile.referenceSettings.length);
-  }
-
-  function paintPublicReferences(model) {
-    const statusLabels = {
-      "upstream-confirmed": "project report",
-      "user-reported": "owner report",
-      "maintainer-tested": "project test",
-      "maintainer-baseline": "project baseline",
-      "network-measured": "network capture",
-      "firmware-analyzed": "firmware analysis",
-      "owner-audited": "owner audit"
-    };
-    const cohort = PublicReferences.cohortForModel(model && model.model);
-    const cohortNode = $("#community-cohort");
-    const guideNode = $("#community-model-guide");
-    const discoveryNode = $("#community-device-discovery");
-    const microphoneNode = $("#community-microphone");
-    const microphoneSwitchNode = $("#community-microphone-switch");
-    const samplesNode = $("#community-samples");
-    replaceContent(samplesNode);
-    replaceContent(guideNode);
-    if (!cohort) {
-      cohortNode.textContent = "This model is not listed in the B/C/G OLED references.";
-      guideNode.textContent = "No matching model-family privacy guide is listed.";
-      discoveryNode.textContent = "No matching model-specific network-discovery entry is available.";
-      microphoneNode.textContent = "Published built-in microphone evidence is not available for this model.";
-      microphoneSwitchNode.textContent = "Physical microphone switch: no model-specific report is available.";
-    } else {
-      const guide = PublicReferences.modelGuideForModel(model && model.model);
-      const samples = PublicReferences.samplesForCohort(cohort.series);
-      const sampleCounts = PublicReferences.sampleCountsForCohort(cohort.series);
-      const sourceCounts = Object.entries(sampleCounts).map(([source, count]) => `${count} ${source}`).join(", ");
-      cohortNode.textContent = `${cohort.series} · ${cohort.year} OLED family · launch version webOS ${cohort.launchWebOS} · listed screen sizes: ${cohort.sizes.join(", ")} inches. Reports: ${samples.length}${sourceCounts ? ` (${sourceCounts})` : ""}.`;
-      if (guide) {
-        guideNode.append(document.createTextNode("Model-family guide: "));
-        const link = document.createElement("a");
-        link.href = guide.url;
-        link.rel = "noopener noreferrer";
-        link.textContent = `LG ${guide.series} (${guide.year}) privacy guide`;
-        guideNode.append(link, document.createTextNode(` ${guide.scopeNote}`));
-      }
-      discoveryNode.textContent = "LG says these TVs look for compatible devices on the home network. The cited guides list no setting to stop this. They do not show that the device list is sent to LG. A guest network can limit local access.";
-      const microphoneLabels = {
-        present: "Listed by the cited manufacturer source",
-        absent: "Listed as absent by the cited manufacturer source",
-        "reported-present": "Reported by an independent review",
-        "reported-absent": "Reported by LG support in a retailer Q&A",
-        conflicting: "Conflicting regional sources",
-        "variant-limited": "A different model variant is documented",
-        unknown: "Unknown"
-      };
-      const exactC6H = cohort.series === "C6" && /C6H/i.test(model.model || "");
-      const exactMicStatus = exactC6H ? "C6H variant not covered" : microphoneLabels[cohort.microphone.status] || "Unknown";
-      microphoneNode.textContent = `Built-in microphone: ${exactMicStatus}. ${cohort.microphone.summary} Software cannot identify or control a physical switch.`;
-      const switchEvidence = PublicReferences.microphoneSwitchForCohort(cohort.series);
-      if (switchEvidence) {
-        microphoneSwitchNode.textContent = `Physical microphone switch: reported for ${cohort.series} on ${switchEvidence.webOS}. ${switchEvidence.observation} ${switchEvidence.limit}`;
-      } else if (cohort.series === "C6") {
-        microphoneSwitchNode.textContent = "Physical microphone switch: no C6-specific report is included. The C5 switch finding does not establish a switch on a C6 or C6H.";
-      } else {
-        microphoneSwitchNode.textContent = `Physical microphone switch: no report confirms one on this ${cohort.series} model family.`;
-      }
-      if (!samples.length) {
-        const item = document.createElement("li");
-        item.textContent = "No report for this family is included in the current evidence catalog.";
-        samplesNode.append(item);
-      } else {
-        for (const sample of samples) {
-          const item = document.createElement("li");
-          const heading = document.createElement("strong");
-          const displayModel = sample.displayModel || sample.model || `${sample.series} family`;
-          const panel = sample.panel ? `; ${sample.panel}` : "";
-          heading.textContent = `${displayModel} · ${sample.project} (${statusLabels[sample.status] || "reported"})`;
-          item.append(heading, document.createTextNode(`Reported webOS version ${sample.webOS}; firmware ${sample.firmware || "not listed"}${panel}. ${sample.note}`));
-          samplesNode.append(item);
-        }
-      }
-    }
-
-    const menuNode = $("#menu-reference-list");
-    replaceContent(menuNode);
-    const menuEntries = model && model.platformVersion
-      ? PublicReferences.menuForPlatform(model.platformVersion)
-      : [];
-    $("#menu-reference-status").textContent = model && model.platformVersion
-      ? `webOS ${model.platformVersion} · ${menuEntries.length} documented menu paths.`
-      : "The installed webOS version is unavailable. No menu paths are shown.";
-    for (const entry of menuEntries) {
-      const item = document.createElement("li");
-      const heading = document.createElement("strong");
-      heading.textContent = entry.name;
-      item.append(heading, document.createTextNode(entry.path));
-      if (entry.note) item.append(document.createTextNode(` ${entry.note}`));
-      menuNode.append(item);
-    }
-
-    const findingsNode = $("#community-control-findings");
-    replaceContent(findingsNode);
-    for (const finding of PublicReferences.PUBLIC_CONTROL_FINDINGS) {
-      const item = document.createElement("li");
-      const heading = document.createElement("strong");
-      heading.textContent = `${finding.project} · ${finding.feature}`;
-      item.append(heading, document.createTextNode(`${finding.method}. ${finding.observation} Scope: ${finding.scope} ${finding.limit}`));
-      findingsNode.append(item);
-    }
-
-    const unassignedNode = $("#community-unassigned-samples");
-    replaceContent(unassignedNode);
-    for (const sample of PublicReferences.unassignedSamples()) {
-      const item = document.createElement("li");
-      const heading = document.createElement("strong");
-      heading.textContent = `${sample.displayModel || "Model not published"} · ${sample.project} (${statusLabels[sample.status] || "reported"})`;
-      const panel = sample.panel ? `; ${sample.panel}` : "";
-      const webOS = sample.webOS === "Not recorded" ? "not recorded" : sample.webOS;
-      item.append(heading, document.createTextNode(` webOS version: ${webOS}; firmware: ${sample.firmware || "not listed"}${panel}. ${sample.note}`));
-      unassignedNode.append(item);
-    }
+      data.platformVersion ? `webOS ${data.platformVersion}` : data.sdk && data.sdk !== "Version unavailable" ? `SDK ${data.sdk}` : "",
+      data.firmware && `Firmware ${data.firmware}`
+    ].filter(Boolean).join(" · ") || "TV software unavailable";
+    updateControlsView();
+    updateCompatibilityPrompt();
   }
 
   function parseRootSnapshot(response) {
@@ -829,27 +528,30 @@
   }
 
   async function loadState() {
-    $("#runtime-mode").textContent = "Reading TV status…";
+    const runtimeStatus = $("#runtime-mode");
+    runtimeStatus.dataset.state = "reading";
+    runtimeStatus.hidden = false;
+    runtimeStatus.textContent = "Reading TV status…";
     state.settings = Object.fromEntries(Model.CONTROLS.map(({ key }) => [key, "unknown"]));
     state.model = null;
     state.profile = null;
     state.controlReads = {};
     state.apiAccess = {};
-    state.referenceSettings = {};
     state.firmwareSettingsMap = null;
     state.errors = [];
+    $("#control-status").textContent = "";
     for (const control of Model.CONTROLS) {
       setControl(control.key, "unknown", { mapped: false, reason: "A TV profile has not been selected yet." });
     }
     $("#privacy-preset").disabled = true;
+    $("#save-settings-button").disabled = true;
     $("#restore-button").disabled = true;
     const results = await Promise.allSettled([
       Api.getAgreements(),
       Api.getSystemInfo(),
-      Api.getNetworkStatus(),
       rootSnapshot()
     ]);
-    const [agreements, model, network, root] = results;
+    const [agreements, model, root] = results;
     state.root = root.status === "fulfilled" ? root.value : null;
     state.firmwareSettingsMap = firmwareSettingsMapFromSnapshot();
     const directAgreements = agreements.status === "fulfilled" ? agreementRecord(agreements.value) : null;
@@ -879,30 +581,6 @@
       observedSettings[control.key] = value;
     }
 
-    const referenceSettings = state.profile && state.profile.referenceSettings || [];
-    const referenceCandidates = referenceSettings.map((setting) => {
-      const firmwareEntry = firmwareMapEntry(setting.key);
-      if (firmwareEntry.available && !firmwareEntry.category) return null;
-      return firmwareEntry.category ? { ...setting, category: firmwareEntry.category } : setting;
-    }).filter(Boolean);
-    const referenceResults = await Promise.allSettled(referenceCandidates.map((setting) =>
-      Api.getSettings(setting.category, [setting.key])
-    ));
-    const rootReferenceSettings = snapshotReferenceSettings();
-    for (let index = 0; index < referenceCandidates.length; index += 1) {
-      const setting = referenceCandidates[index];
-      const result = referenceResults[index];
-      const directValue = result.status === "fulfilled"
-        ? Model.normalizeToggle(Model.pickValue(result.value, setting.key))
-        : "unknown";
-      state.referenceSettings[setting.key] = directValue === "unknown"
-        ? Model.normalizeToggle(rootReferenceSettings[setting.key])
-        : directValue;
-    }
-    for (const setting of referenceSettings) {
-      if (!referenceCandidates.some((candidate) => candidate.key === setting.key)) state.referenceSettings[setting.key] = "unknown";
-    }
-
     state.controlReads = {};
     for (const control of Model.CONTROLS) {
       state.controlReads[control.key] = deviceControlStatus(control.key).mapped
@@ -921,8 +599,6 @@
     if (candidates.some((control) => Model.normalizeToggle(state.settings[control.key]) === "unknown")) {
       state.errors.push("Some mapped privacy settings are unavailable");
     }
-    state.network = network.status === "fulfilled" ? network.value : null;
-    if (network.status === "rejected") state.errors.push(network.reason.message);
     if (root.status === "rejected") state.errors.push(root.reason.message);
 
     for (const control of Model.CONTROLS) {
@@ -930,24 +606,13 @@
     }
     paintAgreementState();
     paintOverview();
-    paintEvidence();
-    paintCompatibility();
-    $("#restore-button").disabled = !canRestoreSaved(savedControls());
-    $("#runtime-mode").textContent = state.errors.length ? "Some TV status unavailable" : "TV status updated";
+    updateRestorePointButtons();
+    const valuesUnavailable = state.errors.length > 0;
+    runtimeStatus.dataset.state = valuesUnavailable ? "unavailable" : "ready";
+    runtimeStatus.textContent = valuesUnavailable ? "Some values unavailable" : "";
+    runtimeStatus.hidden = !valuesUnavailable;
     $("#app-version").textContent = Compatibility.APP_VERSION;
     updateControlScrollCue();
-    if (!state.profile) {
-      $("#write-access-note span").textContent = "No settings were changed. No controls are available for this model and software version.";
-    } else if (state.errors.length) {
-      const rootDenied = root.status === "rejected" && /Denied method call ["']exec["']/.test(root.reason.message || "");
-      const controlsUnknown = Model.CONTROLS.some((control) => Model.normalizeToggle(state.settings[control.key]) === "unknown");
-      $("#write-access-note span").textContent = rootDenied
-        ? `The Homebrew Channel blocked local TV checks. Check its permissions and refresh. ${controlsUnknown ? "Unreadable settings remain locked." : "Privacy settings are available; local details are not."}`
-        : `Some TV information could not be read. Refresh to try again. ${controlsUnknown ? "Settings without a readable value remain locked." : "Readable settings are still available."}`;
-    } else {
-      const preset = privacyPresetForProfile();
-      $("#write-access-note span").textContent = `The preset includes ${preset.length} available settings. Other switches remain separate. The TV confirms each change.`;
-    }
   }
 
   function savedControls() {
@@ -964,16 +629,52 @@
     });
   }
 
-  function saveCurrentControls() {
-    if (!savedControls()) {
-      const snapshot = {};
-      for (const control of Model.CONTROLS) {
-        const value = Model.normalizeToggle(state.settings[control.key]);
-        if (value !== "unknown") snapshot[control.key] = value;
-      }
-      localStorage.setItem(SAVE_KEY, JSON.stringify({ savedAt: new Date().toISOString(), settings: snapshot }));
+  function currentControlsSnapshot() {
+    const snapshot = {};
+    if (!state.profile) return snapshot;
+    for (const control of Model.CONTROLS) {
+      if (!deviceControlStatus(control.key).mapped) continue;
+      const value = Model.normalizeToggle(state.settings[control.key]);
+      if (value !== "unknown") snapshot[control.key] = value;
     }
-    $("#restore-button").disabled = !canRestoreSaved(savedControls());
+    return snapshot;
+  }
+
+  function updateRestorePointButtons() {
+    const busy = pendingActions.size > 0 || pendingSettings.size > 0;
+    $("#save-settings-button").disabled = busy || Object.keys(currentControlsSnapshot()).length === 0;
+    $("#restore-button").disabled = busy || !canRestoreSaved(savedControls());
+  }
+
+  function saveRestorePointIfMissing() {
+    if (!savedControls()) {
+      const snapshot = currentControlsSnapshot();
+      if (Object.keys(snapshot).length) {
+        try {
+          localStorage.setItem(SAVE_KEY, JSON.stringify({ kind: "automatic", savedAt: new Date().toISOString(), settings: snapshot }));
+        } catch (_) {}
+      }
+    }
+    updateRestorePointButtons();
+  }
+
+  function saveCurrentSettings() {
+    if (pendingActions.size > 0 || pendingSettings.size > 0) return;
+    const snapshot = currentControlsSnapshot();
+    if (!Object.keys(snapshot).length) {
+      $("#control-status").textContent = "No readable settings are available to save.";
+      return;
+    }
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify({ kind: "manual", savedAt: new Date().toISOString(), settings: snapshot }));
+    } catch (_) {
+      $("#control-status").textContent = "Could not save settings on this TV.";
+      showToast("Could not save current settings on this TV.");
+      return;
+    }
+    updateRestorePointButtons();
+    $("#control-status").textContent = "Current readable settings saved on this TV.";
+    showToast("Current readable settings saved on this TV.");
   }
 
   async function applyOne(control, value) {
@@ -1055,8 +756,9 @@
     const switchLabel = event.target.closest(".switch");
     const hadFocus = hasFocusWithin(switchLabel);
     pendingSettings.add(key);
+    updateRestorePointButtons();
     switchLabel.setAttribute("aria-busy", "true");
-    saveCurrentControls();
+    saveRestorePointIfMissing();
     $("#control-status").textContent = `Turning ${control.label} ${next}…`;
     try {
       await applyOne(control, next);
@@ -1069,6 +771,7 @@
     } finally {
       pendingSettings.delete(key);
       switchLabel.removeAttribute("aria-busy");
+      updateRestorePointButtons();
       restoreFocusAfterPending(event.target, hadFocus, $("#footer-refresh"));
       paintOverview();
     }
@@ -1090,8 +793,9 @@
     const button = $("#privacy-preset");
     const hadFocus = hasFocusWithin(button);
     pendingActions.add("preset");
+    updateRestorePointButtons();
     button.setAttribute("aria-busy", "true");
-    saveCurrentControls();
+    saveRestorePointIfMissing();
     $("#control-status").textContent = "Applying recommended privacy settings…";
     const failures = [];
     try {
@@ -1103,6 +807,7 @@
     } finally {
       pendingActions.delete("preset");
       button.removeAttribute("aria-busy");
+      updateRestorePointButtons();
       restoreFocusAfterPending(button, hadFocus, $("#footer-refresh"));
     }
     paintOverview();
@@ -1162,6 +867,7 @@
     const button = $("#restore-button");
     const hadFocus = hasFocusWithin(button);
     pendingActions.add("restore");
+    updateRestorePointButtons();
     button.setAttribute("aria-busy", "true");
     $("#control-status").textContent = "Restoring saved settings…";
     const failures = [];
@@ -1175,14 +881,14 @@
         $("#control-status").textContent = `Could not restore ${failures.length} saved ${failures.length === 1 ? "setting" : "settings"}.`;
         showToast(`${failures[0].control.label}: ${changeFailureText(failures[0].error)}`);
       } else {
-        localStorage.removeItem(SAVE_KEY);
+        if (saved.kind !== "manual") localStorage.removeItem(SAVE_KEY);
         $("#control-status").textContent = "Saved settings restored.";
         showToast("Saved settings restored.");
       }
     } finally {
       pendingActions.delete("restore");
       button.removeAttribute("aria-busy");
-      button.disabled = !canRestoreSaved(savedControls());
+      updateRestorePointButtons();
       restoreFocusAfterPending(button, hadFocus, $("#privacy-preset").disabled ? $("#footer-refresh") : $("#privacy-preset"));
       paintOverview();
     }
@@ -1190,7 +896,6 @@
 
   function prepareCompatibilityReport() {
     const button = $("#prepare-compatibility-report");
-    const output = $("#compatibility-report-output");
     const status = $("#compatibility-report-status");
     const share = $("#compatibility-report-share");
     const qrImage = $("#compatibility-report-qr");
@@ -1198,9 +903,6 @@
     let qrReady = false;
     const report = Compatibility.createReport(state.model, state.profile, state.apiAccess, Model.CONTROLS);
     const serialized = JSON.stringify(report);
-    output.value = JSON.stringify(report, null, 2);
-    output.hidden = false;
-    output.tabIndex = 0;
     try {
       const issueUrl = new URL("https://github.com/snapetech-org/PrivacyShield/issues/new");
       issueUrl.searchParams.set("template", "compatibility-report.yml");
@@ -1221,22 +923,36 @@
       share.scrollIntoView({ block: "start" });
     }
     status.textContent = qrReady
-      ? "Scan once to open the prefilled GitHub form. The report is sent to GitHub in the link; Submit creates the public issue."
-      : "Report ready below. The QR code could not be generated; nothing was sent.";
+      ? "Scan once to open GitHub's prefilled form. The link includes the report; Submit creates the public issue."
+      : "Could not generate the QR code. Nothing was sent; try again.";
+  }
+
+  function renderSupportQr() {
+    const image = $("#support-qr");
+    try {
+      const qr = window.qrcode(0, "M");
+      qr.addData("https://ko-fi.com/snapetech", "Byte");
+      qr.make();
+      image.src = qr.createDataURL(6, 8);
+      image.hidden = false;
+    } catch (_) {
+      image.hidden = true;
+    }
   }
 
   function bindUI() {
     initializeThemeToggle();
+    renderSupportQr();
     $$(".tab").forEach((button) => button.addEventListener("click", () => setView(button.dataset.view, button)));
     $$("[data-go]").forEach((button) => button.addEventListener("click", () => setView(button.dataset.go, "first")));
     $$("[data-setting]").forEach((input) => input.addEventListener("change", toggleChanged));
-    $("#refresh-button").addEventListener("click", loadState);
     $("#footer-refresh").addEventListener("click", loadState);
     $("#privacy-preset").addEventListener("click", applyPreset);
+    $("#save-settings-button").addEventListener("click", saveCurrentSettings);
     $("#restore-button").addEventListener("click", restoreSettings);
     $("#agreement-manager-button").addEventListener("click", openAgreementManager);
     $("#prepare-compatibility-report").addEventListener("click", prepareCompatibilityReport);
-    $("#restore-button").disabled = !canRestoreSaved(savedControls());
+    updateRestorePointButtons();
     document.addEventListener("keydown", handleRemoteKey);
     $("#main-content").addEventListener("scroll", updateControlScrollCue, { passive: true });
     window.addEventListener("resize", updateControlScrollCue);

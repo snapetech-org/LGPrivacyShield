@@ -87,17 +87,7 @@ const serviceFixture = String.raw`(() => {
     hbbTvDnt: "off", hbbTvDeviceId: "on", thirdPartyCookie: "onByUser",
     hbbTV: "on", bleAdvertisingOnOff: "off", homeSenseAbsence: "on"
   };
-  const referenceSettings = {
-    sportsAlarm: "on", webOSPromotionVideo: "off", promotionStreamer: "on", allowMobileDeviceAccess: false,
-    watchedListCollection: "on", usageCare: true, dbgLogUpload: true, faultLogUpload: false
-  };
-  if (modelName === "OLED65G5WUA") {
-    Object.assign(referenceSettings, {
-      watchedListCollection: "off", usageCare: false, dbgLogUpload: false,
-      faultLogUpload: true, thirdPartyCookie: "offByUser"
-    });
-    settings.thirdPartyCookie = "offByUser";
-  }
+  if (modelName === "OLED65G5WUA") settings.thirdPartyCookie = "offByUser";
   if (unreadableSetting && Object.prototype.hasOwnProperty.call(settings, unreadableSetting)) {
     settings[unreadableSetting] = "enabled";
   }
@@ -115,7 +105,7 @@ const serviceFixture = String.raw`(() => {
     { id: "S_SVC", type: "M", title: "Terms of Use", accepted: true }
   ];
   const calls = [];
-  window.__privacyShieldFixture = { scenario, settings, referenceSettings, firmwareSettingsMap, calls, eulaList, errors: [], activeSettingsUri };
+  window.__privacyShieldFixture = { scenario, settings, firmwareSettingsMap, calls, eulaList, errors: [], activeSettingsUri };
   window.addEventListener("error", (event) => window.__privacyShieldFixture.errors.push(event.message));
   window.addEventListener("unhandledrejection", (event) => window.__privacyShieldFixture.errors.push(String(event.reason)));
   window.PalmSystem = {
@@ -142,7 +132,6 @@ const serviceFixture = String.raw`(() => {
         const values = {};
         for (const key of parameters.keys || []) {
           if (Object.prototype.hasOwnProperty.call(settings, key)) values[key] = settings[key];
-          if (Object.prototype.hasOwnProperty.call(referenceSettings, key)) values[key] = referenceSettings[key];
         }
         return { returnValue: true, settings: values };
       }
@@ -180,12 +169,9 @@ const serviceFixture = String.raw`(() => {
       const snapshotSettings = Object.fromEntries(Object.entries(settings).filter(([key]) =>
         !missingSettings.has(key) && (!firmwareSettingsMap || Object.prototype.hasOwnProperty.call(firmwareSettingsMap.settings, key))
       ));
-      const snapshotReferenceSettings = Object.fromEntries(Object.entries(referenceSettings).filter(([key]) =>
-        !missingSettings.has(key) && (!firmwareSettingsMap || Object.prototype.hasOwnProperty.call(firmwareSettingsMap.settings, key))
-      ));
       return {
         returnValue: true,
-        stdoutString: JSON.stringify({ settings: snapshotSettings, referenceSettings: snapshotReferenceSettings, firmwareSettingsMap, agreements: { eulaList }, voiceProcesses: ["voice-ui"], apps: [{ id: "com.example.video", title: "Example Video", version: "1.0" }], diagnostics: { services: [], autoUpload: false, faultLogUpload: false, debugLogUpload: false } })
+        stdoutString: JSON.stringify({ settings: snapshotSettings, firmwareSettingsMap, agreements: { eulaList } })
       };
     }
     return { returnValue: true };
@@ -435,7 +421,7 @@ async function captureDocumentationScreenshots(browser, outputDirectory) {
   // Use a synthetic matrix identity so documentation captures do not expose a
   // specific physical TV's model or firmware details.
   await browser.navigate("matrix-C5-p25");
-  await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').textContent")) === "TV status updated", "synthetic screenshot fixture");
+  await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').dataset.state")) === "ready", "synthetic screenshot fixture");
   await browser.evaluate("localStorage.clear(); document.querySelector('#main-content').scrollTop = 0");
   await wait(120);
 
@@ -454,8 +440,10 @@ async function captureDocumentationScreenshots(browser, outputDirectory) {
 
   await selectView("controls");
   await capture("controls-top.png");
-  await browser.evaluate("document.querySelector('[data-setting=livePlus]').focus()");
-  for (let index = 1; index < 17; index += 1) await browser.press("ArrowDown");
+  const visibleControls = await browser.evaluate("document.querySelectorAll('.control-row:not([hidden])').length");
+  await browser.evaluate("document.querySelector('.control-row:not([hidden]) [data-setting]').focus()");
+  for (let index = 1; index < visibleControls; index += 1) await browser.press("ArrowDown");
+  await browser.evaluate("document.activeElement.blur(); document.querySelectorAll('.remote-focused').forEach((element) => element.classList.remove('remote-focused'))");
   await capture("controls-bottom.png");
 
   await selectView("agreements");
@@ -463,18 +451,6 @@ async function captureDocumentationScreenshots(browser, outputDirectory) {
   await browser.evaluate("(() => { const main = document.querySelector('#main-content'); main.scrollTop = main.scrollHeight; })()");
   await wait(120);
   await capture("agreements-bottom.png");
-
-  await selectView("evidence");
-  await capture("tv-details-status.png");
-  await browser.evaluate(`(() => {
-    const main = document.querySelector('#main-content');
-    const target = document.querySelector('.compatibility-panel');
-    const map = document.querySelector('#mapped-settings-details');
-    map.open = true;
-    main.scrollTop += target.getBoundingClientRect().top - main.getBoundingClientRect().top;
-  })()`);
-  await wait(120);
-  await capture("tv-details-compatibility.png");
 
   await selectView("about");
   await capture("about.png");
@@ -491,7 +467,7 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
     browser = await launchHeadless(origin, userDataDir);
 
     try {
-      await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').textContent")) === "TV status updated", "successful service readback");
+      await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').dataset.state")) === "ready", "successful service readback");
     } catch (error) {
       const diagnostics = await browser.evaluate(`(() => ({
         title: document.title,
@@ -520,7 +496,7 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       }))()`), { theme: "light", label: "Use dark theme", stored: "light" });
 
       await browser.navigate("success");
-      await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').textContent")) === "TV status updated", "theme preference reload");
+      await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').dataset.state")) === "ready", "theme preference reload");
       assert.equal(await browser.evaluate("document.documentElement.getAttribute('data-theme')"), "light");
       assert.equal(await browser.evaluate("document.querySelector('#theme-toggle').textContent"), "Use dark theme");
       await browser.press("ArrowUp");
@@ -532,109 +508,143 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
         stored: localStorage.getItem('privacyshield.theme.v1')
       }))()`), { theme: "dark", label: "Use light theme", stored: "dark" });
     });
-    await t.test("all sections, actions, and switches are labeled and reachable by remote", async () => {
+    await t.test("the four main pages contain useful content and work with the remote", async () => {
       const audit = await browser.evaluate(`(() => {
         const views = [...document.querySelectorAll('.view')];
-        const aboutGrid = document.querySelector('#view-about .about-grid');
-        const labels = {
+        return {
           tabs: [...document.querySelectorAll('.tab')].map((item) => item.innerText.trim()),
           viewIds: views.map((view) => view.id.replace('view-', '')),
-          buttons: [...document.querySelectorAll('button')].map((button) => (button.getAttribute('aria-label') || button.innerText).trim()),
-          switches: [...document.querySelectorAll('[data-setting]')].map((input) => (input.getAttribute('aria-label') || [...(input.labels || [])].map((label) => label.innerText).join(' ')).trim()),
-          links: [...document.querySelectorAll('a[href]')].map((link) => (link.getAttribute('aria-label') || link.innerText).trim()),
-          agreementCards: [...document.querySelectorAll('#agreement-list .agreement-row')].map((row) => ({
-            id: row.dataset.agreement,
-            title: row.querySelector('h2')?.innerText.trim(),
-            tag: row.querySelector('.required-tag, .optional-tag')?.innerText.trim(),
-            accepted: row.querySelector('.agreement-accepted')?.innerText.trim(),
-            declined: row.querySelector('.agreement-declined')?.innerText.trim(),
-            evidence: row.querySelector('.agreement-evidence')?.innerText.trim()
-          })),
-          summaries: [...document.querySelectorAll('summary')].map((summary) => summary.innerText.trim())
-        };
-        return {
-          ...labels,
           headings: views.map((view) => view.querySelector('h1')?.innerText.trim() || ''),
+          buttons: [...document.querySelectorAll('button')].map((button) => (button.getAttribute('aria-label') || button.innerText).trim()),
+          switches: [...document.querySelectorAll('[data-setting]')].map((input) => [...(input.labels || [])].map((label) => label.innerText).join(' ').trim()),
+          links: [...document.querySelectorAll('a[href]')].map((link) => link.innerText.trim()),
+          agreementIds: [...document.querySelectorAll('#agreement-list .agreement-row')].map((row) => row.dataset.agreement),
+          required: [...document.querySelectorAll('.agreement-row .required-tag')].map((tag) => tag.innerText.trim()),
           bodyCopy: views.map((view) => view.textContent).join(' '),
-          version: document.querySelector('#app-version').textContent,
-          licenseText: document.querySelector('#about-license-title').parentElement.innerText,
-          licenseHref: document.querySelector('#about-license-title').parentElement.querySelector('a')?.href,
-          githubHref: document.querySelector('#about-source-title').parentElement.querySelector('a')?.href,
-          kofiHref: [...document.querySelectorAll('#about-source-title ~ a, #about-source-title ~ p + a')].map((link) => link.href).join(' '),
-          aboutLayout: (() => { const view = document.querySelector("#view-about"); const hidden = view.hidden; const visible = view.classList.contains("is-visible"); view.hidden = false; view.classList.add("is-visible"); const panels = [...aboutGrid.children]; const columns = new Set(panels.map((panel) => Math.round(panel.getBoundingClientRect().left))).size; const mainRect = document.querySelector("main").getBoundingClientRect(); const gridRect = aboutGrid.getBoundingClientRect(); const fitsMain = gridRect.left >= mainRect.left - 1 && gridRect.right <= mainRect.right + 1; view.hidden = hidden; view.classList.toggle("is-visible", visible); return { columns, fitsMain }; })()
+          aboutLinks: [...document.querySelectorAll('#view-about a')].map((link) => [link.innerText.trim(), link.href]),
+          supportQr: {
+            visible: !document.querySelector('#support-qr').hidden,
+            dataUrl: document.querySelector('#support-qr').src.startsWith('data:image/'),
+            alt: document.querySelector('#support-qr').alt
+          },
+          runtimeStatusHidden: document.querySelector('#runtime-mode').hidden,
+          hasOverviewReadTimestamp: Boolean(document.querySelector('#last-updated')),
+          darkPalette: (() => {
+            const css = getComputedStyle(document.documentElement);
+            const names = ['--mineral', '--paper', '--list-frame-surface', '--icon-surface', '--current', '--good', '--focus'];
+            const rgb = (name) => css.getPropertyValue(name).trim().slice(1).match(/../g).map((part) => parseInt(part, 16) / 255);
+            const luminance = (name) => rgb(name).map((channel) => channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4)
+              .reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index], 0);
+            const contrast = (foreground, background) => {
+              const values = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
+              return (values[0] + 0.05) / (values[1] + 0.05);
+            };
+            return {
+              colors: names.map((name) => css.getPropertyValue(name).trim()),
+              textContrast: {
+                inkOnPanel: contrast('--ink', '--paper'),
+                mutedOnPanel: contrast('--muted', '--paper'),
+                accentOnPanel: contrast('--current', '--paper'),
+                focusOnPage: contrast('--focus', '--mineral')
+              }
+            };
+          })(),
+          shellInset: Number.parseFloat(getComputedStyle(document.querySelector('.shell')).paddingLeft),
+          summaryColumns: getComputedStyle(document.querySelector('.summary-grid')).gridTemplateColumns.split(' ').length,
+          evidenceRows: document.querySelectorAll('.agreement-evidence').length
         };
       })()`);
-      const sectionNames = ["overview", "controls", "agreements", "evidence", "about"];
-      assert.deepEqual(audit.tabs.map((name) => name.toLowerCase()), ["overview", "controls", "lg agreements", "tv details", "about"]);
-      assert.deepEqual(audit.viewIds, sectionNames);
-      assert.equal(audit.headings.length, sectionNames.length);
-      assert.ok(audit.headings.every(Boolean), "each section must have a visible page heading");
-      assert.ok(audit.buttons.every(Boolean), "every button must have a text or accessible name");
+      const sections = ["overview", "controls", "agreements", "about"];
+      assert.deepEqual(audit.tabs.map((name) => name.toLowerCase()), ["overview", "controls", "lg agreements", "about"]);
+      assert.deepEqual(audit.viewIds, sections);
+      assert.ok(audit.headings.every(Boolean));
+      assert.ok(audit.buttons.every(Boolean), "every button has a visible or accessible label");
+      assert.ok(audit.buttons.includes("Save current settings"));
+      assert.equal(audit.runtimeStatusHidden, true, "successful reads do not leave a redundant footer status visible");
+      assert.equal(audit.hasOverviewReadTimestamp, false, "Overview does not show a read timestamp");
       assert.equal(audit.switches.length, 17);
-      assert.ok(audit.switches.every(Boolean), "every privacy switch must have an accessible name");
-      assert.ok(audit.links.every(Boolean), "every link must have a text or accessible name");
-      assert.deepEqual(audit.agreementCards.map((item) => item.id), ["S_ADG", "S_VNG", "S_TAG", "S_MKT", "S_DPA", "S_PRG", "S_SVC"]);
-      assert.deepEqual(audit.agreementCards.filter((item) => item.tag === "Required for smart services").map((item) => item.id), ["S_PRG", "S_SVC"]);
-      assert.ok(audit.agreementCards.filter((item) => item.id.startsWith("S_") && !["S_PRG", "S_SVC"].includes(item.id)).every((item) => item.tag === "Optional"));
-      assert.match(audit.agreementCards.find((item) => item.id === "S_ADG").accepted, /Live Plus.*ACR/i);
-      assert.match(audit.agreementCards.find((item) => item.id === "S_TAG").accepted, /both.*Viewing Information/i);
-      assert.match(audit.agreementCards.find((item) => item.id === "S_DPA").accepted, /ad measurement and analytics/i);
-      assert.match(audit.agreementCards.find((item) => item.id === "S_MKT").declined, /does not identify message channels/i);
-      assert.match(audit.bodyCopy, /saved choice, not whether data was used or sent/i);
-      assert.ok(audit.summaries.every(Boolean), "every disclosure must have a label");
-      assert.doesNotMatch(audit.bodyCopy, /\b(?:idfk|todo|tbd|lorem ipsum|placeholder|app-side|maintainer test|developer app)\b/i);
-      assert.equal(audit.version, "0.4.0");
-      assert.match(audit.licenseText, /GNU Affero General Public License, version 3/);
-      assert.match(audit.licenseText, /No warranty is provided/);
-      assert.equal(audit.licenseHref, "https://www.gnu.org/licenses/agpl-3.0.html");
-      assert.equal(audit.githubHref, "https://github.com/snapetech-org/PrivacyShield");
-      assert.ok(audit.kofiHref.includes("https://ko-fi.com/snapetech"));
-      assert.equal(audit.aboutLayout.columns, 2, "the About view should use the two-column 1080p layout");
-      assert.equal(audit.aboutLayout.fitsMain, true, "the About content must fit the viewport without horizontal clipping");
+      assert.ok(audit.switches.every(Boolean), "every setting switch has a label");
+      assert.ok(audit.links.every(Boolean));
+      assert.deepEqual(audit.agreementIds, ["S_ADG", "S_VNG", "S_TAG", "S_MKT", "S_DPA", "S_PRG", "S_SVC"]);
+      assert.deepEqual(audit.required, ["Required for smart services", "Required for smart services"]);
+      assert.equal(audit.evidenceRows, 0, "agreement sources appear once at the end of the page");
+      assert.equal(audit.summaryColumns, 2, "Overview uses both columns for its two setting summaries");
+      assert.deepEqual(audit.aboutLinks.map(([label]) => label), ["GNU AGPL-3.0", "Source code", "ko-fi.com/snapetech"]);
+      assert.equal(audit.aboutLinks[0][1], "https://www.gnu.org/licenses/agpl-3.0.html");
+      assert.equal(audit.aboutLinks[1][1], "https://github.com/snapetech-org/PrivacyShield");
+      assert.equal(audit.aboutLinks[2][1], "https://ko-fi.com/snapetech");
+      assert.deepEqual(audit.supportQr, { visible: true, dataUrl: true, alt: "QR code for Ko-fi donations and support" });
+      assert.match(audit.bodyCopy, /Donations and support/);
+      assert.equal(new Set(audit.darkPalette.colors).size, audit.darkPalette.colors.length, "dark surfaces and accents use distinct colors");
+      assert.ok(audit.darkPalette.textContrast.inkOnPanel >= 7);
+      assert.ok(audit.darkPalette.textContrast.mutedOnPanel >= 4.5);
+      assert.ok(audit.darkPalette.textContrast.accentOnPanel >= 4.5);
+      assert.ok(audit.darkPalette.textContrast.focusOnPage >= 4.5);
+      assert.doesNotMatch(audit.bodyCopy, /TV details|installed apps|network destinations|diagnostic.upload|firmware catalog|lorem ipsum|todo|tbd/i);
+      assert.ok(audit.shellInset >= 100, "main content keeps a safe inset from the TV screen edge");
 
       await browser.evaluate("document.querySelector('.tab[data-view=overview]').focus()");
-      for (let index = 0; index < sectionNames.length; index += 1) {
-        const section = sectionNames[index];
+      for (let index = 0; index < sections.length; index += 1) {
+        const section = sections[index];
         await browser.press("Enter");
         const page = await browser.evaluate(`(() => ({
           view: document.querySelector('.view.is-visible').id,
           tab: document.querySelector('.tab.is-active').dataset.view,
           current: document.querySelector('.tab.is-active').getAttribute('aria-current'),
-          heading: document.querySelector('.view.is-visible h1')?.textContent.trim()
+          heading: document.querySelector('.view.is-visible h1')?.textContent.trim(),
+          mainLeft: (document.querySelector('${section === "overview" ? "#view-overview [data-go=controls]" : section === "controls" ? "#control-scroll-frame" : ".view.is-visible .section-intro"}')).getBoundingClientRect().left,
+          shellInset: Number.parseFloat(getComputedStyle(document.querySelector('.shell')).paddingLeft)
         }))()`);
         assert.equal(page.view, `view-${section}`);
         assert.equal(page.tab, section);
         assert.equal(page.current, "page");
         assert.ok(page.heading);
+        assert.ok(page.mainLeft >= page.shellInset - 1, `${section} content left ${page.mainLeft}px stays within the ${page.shellInset}px TV safe inset`);
         await browser.press("ArrowDown");
-        assert.equal(await browser.evaluate(`document.activeElement.closest('.view')?.id`), `view-${section}`, `${section} must accept remote focus`);
-        if (section === "about" && process.env.PRIVACYSHIELD_ABOUT_CAPTURE_PATH) {
-          await browser.screenshot(process.env.PRIVACYSHIELD_ABOUT_CAPTURE_PATH);
-        }
-        if (index < sectionNames.length - 1) {
+        assert.equal(await browser.evaluate("Boolean(document.activeElement.closest('.view'))"), true, `${section} accepts remote focus`);
+        if (index < sections.length - 1) {
           await browser.evaluate("document.querySelector('.tab.is-active').focus()");
           await browser.press("ArrowRight");
-          assert.equal(await browser.evaluate("document.querySelector('.view.is-visible').id"), `view-${sectionNames[index + 1]}`);
+          assert.equal(await browser.evaluate("document.querySelector('.view.is-visible').id"), `view-${sections[index + 1]}`);
         }
       }
       await browser.press("Back");
-      assert.equal(await browser.evaluate("document.querySelector('.view.is-visible').id"), "view-overview", "Back returns from a section to Overview");
+      assert.equal(await browser.evaluate("document.querySelector('.view.is-visible').id"), "view-overview");
       await browser.press("Back");
-      assert.equal(await browser.evaluate("window.__privacyShieldFixture.backCalled"), true, "Back on Overview exits through the webOS platform handler");
+      assert.equal(await browser.evaluate("window.__privacyShieldFixture.backCalled"), true);
 
-      for (const buttonId of ["refresh-button", "footer-refresh"]) {
-        const before = await browser.evaluate("window.__privacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings').length");
-        await browser.evaluate(`document.querySelector('#${buttonId}').focus()`);
-        await browser.press("Enter");
-        await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').textContent")) === "TV status updated", `${buttonId} refresh`);
-        const after = await browser.evaluate("window.__privacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings').length");
-        assert.ok(after > before, `${buttonId} must refresh TV values`);
-        assert.equal(await browser.evaluate("document.querySelector('.view.is-visible').id"), "view-overview", "refresh keeps the current section selected");
+      try {
+        await browser.command("Emulation.setDeviceMetricsOverride", { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false });
+        const compactOverview = await browser.evaluate(`(() => {
+          const button = document.querySelector('#view-overview [data-go=controls]').getBoundingClientRect();
+          return { inset: parseFloat(getComputedStyle(document.querySelector('.shell')).paddingLeft), left: button.left, right: button.right, width: innerWidth };
+        })()`);
+        assert.ok(compactOverview.left - 8 >= 48, "Overview button and focus outline stay inside the TV safe area at 1280 px");
+        await browser.evaluate("document.querySelector('.tab[data-view=controls]').click()");
+        const compactControls = await browser.evaluate(`(() => {
+          const inset = parseFloat(getComputedStyle(document.querySelector('.shell')).paddingLeft);
+          const width = innerWidth;
+          const elements = [...document.querySelectorAll('#control-scroll-frame, #control-toolbar button')];
+          return { inset, width, bounds: elements.map((element) => { const rect = element.getBoundingClientRect(); return [rect.left, rect.right]; }) };
+        })()`);
+        assert.ok(compactControls.bounds.every(([left, right]) => left >= compactControls.inset - 1 && right <= compactControls.width - compactControls.inset + 1), "Controls frame and buttons stay within the safe area at 1280 px");
+        await browser.evaluate("document.querySelector('.tab[data-view=overview]').click()");
+      } finally {
+        await browser.command("Emulation.setDeviceMetricsOverride", { width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false });
       }
+
+      const before = await browser.evaluate("window.__privacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings').length");
+      await browser.evaluate("document.querySelector('#footer-refresh').focus()");
+      await browser.press("Enter");
+      await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').dataset.state")) === "ready", "footer refresh");
+      const after = await browser.evaluate("window.__privacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings').length");
+      assert.ok(after > before, "Refresh reads current TV values");
+      assert.equal(await browser.evaluate("document.querySelector('.view.is-visible').id"), "view-overview");
+      assert.equal(await browser.evaluate("document.querySelectorAll('#refresh-button').length"), 0);
     });
     await t.test("privacy controls show list position and remote scrolling reaches the final setting", async () => {
       await browser.navigate("success");
-      await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').textContent")) === "TV status updated", "controls scroll fixture ready");
+      await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').dataset.state")) === "ready", "controls scroll fixture ready");
       await browser.evaluate("document.querySelector('.tab[data-view=controls]').focus()");
       await browser.press("Enter");
       const initial = await browser.evaluate(`(() => {
@@ -648,13 +658,13 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
           range: document.querySelector('#control-scroll-range').textContent,
           cue: document.querySelector('#control-scroll-cue').textContent,
           visibleCount,
-          total: document.querySelectorAll('#control-list .control-row').length,
+          total: document.querySelectorAll('#control-list .control-row:not([hidden])').length,
           progress: document.querySelector('.control-scroll-track').getAttribute('aria-valuenow'),
           sticky: getComputedStyle(frame).position,
           scrollTop: main.scrollTop
         };
       })()`);
-      assert.match(initial.range, /^Showing 1–\d+ of 17 controls$/);
+      assert.match(initial.range, new RegExp(`^Showing 1–\\d+ of ${initial.total} controls$`));
       assert.ok(initial.visibleCount >= 2 && initial.visibleCount < initial.total, "the framed list must show some controls and indicate the rest continue below");
       assert.match(initial.cue, /below.*Use Down on the remote/i);
       assert.equal(initial.progress, String(initial.visibleCount));
@@ -664,8 +674,8 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
         await browser.screenshot(process.env.PRIVACYSHIELD_CONTROLS_TOP_CAPTURE_PATH);
       }
 
-      const rowKeys = await browser.evaluate("[...document.querySelectorAll('#control-list .control-row')].map((row) => row.dataset.control)");
-      assert.equal(rowKeys.length, 17);
+      const rowKeys = await browser.evaluate("[...document.querySelectorAll('#control-list .control-row:not([hidden])')].map((row) => row.dataset.control)");
+      assert.equal(rowKeys.length, initial.total);
       assert.equal(rowKeys[0], "livePlus");
       assert.equal(rowKeys.at(-1), "homeSenseAbsence");
       await browser.evaluate("document.querySelector('[data-setting=livePlus]').focus()");
@@ -675,7 +685,7 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
           const active = document.activeElement;
           return active.closest('.control-row')?.dataset.control || null;
         })()`);
-        assert.equal(focusedRow, key, `Down should move to the ${key} control row, including unavailable settings`);
+        assert.equal(focusedRow, key, `Down should move to the ${key} available control row`);
       }
       const bottom = await browser.evaluate(`(() => {
         const main = document.querySelector('#main-content');
@@ -705,9 +715,9 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       assert.ok(bottom.scrollTop > 0, "remote focus should scroll the page");
       assert.equal(bottom.focused, "homeSenseAbsence");
       assert.equal(bottom.pageScrollTop, 0, "remote navigation must keep the app viewport fixed");
-      assert.match(bottom.range, /^Showing \d+–17 of 17 controls$/);
+      assert.match(bottom.range, new RegExp(`^Showing \\d+–${initial.total} of ${initial.total} controls$`));
       assert.match(bottom.cue, /above.*Use Up on the remote/i);
-      assert.equal(bottom.progress, "17");
+      assert.equal(bottom.progress, String(initial.total));
       assert.equal(bottom.lastRowVisible, true, `the final control row must fit below the sticky cue and inside the viewport: ${JSON.stringify(bottom)}`);
       assert.equal(bottom.switchVisible, true, `the final switch must remain below the sticky cue and inside the viewport: ${JSON.stringify(bottom)}`);
       if (process.env.PRIVACYSHIELD_CONTROLS_BOTTOM_CAPTURE_PATH) {
@@ -716,93 +726,39 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       await browser.evaluate("document.querySelector('.tab[data-view=overview]').click()");
       assert.equal(await browser.evaluate("document.querySelector('.view.is-visible').id"), "view-overview", "leave the fixture on Overview for the next UI test");
     });
-    await t.test("known settings navigate, change once, verify, and open the evidence disclosure", async () => {
+    await t.test("Overview identifies the TV and Controls only reads mapped settings", async () => {
       await browser.evaluate("document.querySelector('.tab[data-view=overview]').focus()");
       const ready = await browser.evaluate(`(() => ({
-        model: document.querySelector('#model-name').textContent,
-        states: [...document.querySelectorAll('[data-setting]')].map((input) => ({ key: input.dataset.setting, disabled: input.disabled, checked: input.checked, state: input.closest('.switch').querySelector('.switch-state').textContent })),
-        initialFocus: document.activeElement.dataset.view,
-        title: document.querySelector('#overview-title').textContent,
-        subtitle: document.querySelector('.brand-subtitle').textContent,
+        model: document.querySelector('#device-summary').textContent,
         webos: document.querySelector('#webos-version').textContent,
-        microphone: document.querySelector('#community-microphone').textContent,
-        microphoneSwitch: document.querySelector('#community-microphone-switch').textContent,
-        modelGuide: document.querySelector('#community-model-guide').innerText,
-        discovery: document.querySelector('#community-device-discovery').textContent,
-        mappedKeys: [...document.querySelectorAll('#mapped-settings-list li')].map((item) => item.innerText).join(' | '),
-        firmwareArchiveStatus: document.querySelector('#firmware-source-status').textContent,
-        firmwareKeyCount: Object.keys(window.__privacyShieldFixture.firmwareSettingsMap.settings).length,
+        title: document.querySelector('#overview-title').textContent,
+        viewing: document.querySelector('#summary-viewing').textContent,
+        voice: document.querySelector('#summary-voice').textContent,
+        states: [...document.querySelectorAll('[data-setting]')].map((input) => ({ key: input.dataset.setting, disabled: input.disabled, checked: input.checked, state: input.closest('.switch').querySelector('.switch-state').textContent, hidden: input.closest('.control-row').hidden, display: getComputedStyle(input.closest('.control-row')).display })),
         livePlusReadCategories: window.__privacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings' && (call.parameters.keys || []).includes('livePlus')).map((call) => call.parameters.category),
         hbbDntReads: window.__privacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings' && (call.parameters.keys || []).includes('hbbTvDnt')).length,
-        communitySamples: [...document.querySelectorAll('#community-samples li')].map((item) => item.innerText).join(' | '),
-        menuStatus: document.querySelector('#menu-reference-status').textContent,
-        livePlusPath: (() => {
-          const entry = [...document.querySelectorAll('#menu-reference-list li')].find((item) => item.innerText.includes('Live Plus'));
-          return entry ? entry.innerText : '';
-        })(),
-        visibleCopy: document.body.innerText,
+        requestedKeys: window.__privacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings' && call.parameters.category).flatMap((call) => call.parameters.keys || []),
+        networkRequests: window.__privacyShieldFixture.calls.filter((call) => /connectionmanager/.test(call.service || '') || call.method === 'getStatus').length,
+        bodyCopy: document.body.innerText,
         errors: window.__privacyShieldFixture.errors
       }))()`);
       assert.equal(ready.model, "OLED77C6HUP");
-      assert.equal(ready.initialFocus, "overview");
-      assert.equal(ready.title, "TV privacy settings");
-      assert.equal(ready.subtitle, "TV privacy settings and status");
-      assert.match(ready.webos, /webOS 26.*firmware 43\.21\.79/);
-      assert.match(ready.microphone, /C6H variant not covered/);
-      assert.match(ready.microphone, /state remains unknown/i);
-      assert.match(ready.microphoneSwitch, /no C6-specific report/i);
-      assert.match(ready.modelGuide, /LG C6 \(2026\) privacy guide/);
-      assert.match(ready.firmwareArchiveStatus, /matching firmware package \(43\.21\.79\.01\)/);
-      assert.match(ready.firmwareArchiveStatus, /privacy settings have not been read from the package/);
-      assert.match(ready.modelGuide, /excludes.*C6H/i);
-      assert.match(ready.discovery, /look for compatible devices.*no setting to stop this/i);
-      assert.match(ready.mappedKeys, /option\.livePlus.*PrivacyShield C6H device map/);
-      assert.match(ready.mappedKeys, /com\.webos\.service\.admanager\/updateDNS/);
-      assert.equal(ready.firmwareKeyCount, 24, "the exact C6 firmware index fixture contains 24 reviewed keys");
+      assert.equal(ready.title, "Overview");
+      assert.match(ready.webos, /webOS 26.*Firmware 43\.21\.79/);
+      assert.equal(ready.viewing, "On");
+      assert.match(ready.voice, /voice is on/i);
       assert.ok(ready.livePlusReadCategories.length > 0);
-      assert.ok(ready.livePlusReadCategories.every((category) => category === "option"), "reads must use the exact firmware-index category");
-      assert.equal(ready.hbbDntReads, 0, "an omitted firmware key must not be requested from SettingsService");
-      assert.match(ready.mappedKeys, /hbbTvDnt.*not listed in this TV's firmware map/i);
-      assert.doesNotMatch(ready.mappedKeys, /aiNudge|aiSettingsNudge/);
-      assert.match(ready.communitySamples, /OLED55C61LA/);
-      assert.match(ready.communitySamples, /43\.21\.79/);
-      assert.match(ready.menuStatus, /webOS 26 · 7 documented menu paths/);
-      assert.match(ready.livePlusPath, /System > Additional Settings > Live Plus/);
-      assert.doesNotMatch(ready.visibleCopy, /what the TV can show us|your TV\. your settings|root-only|process snapshot|developer app/i);
-      assert.deepEqual(ready.errors, [], "the browser fixture must load without JavaScript errors");
+      assert.ok(ready.livePlusReadCategories.every((category) => category === "option"));
+      assert.equal(ready.hbbDntReads, 0, "a setting missing from the firmware map is not requested");
+      assert.ok(ready.requestedKeys.every((key) => ["livePlus", "voiceLongDistance", "turnOnByVoice", "lmt", "doNotSellMyPersonalInformation", "screenSaverAd", "homePromotion", "livePromotion", "contentRecommendation", "hbbTvDeviceId", "thirdPartyCookie", "hbbTV", "bleAdvertisingOnOff", "homeSenseAbsence", "aiNudge", "aiSettingsNudge"].includes(key)));
+      assert.equal(ready.networkRequests, 0, "the app does not read network status");
+      assert.doesNotMatch(ready.bodyCopy, /voice services|installed apps|diagnostic.upload|network destinations|firmware archive/i);
+      assert.deepEqual(ready.errors, []);
       assert.deepEqual(ready.states.map((item) => item.disabled), [...Array(9).fill(false), true, true, true, ...Array(5).fill(false)]);
+      assert.deepEqual(ready.states.map((item) => item.hidden), [...Array(9).fill(false), true, true, true, ...Array(5).fill(false)]);
+      assert.ok(ready.states.filter((item) => item.hidden).every((item) => item.display === "none"), "unmapped control cards must not render");
       assert.deepEqual(ready.states.map((item) => item.state), ["On", "On", "On", "Off", "Off", "On", "On", "On", "On", "Not available", "Not available", "Not available", "On", "On", "On", "Off", "On"]);
-      assert.equal(await browser.evaluate("window.__privacyShieldFixture.calls.filter((call) => call.service === 'luna://com.webos.applicationManager' && call.method === 'launch').length"), 0, "the LG agreement screen must not open until selected");
-      const publicFindings = await browser.evaluate("[...document.querySelectorAll('#community-control-findings li')].map((item) => item.innerText).join(' | ')");
-      assert.match(publicFindings, /Glasshouse · Live Plus \/ ACR switch/);
-      assert.match(publicFindings, /Glasshouse dashboard · C2 Limit Ad Tracking key and readback/);
-      assert.match(publicFindings, /option\.livePlus/);
-      assert.match(publicFindings, /CleanYourTV · Ad and telemetry services/);
-      assert.match(publicFindings, /PrivacyShield does not apply or stop them/);
-      assert.match(publicFindings, /Glasshouse · Built-in microphone switch/);
-      assert.match(publicFindings, /own-your-glass · Physical and remote microphone paths/);
-      assert.match(publicFindings, /webOS Unclutter · Ad and telemetry network observations/);
-      assert.match(publicFindings, /KallistoX C1 capture · Network resolver behavior/);
-      assert.match(publicFindings, /LG TV Blocklist · DNS\/packet audit and blocking tiers/);
-      assert.match(publicFindings, /Life's Good Without Spying · Rooted privacy and voice controls/);
-      assert.match(publicFindings, /webos-debloat · Promotions, sports alerts, recommendations, and Live Plus/);
-      assert.match(publicFindings, /webOS Homebrew documentation · Local phone and remote control API/);
-      assert.match(publicFindings, /network\.allowMobileDeviceAccess/);
-      assert.match(publicFindings, /Looking Glass investigation · ACR configuration and local service state/);
-      assert.match(publicFindings, /does not show a packet capture or payload analysis/);
-      assert.match(publicFindings, /TV ACR Firmware Research · LG ACR service and startup path/);
-      assert.match(publicFindings, /does not show that ACR was active on a specific household TV/);
-      assert.match(publicFindings, /tv-home · C5 privacy, agreements, logs, and services/);
-      assert.match(publicFindings, /firmware-update hosts/);
-      const unassignedSamples = await browser.evaluate("[...document.querySelectorAll('#community-unassigned-samples li')].map((item) => item.innerText).join(' | ')");
-      assert.match(unassignedSamples, /Two models; codes not published · CleanYourTV/);
-      assert.match(unassignedSamples, /2026 LG OLED; model code not published/);
-      assert.match(unassignedSamples, /2021 LG webOS TV; exact model code not listed/);
-      assert.match(unassignedSamples, /LG webOS secured EPK; TV model not published/);
-      assert.match(unassignedSamples, /firmware analysis/);
-      assert.match(unassignedSamples, /intentionally unassigned/i);
-      assert.doesNotMatch(unassignedSamples, /49LF632V|OLED65C8PUA|OLED65CSPSA/, "known model codes outside B/C/G must not appear as unassigned samples");
-      assert.match(publicFindings, /IMC 2024 ACR study · ACR network behavior/);
+      assert.equal(await browser.evaluate("window.__privacyShieldFixture.calls.filter((call) => call.service === 'luna://com.webos.applicationManager' && call.method === 'launch').length"), 0);
 
       await browser.press("ArrowDown");
       assert.equal(await browser.evaluate("document.activeElement.closest('.view').id"), "view-overview");
@@ -833,14 +789,12 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       })()`);
       assert.deepEqual(absentSetting, { disabled: true, state: "Not available", value: "off" });
       const beforeAbsentWrite = await browser.evaluate("window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' && Object.prototype.hasOwnProperty.call(call.parameters.settings || {}, 'hbbTvDnt')).length");
-      await browser.evaluate("document.querySelector('[data-setting=hbbTvDnt]').closest('.switch').focus()");
-      await browser.press("Enter");
+      assert.equal(await browser.evaluate("document.querySelector('[data-setting=hbbTvDnt]').closest('.control-row').hidden"), true, "unmapped settings are omitted from Controls");
       const afterAbsentWrite = await browser.evaluate("window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' && Object.prototype.hasOwnProperty.call(call.parameters.settings || {}, 'hbbTvDnt')).length");
       assert.equal(afterAbsentWrite, beforeAbsentWrite, "an omitted firmware key must stay unwritable even when focused");
       await browser.evaluate("document.querySelector('#privacy-preset').focus()");
 
-      await browser.press("ArrowDown");
-      assert.equal(await browser.evaluate("document.activeElement.dataset.setting"), "livePlus");
+      await browser.evaluate("document.querySelector('[data-setting=livePlus]').focus()");
       await browser.press("Enter");
       await waitFor(async () => (await browser.evaluate("document.querySelector('[data-setting=livePlus]').closest('.switch').querySelector('.switch-state').textContent")) === "On", "verified Live Plus toggle");
       const write = await browser.evaluate(`(() => ({
@@ -891,29 +845,12 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       ];
       for (const [key, first, second] of successiveToggles) {
         await browser.press("ArrowDown");
-        if (key === "hbbTvDeviceId") {
-          const omittedKey = await browser.evaluate(`(() => {
-            const active = document.activeElement;
-            const input = active.matches('[data-setting]') ? active : active.querySelector('[data-setting]');
-            return input && { key: input.dataset.setting, disabled: input.disabled, state: input.closest('.switch').querySelector('.switch-state').textContent };
-          })()`);
-          assert.deepEqual(omittedKey, { key: "hbbTvDnt", disabled: true, state: "Not available" }, "the C6 firmware omission remains reachable and read-only");
-          await browser.press("ArrowDown");
-        }
         assert.equal(await browser.evaluate("document.activeElement.dataset.setting"), key);
         await toggleAgain(key, first);
         await toggleAgain(key, second);
         if (key === "contentRecommendation") {
-          for (const unmappedKey of ["aiNudge", "aiSettingsNudge"]) {
-            await browser.press("ArrowDown");
-            const focused = await browser.evaluate(`(() => {
-              const input = document.activeElement.matches('[data-setting]')
-                ? document.activeElement
-                : document.activeElement.querySelector('[data-setting]');
-              return input && { key: input.dataset.setting, disabled: input.disabled, ariaDisabled: input.closest('.switch').getAttribute('aria-disabled') };
-            })()`);
-            assert.deepEqual(focused, { key: unmappedKey, disabled: true, ariaDisabled: "true" }, `${unmappedKey} must be reachable but remain unmapped on this C6H profile`);
-          }
+          const omittedRows = await browser.evaluate("['aiNudge', 'aiSettingsNudge'].map((key) => document.querySelector(`[data-setting=${key}]`).closest('.control-row').hidden)");
+          assert.deepEqual(omittedRows, [true, true], "settings not mapped for this C6H profile are omitted");
         }
       }
       assert.deepEqual(
@@ -940,6 +877,29 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       await waitFor(async () => (await browser.evaluate("document.querySelector('#control-status').textContent")) === "Saved settings restored.", "restore saved values");
       assert.deepEqual(await browser.evaluate("window.__privacyShieldFixture.settings"), savedBaseline, "restore must return readable controls to their saved values");
       assert.equal(await browser.evaluate("document.querySelector('#restore-button').disabled"), true, "a successful restore clears the restore point");
+      assert.equal(await browser.evaluate("document.querySelector('#save-settings-button').disabled"), false, "current readable settings can be saved before any change");
+      await browser.evaluate("document.querySelector('#privacy-preset').focus()");
+      await browser.press("ArrowRight");
+      assert.equal(await browser.evaluate("document.activeElement.id"), "save-settings-button", "the save action is reachable with the remote");
+      await browser.press("Enter");
+      await waitFor(async () => (await browser.evaluate("document.querySelector('#control-status').textContent")) === "Current readable settings saved on this TV.", "save current settings");
+      const manuallySaved = await browser.evaluate("JSON.parse(localStorage.getItem('privacyshield.saved-controls.v1'))");
+      const mappedBaseline = {
+        livePlus: "on", voiceLongDistance: "on", turnOnByVoice: "on", lmt: "off",
+        doNotSellMyPersonalInformation: "off", screenSaverAd: "on", homePromotion: "on",
+        livePromotion: "on", contentRecommendation: "on", hbbTvDeviceId: "on", thirdPartyCookie: "on",
+        hbbTV: "on", bleAdvertisingOnOff: "off", homeSenseAbsence: "on"
+      };
+      assert.equal(manuallySaved.kind, "manual");
+      assert.deepEqual(manuallySaved.settings, mappedBaseline, "manual save stores the current readable mapped settings locally");
+      await browser.evaluate("document.querySelector('[data-setting=livePlus]').focus()");
+      await browser.press("Enter");
+      await waitFor(async () => (await browser.evaluate("window.PrivacyShieldModel.normalizeToggle(window.__privacyShieldFixture.settings.livePlus)")) === "off", "change after manual save");
+      await browser.evaluate("document.querySelector('#restore-button').focus()");
+      await browser.press("Enter");
+      await waitFor(async () => (await browser.evaluate("document.querySelector('#control-status').textContent")) === "Saved settings restored.", "restore manually saved settings");
+      assert.deepEqual(await browser.evaluate("window.__privacyShieldFixture.settings"), savedBaseline, "manual save can be restored after another change");
+      assert.equal(await browser.evaluate("document.querySelector('#restore-button').disabled"), false, "a manual restore point remains available after restoring");
       await browser.evaluate("document.querySelector('.tab[data-view=controls]').focus()");
       await browser.press("ArrowRight");
       assert.equal(await browser.evaluate("document.querySelector('.view.is-visible').id"), "view-agreements");
@@ -968,66 +928,6 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
         code: "TV record S_DIA"
       });
       assert.equal(await browser.evaluate("window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' && /eula/i.test(JSON.stringify(call.parameters))).length"), 0, "PrivacyShield must leave agreement writes to LG's consent screen");
-      for (let step = 0; step < 8 && await browser.evaluate("document.querySelector('.view.is-visible').id !== 'view-evidence'"); step += 1) {
-        await browser.press("ArrowRight");
-      }
-      assert.equal(await browser.evaluate("document.querySelector('.view.is-visible').id"), "view-evidence");
-      let reportButtonFocused = false;
-      for (let step = 0; step < 40 && !reportButtonFocused; step += 1) {
-        await browser.press("ArrowDown");
-        reportButtonFocused = await browser.evaluate("document.activeElement.id === 'prepare-compatibility-report'");
-      }
-      assert.equal(reportButtonFocused, true, "the report button must be reachable with the remote from the top of TV details");
-      assert.match(await browser.evaluate("document.querySelector('#compatibility-summary').textContent"), /15 settings are documented for this model and software.*3 changes were previously confirmed through PrivacyShield/i);
-      await browser.evaluate(`(() => {
-        window.__privacyShieldFixture.clipboardAccesses = 0;
-        window.__privacyShieldFixture.qrPayloads = [];
-        Object.defineProperty(navigator, "clipboard", { configurable: true, get() {
-          window.__privacyShieldFixture.clipboardAccesses += 1;
-          throw new Error("TV clipboard is unavailable");
-        } });
-        const createQr = window.qrcode;
-        window.qrcode = (...args) => {
-          const qr = createQr(...args);
-          const addData = qr.addData.bind(qr);
-          qr.addData = (data, ...options) => {
-            window.__privacyShieldFixture.qrPayloads.push(data);
-            return addData(data, ...options);
-          };
-          return qr;
-        };
-      })()`);
-      await browser.press("Enter");
-      await waitFor(async () => (await browser.evaluate("document.querySelector('#compatibility-report-output').hidden")) === false, "local compatibility report output");
-      const report = await browser.evaluate(`(() => ({
-        status: document.querySelector('#compatibility-report-status').textContent,
-        json: document.querySelector('#compatibility-report-output').value,
-        clipboardAccesses: window.__privacyShieldFixture.clipboardAccesses,
-        qrPayloads: window.__privacyShieldFixture.qrPayloads
-      }))()`);
-      assert.equal(report.status, "Scan once to open the prefilled GitHub form. The report is sent to GitHub in the link; Submit creates the public issue.");
-      assert.equal(report.clipboardAccesses, 0, "report generation must not use a TV clipboard");
-      const reportJson = JSON.parse(report.json);
-      assert.equal(reportJson.compatibility.profileId, "lg-oled77c6hup-webos26-43.21.79");
-      assert.deepEqual(Object.keys(reportJson.controlReads).length, 17);
-      assert.doesNotMatch(report.json, /eulaList|serialNumber|macAddress|ssid|192\.168\.|"livePlus":\s*"on"/i);
-      assert.equal(report.qrPayloads.length, 1, "the report flow must use one QR code");
-      const reportUrl = new URL(report.qrPayloads[0]);
-      assert.equal(reportUrl.origin, "https://github.com");
-      assert.equal(reportUrl.pathname, "/snapetech-org/PrivacyShield/issues/new");
-      assert.equal(reportUrl.searchParams.get("template"), "compatibility-report.yml");
-      assert.equal(reportUrl.searchParams.get("title"), `[Compatibility] ${reportJson.device.model}`);
-      assert.deepEqual(JSON.parse(reportUrl.searchParams.get("report")), reportJson);
-      const reportCapture = process.env.PRIVACYSHIELD_REPORT_CAPTURE_PATH;
-      if (reportCapture) await browser.screenshot(reportCapture);
-      await browser.press("ArrowDown");
-      assert.equal(await browser.evaluate("document.activeElement.id"), "compatibility-report-output");
-      await browser.press("ArrowDown");
-      assert.equal(await browser.evaluate("document.activeElement.tagName"), "SUMMARY");
-      await browser.press("Enter");
-      assert.equal(await browser.evaluate("document.querySelector('.evidence-method').open"), true);
-      await browser.press("Escape");
-      assert.equal(await browser.evaluate("document.querySelector('.view.is-visible').id"), "view-overview");
 
     });
 
@@ -1057,9 +957,9 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       for (const scenario of scenarios) {
         await browser.evaluate("localStorage.clear()");
         await browser.navigate(scenario);
-        await waitFor(async () => /TV status updated|Some TV status unavailable/.test(await browser.evaluate("document.querySelector('#runtime-mode').textContent")), `${scenario} settings`);
+        await waitFor(async () => ["ready", "unavailable"].includes(await browser.evaluate("document.querySelector('#runtime-mode').dataset.state")), `${scenario} settings`);
         const profile = await browser.evaluate(`(() => ({
-          status: document.querySelector('#compatibility-status').textContent,
+          status: document.querySelector('#runtime-mode').dataset.state,
           keys: [...document.querySelectorAll('[data-setting]:not(:disabled)')].map((input) => input.dataset.setting),
           writers: window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' || call.method === 'updateDNS' || (call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || ''))).length,
           errors: window.__privacyShieldFixture.errors
@@ -1110,7 +1010,7 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
           const scenario = `${scenarioPrefix}-${key}`;
           await browser.evaluate("localStorage.clear()");
           await browser.navigate(scenario);
-          await waitFor(async () => (await browser.evaluate("document.querySelector('#compatibility-status').textContent")) === "C6H settings", `${scenario} exact profile`);
+          await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').textContent")) === "Some values unavailable", `${scenario} exact profile`);
           const result = await browser.evaluate(`(() => ({
             locked: [...document.querySelectorAll('[data-setting]')].filter((input) => input.disabled).map((input) => input.dataset.setting),
             missingState: document.querySelector('[data-setting="${key}"]').closest('.switch').querySelector('.switch-state').textContent,
@@ -1140,7 +1040,7 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
 
     await browser.evaluate("localStorage.clear()");
     await browser.navigate("slow-write");
-    await waitFor(async () => (await browser.evaluate("document.querySelector('#compatibility-status').textContent")) === "C6H settings", "delayed write profile");
+    await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').dataset.state")) === "ready", "delayed write profile");
     await t.test("rapid repeated remote presses during a delayed write produce one verified transition", async () => {
       await browser.press("ArrowRight");
       await browser.press("ArrowDown");
@@ -1170,20 +1070,16 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
 
     await browser.evaluate("localStorage.clear()");
     await browser.navigate("root-fallback");
-    await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').textContent")) === "TV status updated", "root snapshot fallback");
+    await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').dataset.state")) === "ready", "root snapshot fallback");
     await t.test("the Homebrew bridge supplies settings and performs verified writes when direct reads are denied", async () => {
       const fallback = await browser.evaluate(`(() => ({
         settings: [...document.querySelectorAll('[data-setting]')].map((input) => ({ key: input.dataset.setting, disabled: input.disabled, value: input.closest('.switch').querySelector('.switch-state').textContent })),
         consent: document.querySelector('[data-agreement="S_ADG"] .status-pill').textContent,
-        processEvidence: document.querySelector('#evidence-processes').textContent,
-        appEvidence: document.querySelector('#evidence-apps').textContent,
         directFailures: window.__privacyShieldFixture.calls.filter((call) => call.service === 'luna://com.webos.settingsservice' && call.method === 'getSystemSettings').length
       }))()`);
       assert.deepEqual(fallback.settings.map((item) => item.value), ["On", "On", "On", "Off", "Off", "On", "On", "On", "On", "Not available", "Not available", "Off", "On", "On", "On", "Off", "On"]);
       assert.deepEqual(fallback.settings.map((item) => item.disabled), [...Array(9).fill(false), true, true, ...Array(6).fill(false)]);
       assert.equal(fallback.consent, "Accepted");
-      assert.match(fallback.processEvidence, /voice-ui/);
-      assert.match(fallback.appEvidence, /1 Homebrew app/);
       assert.ok(fallback.directFailures >= 3, "the private service fallback must actually be exercised");
 
       await browser.press("ArrowRight");
@@ -1208,17 +1104,17 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
 
     await browser.evaluate("localStorage.clear()");
     await browser.navigate("b5-root-fallback");
-    await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').textContent")) === "TV status updated", "B5 owner-map root fallback");
-    await t.test("the exact B5 map keeps its HbbTV switch usable through the root bridge", async () => {
+    await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').dataset.state")) === "ready", "B5 owner-map root fallback");
+    await t.test("the exact B5 map keeps its HbbTV switch usable without extra preference reads", async () => {
       const initial = await browser.evaluate(`(() => ({
-        model: document.querySelector('#model-name').textContent,
+        model: document.querySelector('#device-summary').textContent,
         toggleDisabled: document.querySelector('[data-setting=hbbTV]').disabled,
-        mobileAccess: [...document.querySelectorAll('#research-only-setting-list li')].map((item) => item.innerText).join(' | '),
+        requestedKeys: window.__privacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings' && call.parameters.category).flatMap((call) => call.parameters.keys || []),
         rootAvailable: window.__privacyShieldFixture.calls.some((call) => call.service === 'luna://org.webosbrew.hbchannel.service' && call.method === 'exec')
       }))()`);
       assert.equal(initial.model, "OLED55B56LA");
       assert.equal(initial.toggleDisabled, false);
-      assert.match(initial.mobileAccess, /network\.allowMobileDeviceAccess.*Current value: Off/);
+      assert.equal(initial.requestedKeys.includes("allowMobileDeviceAccess"), false, "the app does not read unrelated preference keys");
       assert.equal(initial.rootAvailable, true);
       await browser.evaluate("document.querySelector('[data-setting=hbbTV]').click()");
       await waitFor(async () => (await browser.evaluate("document.querySelector('[data-setting=hbbTV]').closest('.switch').querySelector('.switch-state').textContent")) === "Off", "B5 root writer readback");
@@ -1236,15 +1132,14 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
 
     await browser.evaluate("localStorage.clear()");
     await browser.navigate("g5-root-fallback");
-    await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').textContent")) === "TV status updated", "G5 root snapshot and writer fallback");
-    await t.test("the exact G5 candidate map reads status through the bridge and keeps unsupported options read-only", async () => {
+    await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').dataset.state")) === "ready", "G5 root snapshot and writer fallback");
+    await t.test("the exact G5 candidate map reads supported settings through the bridge", async () => {
       const initial = await browser.evaluate(`(() => ({
-        model: document.querySelector('#model-name').textContent,
+        model: document.querySelector('#device-summary').textContent,
         aiNudgeDisabled: document.querySelector('[data-setting=aiNudge]').disabled,
         screenSaverAdDisabled: document.querySelector('[data-setting=screenSaverAd]').disabled,
         homePromotionDisabled: document.querySelector('[data-setting=homePromotion]').disabled,
-        readOnly: [...document.querySelectorAll('#research-only-setting-list li')].map((item) => item.innerText).join(' | '),
-        reference: window.__privacyShieldFixture.referenceSettings,
+        requestedKeys: window.__privacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings' && call.parameters.category).flatMap((call) => call.parameters.keys || []),
         rootCalls: window.__privacyShieldFixture.calls.filter((call) => call.service === 'luna://org.webosbrew.hbchannel.service' && call.method === 'exec').length,
         errors: window.__privacyShieldFixture.errors
       }))()`);
@@ -1252,12 +1147,8 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       assert.equal(initial.aiNudgeDisabled, false);
       assert.equal(initial.screenSaverAdDisabled, false);
       assert.equal(initial.homePromotionDisabled, false);
-      assert.match(initial.readOnly, /option.watchedListCollection.*Current value: Off/);
-      assert.match(initial.readOnly, /option.usageCare.*Current value: Off/);
-      assert.match(initial.readOnly, /option.dbgLogUpload.*Current value: Off/);
-      assert.match(initial.readOnly, /option.faultLogUpload.*Current value: On/);
-      assert.match(initial.readOnly, /option.thirdPartyCookie.*Current value: Off/);
       assert.ok(initial.rootCalls > 0);
+      assert.ok(initial.requestedKeys.every((key) => ["livePlus", "voiceLongDistance", "turnOnByVoice", "lmt", "doNotSellMyPersonalInformation", "screenSaverAd", "homePromotion", "livePromotion", "contentRecommendation", "hbbTvDnt", "hbbTvDeviceId", "thirdPartyCookie", "hbbTV", "bleAdvertisingOnOff", "homeSenseAbsence", "aiNudge", "aiSettingsNudge"].includes(key)));
       assert.deepEqual(initial.errors, []);
 
       await browser.evaluate("document.querySelector('[data-setting=aiNudge]').click()");
@@ -1274,23 +1165,24 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
 
     await browser.evaluate("localStorage.clear()");
     await browser.navigate("c5-exact-map");
-    await waitFor(async () => (await browser.evaluate("document.querySelector('#model-name').textContent")) === "OLED77C51LA", "exact C5 read-only map");
-    await t.test("the exact C5 root map shows option status without adding switches", async () => {
+    await waitFor(async () => (await browser.evaluate("document.querySelector('#device-summary').textContent")) === "OLED77C51LA", "exact C5 control map");
+    await t.test("the exact C5 map reads only mapped control keys", async () => {
       const status = await browser.evaluate(`(() => ({
-        model: document.querySelector('#model-name').textContent,
-        readOnly: [...document.querySelectorAll('#research-only-setting-list li')].map((item) => item.innerText).join(' | '),
-        switches: [...document.querySelectorAll('[data-setting]')].map((input) => input.dataset.setting),
-        summary: document.querySelector('#compatibility-summary').textContent,
+        model: document.querySelector('#device-summary').textContent,
+        visibleKeys: [...document.querySelectorAll('.control-row:not([hidden]) [data-setting]')].map((input) => input.dataset.setting),
+        reportPromptHidden: document.querySelector('#compatibility-report-prompt').hidden,
+        reportPromptDisplay: getComputedStyle(document.querySelector('#compatibility-report-prompt')).display,
+        requestedKeys: window.__privacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings' && call.parameters.category).flatMap((call) => call.parameters.keys || []),
         writerCalls: window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' || call.method === 'updateDNS' || (call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || ""))).length,
         errors: window.__privacyShieldFixture.errors
       }))()`);
       assert.equal(status.model, "OLED77C51LA");
-      assert.match(status.readOnly, /option.usageCare.*webos_lockout OLED77C51LA root report/);
-      assert.match(status.readOnly, /option.dbgLogUpload.*webos_lockout OLED77C51LA root report/);
-      assert.match(status.readOnly, /option.faultLogUpload.*webos_lockout OLED77C51LA root report/);
-      assert.match(status.readOnly, /option.watchedListCollection.*Glasshouse C5 firmware map/);
-      assert.match(status.summary, /firmware number is not published/);
-      assert.equal(status.switches.some((key) => ["usageCare", "dbgLogUpload", "faultLogUpload", "watchedListCollection"].includes(key)), false);
+      assert.ok(status.visibleKeys.length > 0);
+      assert.equal(status.reportPromptHidden, true);
+      assert.equal(status.reportPromptDisplay, "none", "the compatibility prompt stays out of view when all mapped controls are readable");
+      assert.deepEqual(status.visibleKeys.sort(), [...new Set(status.requestedKeys)].sort());
+      assert.ok(status.requestedKeys.every((key) => ["livePlus", "voiceLongDistance", "turnOnByVoice", "lmt", "doNotSellMyPersonalInformation", "screenSaverAd", "homePromotion", "livePromotion", "contentRecommendation", "hbbTvDnt", "hbbTvDeviceId", "thirdPartyCookie", "hbbTV", "bleAdvertisingOnOff", "homeSenseAbsence", "aiNudge", "aiSettingsNudge"].includes(key)));
+      assert.ok(!status.requestedKeys.some((key) => ["usageCare", "dbgLogUpload", "faultLogUpload", "watchedListCollection"].includes(key)));
       assert.equal(status.writerCalls, 0);
       assert.deepEqual(status.errors, []);
     });
@@ -1301,7 +1193,7 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
     ]) {
       await browser.evaluate("localStorage.clear()");
       await browser.navigate(scenario);
-      await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').textContent")) === "TV status updated", `${scenario} readable settings`);
+      await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').dataset.state")) === "ready", `${scenario} readable settings`);
       await t.test(`${scenario} leaves the switch unchanged and does not claim success`, async () => {
         await browser.press("ArrowRight");
         await browser.press("ArrowDown");
@@ -1336,25 +1228,26 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
     await browser.evaluate("localStorage.clear()");
     await browser.evaluate(`localStorage.setItem("privacyshield.saved-controls.v1", JSON.stringify({ settings: { livePlus: "off" } }))`);
     await browser.navigate("denied");
-    await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').textContent")) === "Some TV status unavailable", "denied service state");
-    await t.test("denied settings stay locked but remain navigable and explain why", async () => {
+    await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').textContent")) === "Some values unavailable", "denied service state");
+    await t.test("denied settings remain read-only and explain why", async () => {
       const before = await browser.evaluate(`(() => ({
-        values: [...document.querySelectorAll('[data-setting]')].map((input) => ({ disabled: input.disabled, state: input.closest('.switch').querySelector('.switch-state').textContent, tabIndex: input.closest('.switch').tabIndex, ariaDisabled: input.closest('.switch').getAttribute('aria-disabled'), detail: document.querySelector('#' + input.dataset.setting + '-meta').textContent })),
-        note: document.querySelector('#write-access-note span').textContent,
+        values: [...document.querySelectorAll('[data-setting]')].filter((input) => !input.closest('.control-row').hidden).map((input) => ({ key: input.dataset.setting, disabled: input.disabled, state: input.closest('.switch').querySelector('.switch-state').textContent, tabIndex: input.closest('.switch').tabIndex, ariaDisabled: input.closest('.switch').getAttribute('aria-disabled'), detail: document.querySelector('#' + input.dataset.setting + '-meta').textContent })),
         restoreDisabled: document.querySelector('#restore-button').disabled,
         placeholders: document.body.innerText.match(/idfk|not available|unavailable|unknown/ig) || []
       }))()`);
-      assert.deepEqual(before.values.map((item) => item.disabled), Array(17).fill(true));
-      assert.deepEqual(before.values.map((item) => item.state), [...Array(9).fill("Unavailable"), "Not available", "Not available", ...Array(6).fill("Unavailable")]);
-      assert.deepEqual(before.values.map((item) => item.tabIndex), Array(17).fill(0));
-      assert.deepEqual(before.values.map((item) => item.ariaDisabled), Array(17).fill("true"));
+      assert.ok(before.values.length > 0);
+      assert.ok(before.values.every((item) => item.disabled && item.state === "Unavailable" && item.tabIndex === 0 && item.ariaDisabled === "true"));
+      assert.ok(before.values.some((item) => item.key === "livePlus"));
       assert.ok(before.values.every((item) => /could not be read|unavailable|locked|not mapped|read-only|no published settings map|no setting is available/i.test(item.detail)));
-      assert.match(before.note, /Homebrew Channel blocked local TV checks/i);
+      assert.equal(await browser.evaluate("document.querySelector('#runtime-mode').textContent"), "Some values unavailable");
+      assert.equal(await browser.evaluate("document.querySelector('#runtime-mode').hidden"), false, "read errors remain visible in the footer");
       assert.equal(before.restoreDisabled, true, "restore must remain disabled when current values cannot be read");
       assert.ok(!before.placeholders.some((text) => /idfk|unknown/i.test(text)), `unexpected vague status text: ${before.placeholders.join(", ")}`);
 
       await browser.press("ArrowRight");
       assert.equal(await browser.evaluate("document.querySelector('.view.is-visible').id"), "view-controls");
+      await browser.press("ArrowDown");
+      assert.equal(await browser.evaluate("document.activeElement.id"), "prepare-compatibility-report");
       await browser.press("ArrowDown");
       assert.equal(await browser.evaluate("document.activeElement.classList.contains('switch')"), true);
       assert.equal(await browser.evaluate("document.activeElement.querySelector('[data-setting]').dataset.setting"), "livePlus");
@@ -1376,7 +1269,7 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       assert.equal(await browser.evaluate("document.activeElement.querySelector('[data-setting]').dataset.setting"), "voiceLongDistance");
       await browser.press("ArrowDown");
       assert.equal(await browser.evaluate("document.activeElement.querySelector('[data-setting]').dataset.setting"), "turnOnByVoice");
-      for (const key of ["lmt", "doNotSellMyPersonalInformation", "screenSaverAd", "homePromotion", "livePromotion", "contentRecommendation", "aiNudge", "aiSettingsNudge", "hbbTvDnt", "hbbTvDeviceId", "thirdPartyCookie", "hbbTV", "bleAdvertisingOnOff", "homeSenseAbsence"]) {
+      for (const key of before.values.map((item) => item.key).slice(3)) {
         await browser.press("ArrowDown");
         assert.equal(await browser.evaluate("document.activeElement.querySelector('[data-setting]').dataset.setting"), key);
       }
@@ -1386,54 +1279,63 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
     await browser.evaluate(`localStorage.setItem("privacyshield.saved-controls.v1", JSON.stringify({ settings: { livePlus: "on" } }))`);
     await browser.navigate("unmapped");
     try {
-      await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').textContent")) === "TV status updated", "unmapped device identity");
+      await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').dataset.state")) === "ready", "unmapped device identity");
     } catch (error) {
       const diagnostic = await browser.evaluate(`(() => ({
         runtime: document.querySelector('#runtime-mode').textContent,
-        profile: document.querySelector('#compatibility-status').textContent,
+        profile: document.querySelector('#runtime-mode').textContent,
         errors: window.__privacyShieldFixture.errors,
         calls: window.__privacyShieldFixture.calls.map(({ service, method, parameters }) => ({ service, method, keys: parameters.keys, category: parameters.category }))
       }))()`);
       throw new Error(`${error.message}; fixture=${JSON.stringify(diagnostic)}`);
     }
-    await t.test("unmapped models remain read-only and can produce a local sanitized report", async () => {
+    await t.test("unmapped TVs show no control filler and can prepare a single-QR report", async () => {
       const status = await browser.evaluate(`(() => ({
-        model: document.querySelector('#model-name').textContent,
-        profile: document.querySelector('#compatibility-status').textContent,
-        detail: document.querySelector('#compatibility-summary').textContent,
-        family: document.querySelector('#community-cohort').textContent,
-        menuStatus: document.querySelector('#menu-reference-status').textContent,
+        model: document.querySelector('#device-summary').textContent,
+        software: document.querySelector('#webos-version').textContent,
+        noControls: !document.querySelector('#no-supported-controls').hidden,
+        toolbarHidden: document.querySelector('#control-toolbar').hidden,
+        toolbarDisplay: getComputedStyle(document.querySelector('#control-toolbar')).display,
+        scrollFrameHidden: document.querySelector('#control-scroll-frame').hidden,
+        scrollFrameDisplay: getComputedStyle(document.querySelector('#control-scroll-frame')).display,
+        listFrameHidden: document.querySelector('#control-list-frame').hidden,
+        listFrameDisplay: getComputedStyle(document.querySelector('#control-list-frame')).display,
+        visibleRows: [...document.querySelectorAll('.control-row')].filter((row) => !row.hidden).length,
+        promptHidden: document.querySelector('#compatibility-report-prompt').hidden,
+        promptDisplay: getComputedStyle(document.querySelector('#compatibility-report-prompt')).display,
         errors: window.__privacyShieldFixture.errors,
         presetDisabled: document.querySelector('#privacy-preset').disabled,
         restoreDisabled: document.querySelector('#restore-button').disabled,
-        states: [...document.querySelectorAll('[data-setting]')].map((input) => ({ disabled: input.disabled, state: input.closest('.switch').querySelector('.switch-state').textContent, tabIndex: input.closest('.switch').tabIndex })),
+        states: [...document.querySelectorAll('[data-setting]')].map((input) => ({ disabled: input.disabled, state: input.closest('.switch').querySelector('.switch-state').textContent })),
         writerCalls: window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' || call.method === 'updateDNS' || (call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || ""))).length
       }))()`);
       assert.equal(status.model, "OLED65CSPSA");
-      assert.equal(status.profile, "Read-only");
-      assert.match(status.detail, /No controls are available/);
-      assert.match(status.family, /not listed in the B\/C\/G OLED references/);
-      assert.match(status.menuStatus, /webOS 25/);
-      assert.deepEqual(status.errors, [], "unmapped models must not break browser-side profile matching");
+      assert.match(status.software, /webOS 25/);
+      assert.equal(status.noControls, true);
+      assert.equal(status.toolbarHidden, true);
+      assert.equal(status.toolbarDisplay, "none");
+      assert.equal(status.scrollFrameHidden, true);
+      assert.equal(status.scrollFrameDisplay, "none");
+      assert.equal(status.listFrameHidden, true);
+      assert.equal(status.listFrameDisplay, "none");
+      assert.equal(status.visibleRows, 0);
+      assert.equal(status.promptHidden, false);
+      assert.notEqual(status.promptDisplay, "none", "the report action remains visible when no controls are mapped");
+      assert.deepEqual(status.errors, []);
       assert.equal(status.presetDisabled, true);
       assert.equal(status.restoreDisabled, true);
       assert.deepEqual(status.states.map((item) => item.disabled), Array(17).fill(true));
       assert.deepEqual(status.states.map((item) => item.state), Array(17).fill("Not available"));
-      assert.deepEqual(status.states.map((item) => item.tabIndex), Array(17).fill(0));
       assert.equal(status.writerCalls, 0);
 
-      await browser.press("ArrowRight");
-      await browser.press("ArrowRight");
-      await browser.press("ArrowRight");
-      assert.equal(await browser.evaluate("document.querySelector('.view.is-visible').id"), "view-evidence");
-      let reportButtonFocused = false;
-      for (let step = 0; step < 40 && !reportButtonFocused; step += 1) {
-        await browser.press("ArrowDown");
-        reportButtonFocused = await browser.evaluate("document.activeElement.id === 'prepare-compatibility-report'");
-      }
-      assert.equal(reportButtonFocused, true, "the report button must be reachable with the remote from the top of TV details");
+      await browser.evaluate("document.querySelector('.tab[data-view=controls]').click()");
       await browser.evaluate(`(() => {
+        window.__privacyShieldFixture.clipboardAccesses = 0;
         window.__privacyShieldFixture.qrPayloads = [];
+        Object.defineProperty(navigator, "clipboard", { configurable: true, get() {
+          window.__privacyShieldFixture.clipboardAccesses += 1;
+          throw new Error("No TV clipboard");
+        } });
         const createQr = window.qrcode;
         window.qrcode = (...args) => {
           const qr = createQr(...args);
@@ -1445,8 +1347,8 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
           return qr;
         };
       })()`);
-      await browser.press("Enter");
-      await waitFor(async () => (await browser.evaluate("document.querySelector('#compatibility-report-output').hidden")) === false, "unmapped compatibility report output");
+      await browser.evaluate("document.querySelector('#prepare-compatibility-report').click()");
+      await waitFor(async () => (await browser.evaluate("document.querySelector('#compatibility-report-qr').hidden")) === false, "unmapped compatibility report QR");
       const qr = await browser.evaluate(`(() => ({
         hidden: document.querySelector('#compatibility-report-qr').hidden,
         src: document.querySelector('#compatibility-report-qr').src,
@@ -1455,22 +1357,24 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
         shareVisible: !document.querySelector('#compatibility-report-share').hidden,
         reportBottom: document.querySelector('#compatibility-report-qr').getBoundingClientRect().bottom,
         footerTop: document.querySelector('.footer').getBoundingClientRect().top,
-        payloads: window.__privacyShieldFixture.qrPayloads
+        payloads: window.__privacyShieldFixture.qrPayloads,
+        clipboardAccesses: window.__privacyShieldFixture.clipboardAccesses
       }))()`);
       assert.equal(qr.hidden, false);
       assert.equal(qr.imageCount, 1);
       assert.equal(qr.shareVisible, true);
-      assert.ok(qr.reportBottom <= qr.footerTop, "the full report QR must remain above the fixed footer");
+      assert.ok(qr.reportBottom <= qr.footerTop, "the report QR must remain above the fixed footer");
+      assert.equal(qr.clipboardAccesses, 0, "the TV app does not use a clipboard");
       assert.match(qr.src, /^data:image\/gif;base64,/);
       assert.match(qr.alt, /prefilled GitHub compatibility report form/i);
-      assert.equal(qr.payloads.length, 1, "the report flow must use one QR code");
-      const generated = await browser.evaluate("document.querySelector('#compatibility-report-output').value");
+      assert.equal(qr.payloads.length, 1, "one QR opens the prefilled form and includes the report");
       const issueUrl = new URL(qr.payloads[0]);
       assert.equal(issueUrl.origin, "https://github.com");
       assert.equal(issueUrl.pathname, "/snapetech-org/PrivacyShield/issues/new");
       assert.equal(issueUrl.searchParams.get("template"), "compatibility-report.yml");
       assert.equal(issueUrl.searchParams.get("title"), "[Compatibility] OLED65CSPSA");
-      assert.deepEqual(JSON.parse(issueUrl.searchParams.get("report")), JSON.parse(generated));
+      const generated = issueUrl.searchParams.get("report");
+      assert.ok(generated, "the report is embedded in the single QR link");
       const qrDecoder = spawnSync("zbarimg", ["--version"], { encoding: "utf8" });
       if (!qrDecoder.error && qrDecoder.status === 0) {
         const qrPath = path.join(userDataDir, "compatibility-report-link.gif");
@@ -1485,190 +1389,43 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       assert.equal(json.compatibility.evidenceLevel, "unmapped");
       assert.equal(json.compatibility.mappingScope, "unmapped");
       assert.equal(json.compatibility.mappedControlCount, 0);
-      assert.deepEqual(Object.keys(json.controlReads).length, 17);
+      assert.equal(Object.keys(json.controlReads).length, 17);
       assert.ok(Object.values(json.controlReads).every((value) => value === false));
-      assert.doesNotMatch(generated, /eulaList|serialNumber|macAddress|ssid|192\.168\.|"livePlus":\s*"on"/i);
-      assert.match(await browser.evaluate("document.querySelector('#compatibility-report-status').textContent"), /report is sent to GitHub in the link.*Submit creates the public issue/i);
+      assert.doesNotMatch(generated, /eulaList|serialNumber|macAddress|ssid|192\\.168\\.|"livePlus":\\s*"on"/i);
+      assert.match(await browser.evaluate("document.querySelector('#compatibility-report-status').textContent"), /Scan once to open GitHub's prefilled form.*Submit creates the public issue\./);
     });
 
     await browser.evaluate("localStorage.clear()");
     await browser.navigate("mismatchedRuntime");
-    await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').textContent")) === "TV status updated", "mismatched SDK/browser identity");
-    await t.test("a known cohort with inconsistent SDK and browser engine stays read-only", async () => {
+    await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').dataset.state")) === "ready", "mismatched SDK/browser identity");
+    await t.test("a known model with an inconsistent runtime stays read-only", async () => {
       const status = await browser.evaluate(`(() => ({
-        model: document.querySelector('#model-name').textContent,
+        model: document.querySelector('#device-summary').textContent,
         runtime: document.querySelector('#webos-version').textContent,
-        cohort: document.querySelector('#community-cohort').textContent,
-        profile: document.querySelector('#compatibility-status').textContent,
-        menu: document.querySelector('#menu-reference-status').textContent,
         controlsDisabled: [...document.querySelectorAll('[data-setting]')].every((input) => input.disabled),
+        visibleRows: [...document.querySelectorAll('.control-row')].filter((row) => !row.hidden).length,
         settingReads: window.__privacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings' && call.parameters.category).length,
         writers: window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' || call.method === 'updateDNS' || (call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || ''))).length,
         errors: window.__privacyShieldFixture.errors
       }))()`);
       assert.equal(status.model, "OLED65C6SIM");
       assert.match(status.runtime, /SIM-ENGINE-MISMATCH/);
-      assert.match(status.cohort, /C6 · 2026 OLED family/);
-      assert.equal(status.profile, "Read-only");
-      assert.match(status.menu, /installed webOS version is unavailable/);
       assert.equal(status.controlsDisabled, true);
-      assert.equal(status.settingReads, 0, "an unverified platform must not nominate candidate keys");
+      assert.equal(status.visibleRows, 0);
+      assert.equal(status.settingReads, 0, "an unverified platform does not nominate candidate keys");
       assert.equal(status.writers, 0);
       assert.deepEqual(status.errors, []);
     });
 
-    for (const [scenario, model, family, platform, sample, profileCohort, profilePlatform] of [
-      ["c1", "OLED55C17LB", /C1 · 2021 OLED family.*launch version webOS 6\.x/, "webOS 6\\.x", "OLED55C17LB", "C1", "6.x"],
-      ["c5", "OLED65C54LA", /C5 · 2025 OLED family.*launch version webOS 25/, "webOS 26", "OLED65C54LA", "C5", "26"],
-      ["g2", "OLED65G26LA", /G2 · 2022 OLED family.*launch version webOS 22/, "webOS 25", "OLED65G26LA", "G2", "25"],
-      ["g1", "OLED55G19LA", /G1 · 2021 OLED family.*launch version webOS 6\.x/, "webOS 6\\.x", "OLED55G19LA", "G1", "6.x"],
-      ["g4", "OLED65G45LW", /G4 · 2024 OLED family.*launch version webOS 24/, "webOS 24", "Life's Good Without Spying", "G4", "24"],
-      ["b5", "OLED55B56LA", /B5 · 2025 OLED family.*launch version webOS 25/, "webOS 25", "OLED55B56LA", "B5", "25"],
-      ["g5", "OLED65G5WUA", /G5 · 2025 OLED family.*launch version webOS 25/, "webOS 25", "OLED65G5WUA", "G5", "25"]
-    ]) {
-      await browser.evaluate("localStorage.clear()");
-      await browser.navigate(scenario);
-      await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').textContent")) === "TV status updated", `${scenario} community model evidence`);
-      await t.test(`${model} uses the matching platform map while keeping its device evidence separate`, async () => {
-        const status = await browser.evaluate(`(() => ({
-          model: document.querySelector('#model-name').textContent,
-          version: document.querySelector('#webos-version').textContent,
-          family: document.querySelector('#community-cohort').textContent,
-          modelGuide: document.querySelector('#community-model-guide').innerText,
-          modelGuideUrl: document.querySelector('#community-model-guide a')?.href || null,
-          mappedKeys: [...document.querySelectorAll('#mapped-settings-list li')].map((item) => item.innerText).join(' | '),
-          readOnlyKeys: [...document.querySelectorAll('#research-only-setting-list li')].map((item) => item.innerText).join(' | '),
-          readOnlySectionHidden: document.querySelector('#research-only-setting-details').hidden,
-          microphone: document.querySelector('#community-microphone').textContent,
-          microphoneSwitch: document.querySelector('#community-microphone-switch').textContent,
-          samples: [...document.querySelectorAll('#community-samples li')].map((item) => item.innerText).join(' | '),
-          menuStatus: document.querySelector('#menu-reference-status').textContent,
-          menu: [...document.querySelectorAll('#menu-reference-list li')].map((item) => item.innerText).join(' | '),
-          profile: document.querySelector('#compatibility-status').textContent,
-          controlsLocked: [...document.querySelectorAll('[data-setting]')].every((input) => input.disabled),
-          presetDisabled: document.querySelector('#privacy-preset').disabled,
-          restoreDisabled: document.querySelector('#restore-button').disabled,
-          writerCalls: window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' || call.method === 'updateDNS' || (call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || ""))).length
-        }))()`);
-        assert.equal(status.model, model);
-        assert.match(status.version, new RegExp(platform));
-        assert.match(status.family, family);
-        assert.ok(status.modelGuideUrl.endsWith(`/tv/lg/${profileCohort.toLowerCase()}-${Number(profileCohort.slice(1)) + 2020}/`));
-        assert.match(status.modelGuide, /Model-family guide/);
-        assert.ok(status.mappedKeys.length > 0, "the selected internal settings map is shown");
-        const microphoneEvidence = scenario === "c5"
-          ? /Conflicting regional sources/
-          : scenario === "g1"
-            ? /Listed as absent by the cited manufacturer source/
-            : scenario === "g4"
-              ? /Listed by the cited manufacturer source/
-              : /Built-in microphone: Unknown/;
-        assert.match(status.microphone, microphoneEvidence);
-        if (scenario === "c5") {
-          assert.match(status.microphoneSwitch, /Physical microphone switch: reported for C5 on 10\.3\.1/);
-          assert.match(status.microphoneSwitch, /Both projects report a physical microphone switch on a C5/);
-          assert.match(status.microphoneSwitch, /do not establish a physical switch.*C6\/C6H/i);
-          assert.match(status.samples, /OLED65C54LA.*owner report/);
-          assert.match(status.family, /Reports: 6 \(3 Glasshouse, 1 CleanYourTV, 1 webos_lockout, 1 tv-home\)/);
-          assert.match(status.samples, /LG OLED C5 \(2025\); exact model code not published · tv-home \(owner report\)/);
-          assert.match(status.samples, /seven days of TV logs/);
-        } else if (scenario === "c1") {
-          assert.match(status.microphoneSwitch, /no report confirms one on this C1/i);
-          assert.match(status.family, /Reports: 4 \(2 Glasshouse, 1 webOS Unclutter, 1 KallistoX C1 capture\)/);
-          assert.match(status.samples, /European C1; exact model code not listed/);
-          assert.match(status.samples, /KallistoX C1 capture.*network capture/);
-        } else {
-          assert.match(status.microphoneSwitch, /no report confirms one on this/i);
-        }
-        assert.match(status.samples, new RegExp(sample));
-        assert.match(status.menuStatus, new RegExp(platform));
-        assert.equal(status.profile, `${profileCohort} · webOS ${profilePlatform}`);
-      assert.ok(status.modelGuideUrl.endsWith(`/tv/lg/${profileCohort.toLowerCase()}-${Number(profileCohort.slice(1)) + 2020}/`));
-      assert.match(status.modelGuide, /Model-family guide/);
-      assert.ok(status.mappedKeys.length > 0, "the selected internal settings map is shown");
-        assert.equal(status.controlsLocked, false);
-        assert.equal(status.presetDisabled, false);
-        assert.equal(status.restoreDisabled, true);
-        assert.equal(status.writerCalls, 0);
-        if (scenario === "g2") {
-          assert.match(status.samples, /project test/);
-          assert.match(status.version, /firmware 33\.23\.05/);
-        }
-        if (scenario === "g1") {
-          assert.match(status.samples, /03\.53\.45/);
-          assert.match(status.samples, /LG TV Blocklist.*network capture/);
-          assert.match(status.menu, /Advertisement \(legacy setting\)/);
-          assert.equal(status.writerCalls, 0);
-        }
-        if (scenario === "g4") {
-          assert.match(status.samples, /OLED65G45LW \(EU\).*Life's Good Without Spying.*project test/);
-          assert.match(status.samples, /23\.23\.30/);
-        }
-        if (scenario === "b5") {
-          assert.match(status.samples, /OLED55B56LA \(DEU, B5\).*own-your-glass \(owner audit\)/);
-          assert.match(status.samples, /firmware not listed.*does not list the firmware version or verify changes made from PrivacyShield/);
-          assert.match(status.mappedKeys, /Smart tips.*general\.aiNudge.*own-your-glass B5 audit/);
-          for (const mapping of ["option.hbbTV", "option.hbbTvDnt", "option.hbbTvDeviceId"]) {
-            assert.match(status.mappedKeys, new RegExp(`${mapping}.*own-your-glass B5 audit`));
-          }
-          assert.match(status.readOnlyKeys, /network\.allowMobileDeviceAccess.*Current value: Off.*does not prove that LAN access is blocked/);
-          assert.equal(status.readOnlySectionHidden, false);
-          const requestedB5Keys = await browser.evaluate("window.__privacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings' && call.parameters.category).flatMap((call) => call.parameters.keys || [])");
-          assert.ok(requestedB5Keys.includes("allowMobileDeviceAccess"));
-          for (const unclassified of ["adCookie", "sportsAlarm", "webOSPromotionVideo"]) {
-            assert.ok(!requestedB5Keys.includes(unclassified), `${unclassified} has no exact B5 category map and must not be guessed`);
-          }
-          await browser.evaluate("document.querySelector('[data-setting=hbbTV]').click()");
-          await waitFor(async () => (await browser.evaluate("document.querySelector('[data-setting=hbbTV]').closest('.switch').querySelector('.switch-state').textContent")) === "Off", "B5 HbbTV map write/readback");
-          const b5Write = await browser.evaluate("(() => ({ value: window.__privacyShieldFixture.settings.hbbTV, writes: window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' && call.parameters.settings && Object.prototype.hasOwnProperty.call(call.parameters.settings, 'hbbTV')).length }))()");
-          assert.equal(b5Write.value, "off");
-          assert.equal(b5Write.writes, 1);
-        }
-        if (scenario === "g5") {
-          assert.match(status.samples, /OLED65G5WUA.*Level1Techs G5 rooted privacy guide \(owner report\)/);
-          assert.match(status.samples, /firmware not listed.*lists privacy keys.*preference files with root access/);
-          for (const mapping of ["general.aiNudge", "general.screenSaverAd", "general.homePromotion"]) {
-            assert.match(status.mappedKeys, new RegExp(`${mapping}.*Level1Techs G5 keys \\+ Glasshouse SettingsService definitions`));
-          }
-          assert.match(status.mappedKeys, /option.livePlus.*Glasshouse SettingsService map/);
-          assert.match(status.readOnlyKeys, /option.watchedListCollection.*Current value: Off.*does not verify that the TV accepts the change or clears stored viewing history/);
-          assert.match(status.readOnlyKeys, /option.usageCare.*Current value: Off.*does not verify its effect on data collection/);
-          assert.match(status.readOnlyKeys, /option.dbgLogUpload.*Current value: Off.*does not verify whether uploads stop/);
-          assert.match(status.readOnlyKeys, /option.faultLogUpload.*Current value: On.*does not verify whether uploads stop/);
-          assert.match(status.readOnlyKeys, /option.thirdPartyCookie.*Current value: Off.*does not verify HbbTV behavior on another G5 firmware/);
-          const requestedG5Keys = await browser.evaluate("window.__privacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings' && call.parameters.category).flatMap((call) => call.parameters.keys || [])");
-          for (const key of ["aiNudge", "screenSaverAd", "homePromotion", "watchedListCollection", "usageCare", "dbgLogUpload", "faultLogUpload", "thirdPartyCookie"]) {
-            assert.ok(requestedG5Keys.includes(key), `${key} should be read only for the matching G5 software tuple`);
-          }
-          for (const consentOrUnmappedKey of ["voiceAllowed", "voice2Allowed", "launchEulaByHome", "adCookie"]) {
-            assert.ok(!requestedG5Keys.includes(consentOrUnmappedKey), `${consentOrUnmappedKey} must not be queried or treated as an app setting`);
-          }
-          for (const key of ["screenSaverAd", "homePromotion", "aiNudge"]) {
-            await browser.evaluate(`document.querySelector('[data-setting=${key}]').click()`);
-            await waitFor(async () => (await browser.evaluate(`document.querySelector('[data-setting=${key}]').closest('.switch').querySelector('.switch-state').textContent`)) === "Off", `G5 ${key} direct write/readback`);
-            const write = await browser.evaluate(`(() => {
-              const writes = window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' && call.parameters.category === 'general' && call.parameters.settings && Object.prototype.hasOwnProperty.call(call.parameters.settings, '${key}'));
-              return { value: window.__privacyShieldFixture.settings.${key}, writes: writes.length, payload: writes.at(-1)?.parameters.settings.${key} };
-            })()`);
-            assert.equal(write.value, "off");
-            assert.equal(write.writes, 1);
-            assert.equal(write.payload, "off");
-          }
-          assert.equal(status.writerCalls, 0, "the compatibility view itself must not write settings");
-        }
-      });
-    }
-
-    // Exercise the full model-family × installed-software cross-product. This
-    // is a parser/service/UI simulation, not a claim that every firmware path
-    // exists as an OTA upgrade for every physical TV.
+    // Exercise the model-family × installed-software cross-product. Fixtures
+    // verify control matching and TV service behavior, not physical devices.
     const matrixPlatforms = [
       { token: "6x", display: "6.x" }, { token: "22", display: "22" },
       { token: "23", display: "23" }, { token: "24", display: "24" },
       { token: "25", display: "25" }, { token: "26", display: "26" }
     ];
     const baseMappedKeys = ["livePlus", "screenSaverAd", "homePromotion", "livePromotion", "contentRecommendation"];
-    const publicCohorts = require("../webos-app/src/community-reference.js").COHORTS;
+    const allowedControlKeys = ["livePlus", "voiceLongDistance", "turnOnByVoice", "lmt", "doNotSellMyPersonalInformation", "screenSaverAd", "homePromotion", "livePromotion", "contentRecommendation", "hbbTvDnt", "hbbTvDeviceId", "thirdPartyCookie", "hbbTV", "bleAdvertisingOnOff", "homeSenseAbsence", "aiNudge", "aiSettingsNudge"];
     for (const series of ["B", "C", "G"]) {
       for (let generation = 1; generation <= 6; generation += 1) {
         for (const platform of matrixPlatforms) {
@@ -1677,21 +1434,15 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
           await browser.evaluate("localStorage.clear()");
           await browser.navigate(scenario);
           await waitFor(async () => await browser.evaluate(`(() => {
-            const runtime = document.querySelector('#runtime-mode').textContent;
-            return /TV status updated|Some TV status unavailable/.test(runtime)
+            const runtime = document.querySelector('#runtime-mode').dataset.state;
+            return runtime === 'ready' || runtime === 'unavailable'
               || window.__privacyShieldFixture.errors.length > 0;
           })()`), `${scenario} model fixture`);
           const status = await browser.evaluate(`(() => ({
-            model: document.querySelector('#model-name').textContent,
-            family: document.querySelector('#community-cohort').textContent,
+            model: document.querySelector('#device-summary').textContent,
             version: document.querySelector('#webos-version').textContent,
-            profile: document.querySelector('#compatibility-status').textContent,
-            compatibilitySummary: document.querySelector('#compatibility-summary').textContent,
             errors: window.__privacyShieldFixture.errors,
-            switches: [...document.querySelectorAll('[data-setting]')].map((input) => ({ key: input.dataset.setting, disabled: input.disabled, state: input.closest('.switch').querySelector('.switch-state').textContent })),
-            mappedKeys: [...document.querySelectorAll('#mapped-settings-list li')].map((item) => item.innerText).join(' | '),
-            readOnlyKeys: [...document.querySelectorAll('#research-only-setting-list li')].map((item) => item.innerText).join(' | '),
-            readOnlySectionHidden: document.querySelector('#research-only-setting-details').hidden,
+            controls: [...document.querySelectorAll('[data-setting]')].map((input) => ({ key: input.dataset.setting, disabled: input.disabled, hidden: input.closest('.control-row').hidden, state: input.closest('.switch').querySelector('.switch-state').textContent })),
             presetDisabled: document.querySelector('#privacy-preset').disabled,
             settingReads: window.__privacyShieldFixture.calls.filter((call) => call.service === window.__privacyShieldFixture.activeSettingsUri && call.method === 'getSystemSettings' && call.parameters.category).map((call) => call.parameters.keys),
             missingCurrentServiceProbes: window.__privacyShieldFixture.calls.filter((call) => call.service === 'luna://com.webos.settingsservice' && call.service !== window.__privacyShieldFixture.activeSettingsUri && call.method === 'getSystemSettings' && call.parameters.category).length,
@@ -1699,54 +1450,26 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
           }))()`);
           assert.equal(status.model, model);
           assert.deepEqual(status.errors, [], `${scenario} browser profile errors`);
-          assert.match(status.family, new RegExp(`${series}${generation} · ${2020 + generation} OLED family`));
-          const cohort = publicCohorts.find((entry) => entry.series === `${series}${generation}`);
-          assert.match(status.family, new RegExp(`launch version webOS ${cohort.launchWebOS.replace(".", "\\.")}`));
           assert.match(status.version, new RegExp(`webOS ${platform.display.replace(".", "\\.")}`));
-          assert.equal(status.profile, `${series}${generation} · webOS ${platform.display}`);
           const expectedKeys = [...baseMappedKeys];
           if (["22", "23", "24", "25", "26"].includes(platform.token)) expectedKeys.push("lmt");
           if (platform.token === "24") expectedKeys.push("aiNudge", "aiSettingsNudge");
           if (series === "C" && generation === 2 && platform.token === "22") expectedKeys.push("aiNudge", "aiSettingsNudge");
-          if (series === "C" && generation === 5 && platform.token === "25") {
-            expectedKeys.push("voiceLongDistance", "thirdPartyCookie");
-          }
+          if (series === "C" && generation === 5 && platform.token === "25") expectedKeys.push("voiceLongDistance", "thirdPartyCookie");
           const missingKey = series === "B" && generation === 1 && platform.token === "6x" ? "screenSaverAd" : null;
-          const mapped = status.switches.filter((item) => !item.disabled);
-          const readOnlyKeys = platform.token === "26"
-            ? ["general.sportsAlarm", "option.webOSPromotionVideo", "option.promotionStreamer"]
-            : series === "C" && generation === 5 && platform.token === "25"
-              ? ["option.watchedListCollection", "option.usageCare", "option.dbgLogUpload", "option.faultLogUpload"]
-              : [];
-          assert.equal(mapped.length, expectedKeys.length - (missingKey ? 1 : 0));
+          const visible = status.controls.filter((item) => !item.hidden);
+          const readable = visible.filter((item) => !item.disabled);
+          assert.deepEqual(visible.map((item) => item.key).sort(), [...expectedKeys].sort(), `${scenario} shows only mapped control rows`);
+          assert.equal(readable.length, expectedKeys.length - (missingKey ? 1 : 0));
           assert.equal(status.presetDisabled, false);
-          assert.deepEqual(status.settingReads.flat().sort(), [...expectedKeys, ...readOnlyKeys.map((entry) => entry.split(".")[1])].sort(), "the UI reads mapped controls and source-scoped read-only keys only");
-          assert.equal(status.settingReads.length, expectedKeys.length + readOnlyKeys.length, "each mapped or read-only candidate is requested once from the active SettingsService");
-          assert.ok(status.settingReads.every((keys) => keys.length === 1), "a missing key must not fail a whole category request");
+          assert.deepEqual(status.settingReads.flat().sort(), [...expectedKeys].sort(), `${scenario} reads only mapped control keys`);
+          assert.equal(status.settingReads.length, expectedKeys.length, `${scenario} requests each mapped key once`);
+          assert.ok(status.settingReads.every((keys) => keys.length === 1), "a missing key does not fail a whole category request");
           assert.equal(status.missingCurrentServiceProbes, platform.token === "6x" ? expectedKeys.length : 0, "webOS 6 probes the current URI before using the legacy SettingsService");
-          assert.equal(status.writerCalls, 0, "initial profile detection and reads must never write settings");
-          if (series === "C" && generation === 2 && platform.token === "22") {
-            assert.match(status.mappedKeys, /general\.lmt.*Glasshouse dashboard · C2\/webOS 22 root map/);
-            assert.match(status.mappedKeys, /general\.aiNudge.*Glasshouse C2\/webOS 22 sample fixture/);
-            assert.match(status.mappedKeys, /general\.aiSettingsNudge.*Glasshouse C2\/webOS 22 sample fixture/);
-          }
-          if (series === "C" && generation === 5 && platform.token === "25") {
-            assert.match(status.readOnlyKeys, /option.watchedListCollection.*Current value: On/);
-            assert.match(status.readOnlyKeys, /option.usageCare.*Current value: On/);
-            assert.match(status.readOnlyKeys, /option.dbgLogUpload.*Current value: On/);
-            assert.match(status.readOnlyKeys, /option.faultLogUpload.*Current value: Off/);
-            assert.match(status.compatibilitySummary, /does not identify the exact TV or firmware/);
-          }
-          if (readOnlyKeys.length) {
-            for (const key of readOnlyKeys) assert.match(status.readOnlyKeys, new RegExp(`${key}.*Current value:`));
-            assert.equal(status.readOnlySectionHidden, false);
-            assert.equal(status.switches.some((item) => readOnlyKeys.some((entry) => entry.endsWith(`.${item.key}`))), false, "read-only research keys have no switch");
-          } else {
-            assert.equal(status.readOnlyKeys, "");
-            assert.equal(status.readOnlySectionHidden, true);
-          }
+          assert.equal(status.writerCalls, 0, "initial profile detection and reads do not write settings");
+          assert.ok(status.settingReads.flat().every((key) => allowedControlKeys.includes(key)), "the app does not read reference or research-only preferences");
           if (missingKey) {
-            assert.equal(status.switches.find((item) => item.key === "screenSaverAd").state, "Unavailable");
+            assert.equal(status.controls.find((item) => item.key === "screenSaverAd").state, "Unavailable");
             await browser.press("ArrowRight");
             await browser.press("ArrowDown");
             await browser.press("Enter");

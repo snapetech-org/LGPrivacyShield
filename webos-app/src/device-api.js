@@ -78,10 +78,6 @@
     });
   }
 
-  function getNetworkStatus() {
-    return request("luna://com.palm.connectionmanager", "getStatus", { subscribe: false });
-  }
-
   function rootExec(command) {
     return request(HBC, "exec", { command });
   }
@@ -103,7 +99,6 @@
 
   const api = Object.freeze({
     getAgreements,
-    getNetworkStatus,
     getSettings,
     getSystemInfo,
     missingSettingsService,

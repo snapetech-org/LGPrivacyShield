@@ -11,13 +11,16 @@
 - Added a source-backed accepted/declined effect map for LG agreements, plus
   visible unmapped status for additional model or region-specific agreements.
 - Expanded headless Chromium, Python, firmware-catalog, and package checks.
-- Added the About screen, AGPL-3.0-only licensing, third-party notices, and Ko-fi
-  links.
-- Use one QR code to open GitHub's compatibility form with the report pre-filled.
-  The issue is created only when the form is submitted.
-- Add a dark default theme and a saved light-theme option.
-- Added a page-by-page user guide with headless screenshots and a documentation
-  index.
+- Added an About page with the app version, license, and source-code link.
+- Replaced the TV details page with TV identity on Overview and TV-mapped
+  settings on Controls. Settings absent from the firmware map are hidden.
+- Prepare compatibility reports locally and use one QR code to open GitHub's
+  prefilled issue form. The user reviews and submits the issue.
+- Added a dark default theme and a saved light-theme option.
+- Added a Ko-fi donations and support QR code and link to About.
+- Shifted dark surfaces to blue-gray, with separate action, status, and focus colors.
+- Added a button to save readable TV settings as a reusable restore point.
+- Added a page-by-page user guide, screenshots, and a documentation index.
 
 ## 0.1.12
 

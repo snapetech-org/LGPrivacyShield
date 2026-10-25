@@ -17,7 +17,7 @@ class DeviceSnapshotTests(unittest.TestCase):
         fixture = json.loads(FIRMWARE_MAP_FIXTURE.read_text(encoding="utf-8"))
         firmware_map = device_snapshot.firmware_settings_map(fixture["categoryKeysMap"])
         self.assertTrue(firmware_map["available"])
-        self.assertEqual(len(firmware_map["settings"]), 24)
+        self.assertEqual(len(firmware_map["settings"]), 16)
         self.assertEqual(firmware_map["ambiguous"], [])
         self.assertEqual(firmware_map["settings"]["livePlus"], "option")
         self.assertEqual(firmware_map["settings"]["doNotSellMyPersonalInformation"], "general")
@@ -67,75 +67,6 @@ class DeviceSnapshotTests(unittest.TestCase):
         self.assertEqual(categories["customPrivacy"], {"livePlus": "off"})
         self.assertIn("/var/luna/preferences/customPrivacy", requested)
         self.assertIn("/var/luna/preferences/general", requested)
-
-    def test_reference_settings_use_the_firmware_index_category(self):
-        firmware_map = {"available": True, "settings": {"sportsAlarm": "network"}, "ambiguous": []}
-        settings = device_snapshot.reference_settings(
-            {"sportsAlarm": "off"},
-            firmware_map=firmware_map,
-            category_preferences={"option": {"sportsAlarm": "on"}, "network": {"sportsAlarm": "off"}},
-        )
-        self.assertEqual(settings, {"sportsAlarm": "off"})
-
-    def test_reference_settings_only_expose_read_only_research_keys(self):
-        self.assertEqual(
-            device_snapshot.reference_settings(
-                {"webOSPromotionVideo": "off", "promotionStreamer": "on", "unrelated": "on"},
-                {"sportsAlarm": "on", "other": "private"},
-                {"allowMobileDeviceAccess": False, "unrelated": "private"},
-            ),
-            {
-                "sportsAlarm": "on",
-                "webOSPromotionVideo": "off",
-                "promotionStreamer": "on",
-                "allowMobileDeviceAccess": False,
-            },
-        )
-        self.assertEqual(
-            device_snapshot.reference_settings(
-                {"webOSPromotionVideo": True, "promotionStreamer": "unknown"},
-                {"sportsAlarm": {"value": "on"}},
-                {"allowMobileDeviceAccess": "false"},
-            ),
-            {},
-        )
-
-    def test_g5_root_preferences_are_allowlisted_with_their_published_types(self):
-        self.assertEqual(
-            device_snapshot.reference_settings(
-                {
-                    "watchedListCollection": "off",
-                    "usageCare": False,
-                    "dbgLogUpload": True,
-                    "faultLogUpload": False,
-                    "thirdPartyCookie": "offByUser",
-                    "unrelated": "private",
-                },
-                {"unrelated": "private"},
-                {"unrelated": "private"},
-            ),
-            {
-                "watchedListCollection": "off",
-                "usageCare": False,
-                "dbgLogUpload": True,
-                "faultLogUpload": False,
-                "thirdPartyCookie": "offByUser",
-            },
-        )
-        self.assertEqual(
-            device_snapshot.reference_settings(
-                {
-                    "watchedListCollection": "unknown",
-                    "usageCare": "off",
-                    "dbgLogUpload": 1,
-                    "faultLogUpload": "false",
-                    "thirdPartyCookie": "enabled",
-                },
-                None,
-                None,
-            ),
-            {},
-        )
 
     def test_privacy_settings_return_only_allowlisted_on_off_values(self):
         settings = device_snapshot.privacy_settings(
@@ -226,17 +157,13 @@ class DeviceSnapshotTests(unittest.TestCase):
             },
         )
 
-    def test_diagnostics_expose_upload_flags_without_returning_full_preferences(self):
-        details = device_snapshot.diagnostics({
-            "faultLogUpload": False,
-            "dbgLogUpload": False,
-            "unrelated": "private",
-        })
-        self.assertEqual(details["faultLogUpload"], False)
-        self.assertEqual(details["debugLogUpload"], False)
-        self.assertIn("services", details)
-        self.assertIn("autoUpload", details)
-        self.assertNotIn("unrelated", details)
+    def test_snapshot_returns_only_settings_firmware_map_and_agreements(self):
+        with patch.object(device_snapshot, "firmware_settings_map", return_value={"available": False, "settings": {}, "ambiguous": []}), \
+             patch.object(device_snapshot, "preference_categories", return_value={"option": {}, "general": {}, "network": {}, "other": {}}), \
+             patch.object(device_snapshot, "agreements", return_value={"eulaInfoNetwork": {"eulaList": []}}):
+            result = device_snapshot.snapshot()
+        self.assertEqual(set(result), {"settings", "firmwareSettingsMap", "agreements"})
+        self.assertEqual(result["settings"], {})
 
     def test_malformed_agreement_data_fails_closed(self):
         self.assertEqual(

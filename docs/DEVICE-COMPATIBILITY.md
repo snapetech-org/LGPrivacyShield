@@ -10,15 +10,15 @@ PrivacyShield builds a profile from the TV's model family and its **installed** 
 | Profile | Match | Mapped controls | Evidence |
 |---|---|---|---|
 | Family + platform | Recognized B/C/G family and installed webOS 6.x, 22, 23, 24, 25, or 26 | Shared controls from the platform row below; a missing key stays unavailable | Published SettingsService code, model-family guides, and platform maps; not a PrivacyShield physical-device test |
-| C5 + SDK 10.3.1 / webOS 25 | C5 family with installed SDK 10.3.1 and webOS 25 | Family + platform controls, plus hands-free voice and HbbTV third-party cookies; four read-only keys | Glasshouse C5/webOS 10.3.1 firmware research |
-| OLED77C51LA + SDK 10.3.1 / webOS 25 | Exact C5 model and reported SDK; numeric firmware is unpublished | Exact-model source attribution for read-only `usageCare`, `dbgLogUpload`, and `faultLogUpload` values | `webos_lockout` root report; not a PrivacyShield app-side write test |
-| OLED55B56LA + SDK 10.3.1 / webOS 25 | Exact B5 model code and matching SDK/platform; firmware was not published by the source | Family + platform controls, plus Smart Tips and three HbbTV controls; mobile-device access is read-only | Owner-audited B5 SettingsService map. It is not a PrivacyShield app-side write test. |
-| OLED65G5WUA + webOS 10.2.1 / webOS 25 | Exact G5 model code and matching software; numeric firmware was not published | Family + platform controls, plus `general.aiNudge`, `general.screenSaverAd`, and `general.homePromotion`; five option keys are read-only status | Level1Techs root guide plus Glasshouse key/value definitions. The root script edits preference files and does not test PrivacyShield's app-side setter. |
+| C5 + SDK 10.3.1 / webOS 25 | C5 family with installed SDK 10.3.1 and webOS 25 | Family + platform controls, plus hands-free voice and HbbTV third-party cookies | Glasshouse C5/webOS 10.3.1 firmware research |
+| OLED77C51LA + SDK 10.3.1 / webOS 25 | Exact C5 model and reported SDK; numeric firmware is unpublished | No additional app controls | `webos_lockout` root report; not a PrivacyShield app-side write test |
+| OLED55B56LA + SDK 10.3.1 / webOS 25 | Exact B5 model code and matching SDK/platform; firmware was not published by the source | Family + platform controls, plus Smart Tips and three HbbTV controls | Owner-audited B5 SettingsService map. It is not a PrivacyShield app-side write test. |
+| OLED65G5WUA + webOS 10.2.1 / webOS 25 | Exact G5 model code and matching software; numeric firmware was not published | Family + platform controls, plus `general.aiNudge`, `general.screenSaverAd`, and `general.homePromotion` | Level1Techs root guide plus Glasshouse key/value definitions. The root script edits preference files and does not test PrivacyShield's app-side setter. |
 | Exact C6H | `OLED77C6HUP`, SDK `11.2.0`, firmware `43.21.79` | 15 profile candidates; the firmware index lists 14 and omits `hbbTvDnt` | Exact PrivacyShield sample; prior app write/readback checks for Live Plus and two voice settings |
 
 The exact C6H profile takes priority. Other C6 sizes and regions use the C6 + installed-platform profile. The C5-specific settings do not carry forward to a C5 upgraded to webOS 26 because the source evidence is for webOS 10.3.1.
 
-The app links a privacy guide for each B1–B6, C1–C6, and G1–G6 family. Those pages document model-family hardware, privacy claims, and menu locations; they do not publish private Luna key tables. Internal maps are scattered across rooted-TV projects, firmware reports, and SettingsService code. The app shows the family guide separately from the category/key entries selected by its platform map and any exact-model overlay. The standard C6 guide explicitly excludes C6H; its microphone claims are not applied to C6H.
+The repository includes a privacy guide for each B1–B6, C1–C6, and G1–G6 family. Those pages document model-family hardware, privacy claims, and menu locations; they do not publish private Luna key tables. PrivacyShield lists only controls selected by its installed-platform map and any exact-model overlay. The standard C6 guide explicitly excludes C6H; its microphone claims are not applied to C6H.
 
 ## Firmware-local category/key index
 
@@ -35,15 +35,15 @@ The current C6H read-only capture is `OLED77C6HUP.ACCQLJD`, SDK `11.2.0`,
 firmware `43.21.79`, captured 2026-10-24 from
 `/etc/palm/description.categorykeysmap.json` (SHA-256
 `2c818cd342ae675fac4e425ec6d2078b328e281a8e5994449bd6662cab92eec1`). The
-allowlisted index contains 24 of 25 reviewed control/reference candidates in
+research fixture contains 24 of 25 reviewed control/reference candidates in
 `tests/fixtures/oled77c6hup-firmware-key-map.json`; `hbbTvDnt` is absent. It
 remains unavailable in PrivacyShield even though an earlier shared map had it
 as a candidate. A stored preference value does not override the firmware
 registry for this app's SettingsService path.
 
-PrivacyShield now reads this index through the local HBC snapshot, keeps only
-reviewed key names/categories, and uses the device's category for individual
-reads and writes. Missing or multiply categorized keys stay locked. If the
+PrivacyShield reads this index through the local HBC snapshot, keeps only
+reviewed control keys/categories, and uses the device's category for individual
+reads and writes. Missing or multiply categorized keys are omitted. If the
 index is unavailable, the app falls back to the reviewed category and tests
 each key separately. The index proves registration and category only; it does
 not prove current value, privacy effect, successful writes, or that a feature
@@ -56,15 +56,14 @@ source map still determines which findings are safe to expose as controls.
 
 The EPK Firmware Archive publishes `processed_fw.json`, a model-to-package
 index with firmware version, SDK/platform version, OTA ID, archive path, and
-ZIP/EPK SHA-256 values. PrivacyShield's generated
+ZIP/EPK SHA-256 values. The repository's generated
 [`data/lg-oled-firmware-catalog.json`](../data/lg-oled-firmware-catalog.json)
 contains 405 checksummed package builds covering 525 exact OLED model codes in
 all 18 B/C/G cohorts. It includes the B1 `W21U` OTA family as well as the
-different C1/G1 `W21O` family. The app uses a model/version match only to show
-which firmware packages the archive lists. Region variants can produce
-multiple OTA IDs; in that case the app says the OTA ID is needed. This catalog
-is firmware identity metadata, not a settings map, and it does not enable any
-control.
+different C1/G1 `W21O` family. This catalog is maintainer research; the app
+does not load or show firmware-package matches. Region variants can produce
+multiple OTA IDs. The catalog is firmware identity metadata, not a settings
+map, and it does not enable any control.
 
 The pinned archive index was retrieved on 2026-10-24 and has SHA-256
 `f27b1f8aed59da60b48fcdabd534ffff72cb84ad8d90ab1c59fd92829b0b2269`. Its
@@ -179,10 +178,10 @@ Additional settings are limited to the platform maps below:
 | 25 on C5 | Hands-free voice (`general.voiceLongDistance`); HbbTV third-party cookies (`option.thirdPartyCookie`) | 8 |
 | 25 on `OLED55B56LA` / SDK 10.3.1 | Smart Tips (`general.aiNudge`), HbbTV (`option.hbbTV`, `option.hbbTvDnt`, `option.hbbTvDeviceId`) | 10 |
 | 25 on `OLED65G5WUA` / webOS 10.2.1 | Smart Tips (`general.aiNudge`) | 7 |
-| 26 | Limit Ad Tracking (`general.lmt`) | 6 controls, plus 3 read-only research keys |
+| 26 | Limit Ad Tracking (`general.lmt`) | 6 controls |
 | 26 on the exact C6H profile | C6H-specific candidate map before the device-local key filter | 15 |
 
-These are candidate mappings. Some televisions do not expose every key. When available, the app first filters candidates through the TV's own firmware index, then requests each remaining key separately because webOS can reject a whole category request when one requested key is missing. It falls back to the allowlisted HBC snapshot where direct reads are denied. If the index is unavailable, it keeps the reviewed category and still tries only one key per call. A key with no recognized current value stays locked. The preset includes only mapped controls whose current values can be read.
+These are candidate mappings. Some televisions do not expose every key. When available, the app first filters candidates through the TV's own firmware index, then requests each remaining key separately because webOS can reject a whole category request when one requested key is missing. It falls back to the allowlisted HBC snapshot where direct reads are denied. If the index is unavailable, it keeps the reviewed category and still tries only one key per call. A mapped control appears read-only when its current value cannot be read. The preset includes only mapped controls whose current values can be read.
 
 ## Coverage across B, C, and G families
 
@@ -192,24 +191,24 @@ These are candidate mappings. Some televisions do not expose every key. When ava
 | 2022 | webOS 22 | B2 family map | C2 family map | G2 family map |
 | 2023 | webOS 23 | B3 family map | C3 family map | G3 family map |
 | 2024 | webOS 24 | B4 family map | C4 family map | G4 family map |
-| 2025 | webOS 25 | B5 family map + OLED55B56LA owner map | C5 family map + C5/SDK 10.3.1 map + OLED77C51LA read-only map | G5 family map |
+| 2025 | webOS 25 | B5 family map + OLED55B56LA owner map | C5 family map + C5/SDK 10.3.1 controls | G5 family map + OLED65G5WUA owner map |
 | 2026 | webOS 26 | B6 family map | C6 family map; exact C6H profile where matched | G6 family map |
 
 An updated TV uses the profile for its installed webOS version, not its launch year. The profile IDs retain both cohort and platform, for example `lg-oled-b6-webos-26` and `lg-oled-c5-webos-25`.
 
-The public catalog contains device rows for 13 of these 18 cohorts and a separate guide for each family. B1, B2, B3, B6, and G6 have no exact device row in the pinned app-test catalog. B5 has one owner-audited exact model row: `OLED55B56LA` (Germany), webOS 10.3.1; the firmware version is not published. G5 has an exact `OLED65G5WUA` root-guide row on webOS 10.2.1, also without a numeric firmware version. Its three added controls are source-mapped candidates; five other named options remain read-only because the guide does not establish an app-side setter. Glasshouse separately lists G5 samples at firmware 33.30.69 and 43.21.71, but those rows do not report per-key privacy tests. None of these entries is a PrivacyShield physical-device test. The TV must return each current value, and changes require readback. Related device reports and their limits are listed in [COMMUNITY-EVIDENCE.md](COMMUNITY-EVIDENCE.md).
+The public catalog contains device rows for 13 of these 18 cohorts and a separate guide for each family. B1, B2, B3, B6, and G6 have no exact device row in the pinned app-test catalog. B5 has one owner-audited exact model row: `OLED55B56LA` (Germany), webOS 10.3.1; the firmware version is not published. G5 has an exact `OLED65G5WUA` root-guide row on webOS 10.2.1, also without a numeric firmware version. Its three added controls are source-mapped candidates. Five other named options remain research-only because the guide does not establish an app-side setter; PrivacyShield does not read or display them. Glasshouse separately lists G5 samples at firmware 33.30.69 and 43.21.71, but those rows do not report per-key privacy tests. None of these entries is a PrivacyShield physical-device test. The TV must return each current value, and changes require readback. Related device reports and their limits are listed in [COMMUNITY-EVIDENCE.md](COMMUNITY-EVIDENCE.md).
 
 ## Why these controls are mapped
 
 - Glasshouse's pinned SettingsService registry defines the promotion keys, their categories, labels, and `on`/`off` values. It loads a row only when the TV reports that key; a B8-like unit test confirms that an absent key is omitted. The repository also has a C2/webOS 22 sample fixture, but the unit test does not load that fixture. The same source uses `option.livePlus` where the TV has that setting.
 - Glasshouse records the `general.lmt` key and its value behavior on later firmware. Opt Out Of's model/platform guides list Limit AD Tracking on webOS 22–26; the exact C6H read also confirms the key on webOS 26. A pinned Glasshouse dashboard source adds a C2/webOS 9.2 root-side `general.lmt` write and ad-manager readback; its tested-TV table lists OLED42C24LA but does not link that exact row to the LMT code path. PrivacyShield uses that source on C2/webOS 22 and still requires a readable `on`/`off` value on the target TV. The webOS 6 `Advertisement` item remains separate because its manual describes a legacy frequency-capping cookie.
 - Glasshouse's registry maps `general.aiNudge` and `general.aiSettingsNudge` to Smart Tips and Smart Tips in Settings, with `on`/`off` values. Its webOS 9.2 C2/webOS 22 fixture lists both, but the upstream unit test does not load that fixture. PrivacyShield uses that fixture only for the C2/webOS 22 overlay; it also maps both on webOS 24 and adds `aiNudge` for the exact `OLED55B56LA` / SDK 10.3.1 / webOS 25 and `OLED65G5WUA` / webOS 10.2.1 / webOS 25 rows. These prompt controls remain outside the recommended preset.
-- The B5 owner's SettingsService script names the HbbTV controls as `option.hbbTV`, `option.hbbTvDnt`, and `option.hbbTvDeviceId`; the report records their HbbTV tracking rationale. PrivacyShield maps these only for the matching `OLED55B56LA` / SDK 10.3.1 profile. It also reads `network.allowMobileDeviceAccess` for that profile but keeps it read-only: the report found that turning it off did not close the local SSAP service.
-- The B5 report names `adCookie`, `sportsAlarm`, and `webOSPromotionVideo` but does not publish their SettingsService categories. The app displays that research note without querying a guessed category. The report found the stored LG ad cookie remained after `adCookie` was switched off and that the sports-alert process continued running with its setting off; neither name is offered as a protection switch.
-- The Level1Techs G5 guide names `general.aiNudge`, `general.screenSaverAd`, and `general.homePromotion` and writes them as off in a root script. The G5 overlay combines that exact-model key evidence with Glasshouse's common SettingsService key/value definitions, then still requires a live value and post-write readback on the TV. Its `option.watchedListCollection`, `option.usageCare`, `option.dbgLogUpload`, `option.faultLogUpload`, and `option.thirdPartyCookie` values are displayed read-only. The source writes cached EULA/consent records too; PrivacyShield does not copy that behavior and leaves agreement changes to webOS's native flow.
-- The webOS 26 `webos-debloat` report names `/etc/palm/description.categorykeysmap.json` as the device-local key/category index and `/etc/palm/defaultSettings.json` as the defaults file. Its one model-unassigned 2026 OLED report independently includes Live Plus, Home Promotion, Live Promotion, and Content Recommendation; it also names `general.sportsAlarm`, `option.webOSPromotionVideo`, and `option.promotionStreamer`. The app reads the latter as read-only status because their effects are not established. Its key list is one device's firmware evidence, not a model-assigned map.
-- Glasshouse's C5/webOS 10.3.1 firmware research records `general.voiceLongDistance` and `option.thirdPartyCookie`, including the cookie value domain `on`, `off`, `onByUser`, and `offByUser`. Those controls and four additional reference keys are limited to C5 devices reporting SDK 10.3.1 / webOS 25. `option.watchedListCollection`, `option.usageCare`, `option.dbgLogUpload`, and `option.faultLogUpload` appear as read-only status. The report does not publish the scanned set's exact model or firmware, so these are software-cohort findings, not exact-SKU validation. The cookie writer uses the TV's `onByUser`/`offByUser` values.
-- `webos_lockout` names an exact `OLED77C51LA` on Rockhopper 10.3.1-3006 and its root boot script sets `option.usageCare`, `option.dbgLogUpload`, and `option.faultLogUpload` to false. PrivacyShield uses that exact model/SDK row to label those three values with their model-specific source, but keeps them read-only. The source does not publish the numeric firmware version or demonstrate a packaged-app SettingsService setter. The report's interpretation of `usageCare` conflicts with Glasshouse's Family Care menu finding, so the app does not describe it as a proven collection control.
+- The B5 owner's SettingsService script names the HbbTV controls as `option.hbbTV`, `option.hbbTvDnt`, and `option.hbbTvDeviceId`; the report records their HbbTV tracking rationale. PrivacyShield maps these only for the matching `OLED55B56LA` / SDK 10.3.1 profile. The separate `network.allowMobileDeviceAccess` finding is research only; turning it off did not close the local SSAP service.
+- The B5 report names `adCookie`, `sportsAlarm`, and `webOSPromotionVideo` but does not publish their SettingsService categories. The report found the stored LG ad cookie remained after `adCookie` was switched off and that the sports-alert process continued running with its setting off; neither name is offered as a PrivacyShield control.
+- The Level1Techs G5 guide names `general.aiNudge`, `general.screenSaverAd`, and `general.homePromotion` and writes them as off in a root script. The G5 overlay combines that exact-model key evidence with Glasshouse's common SettingsService key/value definitions, then still requires a live value and post-write readback on the TV. Its five other option keys are research only and are not read or displayed by PrivacyShield. The source writes cached EULA/consent records too; PrivacyShield leaves agreement changes to webOS's native flow.
+- The webOS 26 `webos-debloat` report names `/etc/palm/description.categorykeysmap.json` as the device-local key/category index and `/etc/palm/defaultSettings.json` as the defaults file. Its one model-unassigned 2026 OLED report independently includes Live Plus, Home Promotion, Live Promotion, and Content Recommendation; it also names `general.sportsAlarm`, `option.webOSPromotionVideo`, and `option.promotionStreamer`. These latter keys remain research-only because their effects are not established. Its key list is one device's firmware evidence, not a model-assigned map.
+- Glasshouse's C5/webOS 10.3.1 firmware research records `general.voiceLongDistance` and `option.thirdPartyCookie`, including the cookie value domain `on`, `off`, `onByUser`, and `offByUser`. Those controls are limited to C5 devices reporting SDK 10.3.1 / webOS 25. Four additional keys remain in source research and are not read by the app. The report does not publish the scanned set's exact model or firmware, so these are software-cohort findings, not exact-SKU validation. The cookie writer uses the TV's `onByUser`/`offByUser` values.
+- `webos_lockout` names an exact `OLED77C51LA` on Rockhopper 10.3.1-3006 and its root boot script sets `option.usageCare`, `option.dbgLogUpload`, and `option.faultLogUpload` to false. The source does not publish the numeric firmware version or demonstrate a packaged-app SettingsService setter. The report's interpretation of `usageCare` conflicts with Glasshouse's Family Care menu finding, so the repository does not describe it as a proven collection control.
 - Existing controls outside the platform, C5/C2, and B5 maps remain in the exact C6H profile only. Smart Tips are not in that exact profile because they were not read on the C6H tuple. Other controls are not enabled on a profile from a similar-looking key name.
 
 Pinned sources and revisions are in the app's [community reference data](../webos-app/src/community-reference.js) and [public evidence catalog](COMMUNITY-EVIDENCE.md).
@@ -232,9 +231,9 @@ LG's official webOS Simulator can run platform versions 6.0 and 22–26. Its Set
 
 ## Optional compatibility report
 
-From **TV details**, choose **Prepare compatibility report**. The version 2 report contains the model, SDK, firmware, profile ID, map scope, API access state, and a boolean for whether each of the 17 controls was readable. It excludes setting values, agreements, serial/MAC/IP addresses, SSID, account data, app lists, process names, and network destinations.
+In **Controls**, choose **Prepare compatibility report** when the model/software is unmapped or a control cannot be read. The version 2 report contains the model, SDK, firmware, profile ID, map scope, API access state, and a boolean for whether each of the 17 controls was readable. It excludes setting values, agreements, serial/MAC/IP addresses, SSID, account data, app lists, process names, and network destinations. One QR code opens GitHub's form with the report included; submitting the form creates a public issue.
 
-Use the report when the model or software is unmapped or a control remains read-only. One QR code opens GitHub's report form with the JSON filled in. Opening the link sends the report to GitHub in the URL; submitting the form creates a public issue for maintainers to review model coverage and read access.
+Use the report when the model or software is unmapped or a control remains unavailable. One QR code opens GitHub's form with the report included in the link. Submit the form to create a public issue for maintainers to review model coverage and read access.
 
 Validate a saved report offline:
 

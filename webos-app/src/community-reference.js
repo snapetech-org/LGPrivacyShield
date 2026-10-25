@@ -345,7 +345,7 @@
       project: "Glasshouse",
       feature: "Settings keys and readers",
       method: "Firmware search of /usr and /etc; key names include option.dbgLogUpload, option.faultLogUpload, option.thirdPartyCookie, general.voiceLongDistance, option.watchedListCollection, and general.lmt.",
-      observation: "The report identifies readers and limits for several keys on a C5 running webOS 10.3.1. It marks watchedListCollection as unknown, finds usageCare is a Family Care menu setting rather than a collection control, and notes a debug-log upload setting came back after boot. PrivacyShield shows watchedListCollection, usageCare, dbgLogUpload, and faultLogUpload as read-only status for this software version.",
+      observation: "The report identifies readers and limits for several keys on a C5 running webOS 10.3.1. It marks watchedListCollection as unknown, finds usageCare is a Family Care menu setting rather than a collection control, and notes a debug-log upload setting came back after boot. These keys remain in repository research; PrivacyShield does not read or display them.",
       scope: "C5/webOS 10.3.1; the research does not publish the scanned set's exact model or firmware. Runtime-generated key reads can be missed by the documented search method.",
       limit: "This is a firmware research map, not proof that PrivacyShield can read or write these values from its packaged app. The four status entries have no switch; a value is displayed only if the TV returns it.",
       sourceId: SOURCES.glasshouse.id
@@ -357,7 +357,7 @@
       method: "A startup script backs up and edits the local preference file before LG settings load.",
       observation: "The script sets usageCare, dbgLogUpload, and faultLogUpload to false only if each key exists. The project reports those values persisted on its target across a reboot and remained false during the session. Glasshouse separately found the debug and fault-log readers; it describes usageCare as a Family Care menu setting, so its collection effect is unresolved.",
       scope: "Exact OLED77C51LA running Rockhopper 10.3.1-3006; numeric firmware version is not published.",
-      limit: "Direct file changes do not show that LG accepts the change through its settings service or that diagnostic uploads stop. PrivacyShield shows these values read-only and does not apply the root script.",
+      limit: "Direct file changes do not show that LG accepts the change through its settings service or that diagnostic uploads stop. These values are not app controls; PrivacyShield does not apply the root script.",
       sourceId: SOURCES.webosLockout.id
     }),
     Object.freeze({
@@ -385,7 +385,7 @@
       project: "own-your-glass",
       feature: "B5 Home and advertising settings map",
       method: "The owner reports changing and reading back settings through LG's settings service on an OLED55B56LA.",
-      observation: "The B5 report records screenSaverAd, adCookie, aiNudge, sportsAlarm, livePromotion, livePlus, webOSPromotionVideo, and Limit Ad Tracking. Its settings script also names option.hbbTV, option.hbbTvDnt, option.hbbTvDeviceId, and network.allowMobileDeviceAccess. PrivacyShield uses the HbbTV trio and general.aiNudge only on OLED55B56LA / webOS 25; mobile-device access is read-only because turning it off did not close SSAP. The report does not publish categories for adCookie, sportsAlarm, or webOSPromotionVideo, so PrivacyShield does not query them.",
+      observation: "The B5 report records screenSaverAd, adCookie, aiNudge, sportsAlarm, livePromotion, livePlus, webOSPromotionVideo, and Limit Ad Tracking. Its settings script also names option.hbbTV, option.hbbTvDnt, option.hbbTvDeviceId, and network.allowMobileDeviceAccess. PrivacyShield uses the HbbTV trio and general.aiNudge only on OLED55B56LA / webOS 25. The report found that turning network.allowMobileDeviceAccess off did not close SSAP; the app does not read that key. The report does not publish categories for adCookie, sportsAlarm, or webOSPromotionVideo, so the app does not query them.",
       scope: "OLED55B56LA (B5), webOS 10.3.1; firmware version not published.",
       limit: "One exact B5 size/region and one software sample. A setting's reported value does not prove it cleared stored data or stopped a service; no C5/C6 or other B5 variant inherits this exact-device observation.",
       sourceId: SOURCES.ownYourGlass.id

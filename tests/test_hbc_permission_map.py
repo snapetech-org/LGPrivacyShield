@@ -174,6 +174,7 @@ class AppPermissionTests(unittest.TestCase):
         appinfo_path = Path(__file__).resolve().parents[1] / "webos-app/appinfo.json"
         appinfo = json.loads(appinfo_path.read_text(encoding="utf-8"))
         self.assertIn("applications.launcher", appinfo["requiredACG"])
+        self.assertNotIn("network.query", appinfo["requiredACG"])
 
 
 if __name__ == "__main__":

@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
-"""Read a minimal local-only snapshot for PrivacyShield's Evidence view."""
-import glob
+"""Read privacy settings and agreement state for the local webOS app."""
 import html
 import json
-import os
 import re
-import subprocess
 
 
 FIRMWARE_MAP_PATH = "/etc/palm/description.categorykeysmap.json"
@@ -28,18 +25,7 @@ CONTROL_CATEGORIES = {
     "aiNudge": "general",
     "aiSettingsNudge": "general",
 }
-REFERENCE_CATEGORIES = {
-    "sportsAlarm": "general",
-    "webOSPromotionVideo": "option",
-    "promotionStreamer": "option",
-    "allowMobileDeviceAccess": "network",
-    "watchedListCollection": "option",
-    "thirdPartyCookie": "option",
-    "usageCare": "option",
-    "dbgLogUpload": "option",
-    "faultLogUpload": "option",
-}
-FIRMWARE_MAP_KEYS = set(CONTROL_CATEGORIES) | set(REFERENCE_CATEGORIES)
+FIRMWARE_MAP_KEYS = set(CONTROL_CATEGORIES)
 CATEGORY_NAME = re.compile(r"^[A-Za-z][A-Za-z0-9_]{0,63}$")
 AGREEMENT_ID = re.compile(r"^S_[A-Z0-9]{1,8}$")
 
@@ -104,77 +90,6 @@ def preference_categories(firmware_map=None):
     }
 
 
-def process_names():
-    wanted = {"voiceinput", "voiceinput_sound", "voiceinput_preprocessor", "voiceconductor"}
-    found = set()
-    for path in glob.glob("/proc/[0-9]*/comm"):
-        try:
-            name = open(path, "r", encoding="utf-8").read().strip()
-        except OSError:
-            continue
-        if name in wanted:
-            found.add(name)
-    return sorted(found)
-
-
-def installed_apps():
-    apps = []
-    for path in glob.glob("/media/developer/apps/usr/palm/applications/*/appinfo.json"):
-        data = read_json(path)
-        if not isinstance(data, dict):
-            continue
-        apps.append({
-            "id": str(data.get("id", os.path.basename(os.path.dirname(path)))),
-            "title": str(data.get("title", "")),
-            "version": str(data.get("version", ""))
-        })
-    return sorted(apps, key=lambda item: (item["title"].lower(), item["id"]))
-
-
-def diagnostics(option=None, firmware_map=None, category_preferences=None):
-    if option is None:
-        option = read_json("/var/luna/preferences/option")
-    if not isinstance(option, dict):
-        option = {}
-    if not isinstance(category_preferences, dict):
-        category_preferences = {"option": option}
-    services = []
-    try:
-        result = subprocess.run(["pidof", "rdxd", "uploadd"], capture_output=True, text=True, timeout=2)
-        pids = set(result.stdout.split())
-        if pids:
-            # Map PIDs to names without exposing process arguments.
-            for pid in pids:
-                try:
-                    name = open(f"/proc/{pid}/comm", "r", encoding="utf-8").read().strip()
-                    if name in {"rdxd", "uploadd"}:
-                        services.append(name)
-                except OSError:
-                    pass
-    except (OSError, subprocess.TimeoutExpired):
-        pass
-    auto_upload = None
-    try:
-        with open("/etc/rdxd.conf", "r", encoding="utf-8", errors="replace") as source:
-            for line in source:
-                key, sep, value = line.partition("=")
-                if sep and key.strip().lower() == "autoupload":
-                    auto_upload = value.strip().lower() == "true"
-                    break
-    except OSError:
-        pass
-    debug_category = category_for("dbgLogUpload", "option", firmware_map)
-    fault_category = category_for("faultLogUpload", "option", firmware_map)
-    debug_value = category_preferences.get(debug_category, {}).get("dbgLogUpload") if debug_category else None
-    fault_value = category_preferences.get(fault_category, {}).get("faultLogUpload") if fault_category else None
-    return {
-        "services": sorted(set(services)),
-        "autoUpload": auto_upload,
-        "faultLogUpload": fault_value if isinstance(fault_value, bool) else None,
-        "debugLogUpload": debug_value if isinstance(debug_value, bool) else None,
-    }
-
-
 def privacy_settings(option=None, general=None, network=None, other=None, firmware_map=None, category_preferences=None):
     """Read only explicit, reviewed privacy controls from local preferences."""
     if option is None:
@@ -201,41 +116,6 @@ def privacy_settings(option=None, general=None, network=None, other=None, firmwa
         key: value
         for key, value in values.items()
         if isinstance(value, str) and value in accepted
-    }
-
-
-def reference_settings(option=None, general=None, network=None, firmware_map=None, category_preferences=None):
-    """Read named research keys for display only; PrivacyShield never writes them."""
-    if option is None:
-        option = read_json("/var/luna/preferences/option")
-    if general is None:
-        general = read_json("/var/luna/preferences/general")
-    if network is None:
-        network = read_json("/var/luna/preferences/network")
-    if not isinstance(option, dict):
-        option = {}
-    if not isinstance(general, dict):
-        general = {}
-    if not isinstance(network, dict):
-        network = {}
-    if not isinstance(category_preferences, dict):
-        category_preferences = {"option": option, "general": general, "network": network}
-    values = {}
-    for key, fallback_category in REFERENCE_CATEGORIES.items():
-        category = category_for(key, fallback_category, firmware_map)
-        if category:
-            values[key] = category_preferences.get(category, {}).get(key)
-    boolean_keys = {"allowMobileDeviceAccess", "usageCare", "dbgLogUpload", "faultLogUpload"}
-    string_values = {
-        "watchedListCollection": {"on", "off"},
-        "thirdPartyCookie": {"on", "off", "onByUser", "offByUser"},
-    }
-    return {
-        key: value
-        for key, value in values.items()
-        if (key in boolean_keys and isinstance(value, bool))
-        or (key in string_values and isinstance(value, str) and value in string_values[key])
-        or (key not in boolean_keys and key not in string_values and isinstance(value, str) and value in {"on", "off"})
     }
 
 
@@ -287,11 +167,7 @@ def snapshot():
     network = categories.get("network")
     other = categories.get("other")
     return {
-        "apps": installed_apps(),
-        "voiceProcesses": process_names(),
-        "diagnostics": diagnostics(option, firmware_map, categories),
         "settings": privacy_settings(option, general, network, other, firmware_map, categories),
-        "referenceSettings": reference_settings(option, general, network, firmware_map, categories),
         "firmwareSettingsMap": firmware_map,
         "agreements": agreements(),
     }

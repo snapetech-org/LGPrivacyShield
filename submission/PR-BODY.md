@@ -50,7 +50,7 @@ the TV's model, software, firmware, and permissions.
 
 #### Submission details
 
-- Release: [LGPrivacyShield 0.4.1](https://github.com/snapetech-org/LGPrivacyShield/releases/tag/v0.4.1)
+- Release: [LGPrivacyShield 0.4.2](https://github.com/snapetech-org/LGPrivacyShield/releases/tag/v0.4.2)
 - License: AGPL-3.0-only
 - Listing: `packages/org.privacyshield.webos.yml`
 
@@ -60,14 +60,13 @@ paired dark and light screenshots. I also included my Ko-fi link for support:
 
 #### Current status
 
-Version 0.4.1 is published. This listing uses the stable latest-release
+Version 0.4.2 is published. This listing uses the stable latest-release
 manifest URL, which resolves to the matching IPK. The PR is ready for
 maintainer review.
 
 #### Validation
 
-The 0.4.1 release passed 61 Node.js tests, 51 Python tests, and 18 packaged
+The 0.4.2 release passed 61 Node.js tests, 51 Python tests, and 18 packaged
 app browser checks; `npm audit` found no vulnerabilities. The Homebrew IPK
-verifier reports ES2017 support on the webOS 6.4.0 and later profiles. It
-marks runtime APIs as `polyfill?` on 6.4.0 and reports native runtime APIs on
-7.4.0 and later. Earlier webOS releases have not been tested.
+verifier reports ES2017 and runtime API support on the webOS 6.4.0 and later
+profiles. Earlier webOS releases have not been physically tested.

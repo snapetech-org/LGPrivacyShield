@@ -1,8 +1,9 @@
-# Release preparation
+# Release procedure
 
-This file describes the release steps. It does not authorize publication.
-Project-owner signoff is required before creating a GitHub release, submitting
-or updating a Homebrew catalog entry, or merging a Homebrew repository change.
+This runbook covers versioning, validation, packaging, and publication.
+Project-owner signoff is required before publishing a release or updating the
+Homebrew catalog entry. Keep the catalog pull request open for maintainer
+review.
 
 ## Before release
 
@@ -34,17 +35,25 @@ or updating a Homebrew catalog entry, or merging a Homebrew repository change.
 9. After signoff, publish the GitHub release and update the Homebrew catalog
    only through its reviewed repository workflow.
 
-## Current state
+## Current release
 
-Version 0.4.0 is published with the installable IPK and matching Homebrew
-manifest. Its SHA-256 is
-`38d5929d583ef0c7ab6e7244ec92cf2956928caaadadec7e40374cd85f804f0d` and its
-size is 73,610 bytes. Homebrew PR #296 is open for maintainer review and points
-to the stable latest-release manifest URL. The catalog PR checks passed before
-v0.4.0 was published; rerunning them requires Homebrew repository admin access.
-The current source is 0.4.1 and is not released. It includes security
-hardening documented in [SECURITY-REVIEW.md](docs/SECURITY-REVIEW.md). The
-Homebrew PR still resolves to the published 0.4.0 manifest; do not merge it
-until a matching 0.4.1 IPK and manifest are published. Project-owner signoff is
-required before that release and PR update. IPK creation uses the local Python
-packager and includes only tracked app files.
+[LGPrivacyShield 0.4.1](https://github.com/snapetech-org/LGPrivacyShield/releases/tag/v0.4.1)
+was published on 2026-10-25 from commit
+`513c4280bae236ce2b8fc43f65cf91ba4901b203`. The release includes the installable
+IPK and a Homebrew manifest generated from that exact package. The IPK is
+73,926 bytes with SHA-256
+`dba31d9531dbd0e966fb07cce913e91983e34068bec8ae391360432cbd6b21e2`.
+
+Homebrew catalog PR
+[#296](https://github.com/webosbrew/apps-repo/pull/296) is open for maintainer
+review. Its stable latest-release manifest URL now resolves to 0.4.1. The
+listing expects webOS 6 and later; physical testing is on a C6 running webOS
+26. Earlier versions have not been physically tested. The 0.4.1 package passed
+61 Node.js tests, 51 Python tests, and all 18 packaged browser checks. The
+dependency audit reported no vulnerabilities. The compatibility checker reports
+ES2017 support on its webOS 6.4.0 and later profiles; runtime API polyfills may
+be needed on 6.4.0, while 7.4.0 and later profiles report native APIs.
+
+Known security and attribution limits are recorded in
+[SECURITY-REVIEW.md](docs/SECURITY-REVIEW.md). IPK creation uses the local
+Python packager and includes tracked app files only.

@@ -12,9 +12,8 @@ test record, and AI-use declaration.
 
 The existing
 [catalog pull request #296](https://github.com/webosbrew/apps-repo/pull/296)
-is open. Its stable manifest URL resolves to the published v0.4.0 package.
-Source version 0.4.1 includes security fixes but is not released; update the
-Homebrew listing and release manifest together before merging the PR. The
-listing expects webOS 6+; the C6 on webOS 26 is the only physical test, and
-earlier releases remain untested. See [release preparation](../RELEASE.md) and
-the [TV testing guide](../docs/TEST-ON-YOUR-TV.md).
+is open for maintainer review. [Version 0.4.1](https://github.com/snapetech-org/LGPrivacyShield/releases/tag/v0.4.1)
+is published, and the listing's stable manifest URL resolves to its matching
+package. The listing expects webOS 6+; the C6 on webOS 26 is the only physical
+test, and earlier releases remain untested. See [release procedure](../RELEASE.md)
+and the [TV testing guide](../docs/TEST-ON-YOUR-TV.md).

@@ -1,6 +1,7 @@
 # Security review
 
-Reviewed 2026-10-25 against the LGPrivacyShield 0.4.1 source candidate.
+Reviewed 2026-10-25 against LGPrivacyShield 0.4.1, published in the
+[0.4.1 release](https://github.com/snapetech-org/LGPrivacyShield/releases/tag/v0.4.1).
 
 ## Changes made
 

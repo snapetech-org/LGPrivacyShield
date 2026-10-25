@@ -1,27 +1,31 @@
 # PrivacyShield
 
-PrivacyShield reads LG webOS privacy settings, LG agreement status, and selected
-local TV status. It can change a setting only when its model/software profile
-supports that setting and the TV returns a readable current value. Each change
-is read back from the TV before success is shown.
+PrivacyShield lets you review and manage privacy settings on an LG webOS TV
+using its remote. It reads the TV's settings, LG agreement choices, and local
+status through webOS services on the TV.
 
-## What it shows and changes
+## What you can do
 
-- 17 privacy controls covering Live Plus, voice, advertising, recommendations,
-  HbbTV, Bluetooth wake, and Sleep on Absence. Available controls depend on the
-  model, webOS version, and keys exposed by the TV.
-- A recommended settings preset and a local restore point. The preset leaves
-  separate ad preferences, broadcast features, and presence features unchanged.
-- LG agreement status. Changes open LG's native User Agreements screen. The app
-  does not accept EULA terms or edit saved agreement records.
-- Per-agreement accepted and declined effects, with source quality and an
-  explicit unmapped state for additional regional or model-specific choices.
-- Model and software details, local service and installed-app status, LG
-  diagnostic-upload settings, documented menu paths, and published model
-  reports.
-- An optional compatibility report. It contains model/software identity and
-  read-access results, not current setting values. It remains local until the
-  user copies or scans it and submits it.
+- Review available controls for Live Plus, voice, advertising, recommendations,
+  HbbTV, Bluetooth wake, and Sleep on Absence.
+- Change supported settings one at a time or apply the recommended settings.
+  PrivacyShield saves a local restore point before the first change, which you
+  can restore later. It reads a setting before enabling its switch and checks
+  the value again after a change.
+- Review saved LG agreement choices and read what LG documents about their
+  effects. Open LG's User Agreements screen on the TV to change a choice.
+- Check the TV model, webOS and firmware versions, network connection, local
+  service status, installed Homebrew apps, and diagnostic-upload settings.
+- Prepare an optional compatibility report with the model/software identity
+  and yes/no results for setting read access. Choose whether to share it.
+
+## Local operation and privacy
+
+PrivacyShield runs on the TV and uses its local webOS services to read or change
+settings. PrivacyShield itself sends no data off the TV and has no account,
+telemetry, or automatic upload service. Its reads and changes stay local. A
+compatibility report is prepared locally and copied to the TV's clipboard; it
+leaves the TV only if you choose to submit it.
 
 The app does not record audio or screenshots, run a background service, inspect
 encrypted network traffic, or upload TV settings or viewing activity. Network
@@ -29,60 +33,28 @@ destination history requires separate router or DNS logs. A software voice
 switch does not disconnect a physical microphone; the TV does not expose a
 verified microphone-disconnect control to this app.
 
-## Model support
+## TV support
 
-Profile selection covers the B1–B6, C1–C6, and G1–G6 OLED families and their
-installed webOS versions. Profile data comes from published source code,
-community reports, LG menu guides, and model-specific settings reports. Extra
-controls are restricted to the model/software scope of their source. These
-profiles do not mean that each physical TV has been tested.
+PrivacyShield targets LG webOS 6 and later. Available controls depend on the TV
+model, region, installed software, and Homebrew permissions. A setting is
+available only when the TV returns a readable current value; PrivacyShield
+checks each change by reading the value back. Some TVs will show fewer controls
+or read-only status.
 
-The exact OLED77C6HUP / webOS 26 profile contains 15 reviewed control entries.
-The checked firmware key list contains 14 of them; `hbbTvDnt` is absent and
-remains unavailable. The two Smart Tips controls are not part of this profile.
-Three C6H settings have prior app write/readback checks. Every current switch
-still requires a fresh readable value, and every write requires readback.
+Download the [latest release](https://github.com/snapetech-org/PrivacyShield/releases/latest)
+and install its IPK with a Homebrew-compatible installer such as
+[webOS Dev Manager](https://github.com/webosbrew/dev-manager-desktop). A rooted
+TV with Homebrew Channel provides local service access used for settings and TV
+status. See the [installation and TV guide](docs/TEST-ON-YOUR-TV.md).
 
-The firmware archive data lists package identity and checksums. It does not
-contain extracted settings maps and never enables a control. See
-[model compatibility](docs/DEVICE-COMPATIBILITY.md),
-[public evidence](docs/COMMUNITY-EVIDENCE.md), and the
-[privacy capability map](docs/TV-PRIVACY-CAPABILITY-MAP.md) for sources and
-limits.
+## More detail
 
-## Build and headless checks
+- [Model and software compatibility](docs/DEVICE-COMPATIBILITY.md)
+- [LG agreement effects](docs/LG-AGREEMENT-EFFECTS.md)
+- [Privacy settings and their documented effects](docs/TV-PRIVACY-CAPABILITY-MAP.md)
+- [Sources for model support](docs/COMMUNITY-EVIDENCE.md)
 
-Requirements: Node.js, Python 3, Chromium, `ar`, and the pinned webOS CLI in the
-project dependencies.
-
-```sh
-npm ci
-npm test
-npm run package
-npm run test:ipk
-```
-
-`npm test` runs the JavaScript, Python, and Chromium headless suites. The UI
-tests emulate the remote, SettingsService responses, HBC access, supported and
-unsupported settings, errors, and model/software profile selection. They do not
-emulate private firmware code or replace physical-TV checks. The package is
-written to `dist/org.privacyshield.webos_0.4.0_all.ipk`.
-
-For QA coverage and limits, see [headless QA](docs/HEADLESS-QA.md). For a
-physical TV test, see [the TV test guide](docs/TEST-ON-YOUR-TV.md).
-
-## Release status
-
-The source tree is at version 0.4.0 and is not published as a release. The last
-published release is [v0.1.12](https://github.com/snapetech-org/PrivacyShield/releases/tag/v0.1.12).
-The existing Homebrew catalog submission has not been updated by this source
-change. A release or Homebrew submission requires project-owner signoff; see
-[release preparation](RELEASE.md).
-
-## License and support
+## License
 
 PrivacyShield is licensed under the GNU Affero General Public License, version
-3. See [LICENSE](LICENSE) and
-[third-party notices](THIRD-PARTY-NOTICES.md).
-
-[Ko-fi: snapetech](https://ko-fi.com/snapetech)
+3. See [LICENSE](LICENSE).

@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.2 (unreleased)
+## 0.4.2 (2026-10-25)
 
 - Keep runtime API use within ES2017 so the webOS 6.4 compatibility check passes without polyfills.
 

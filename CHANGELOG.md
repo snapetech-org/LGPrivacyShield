@@ -13,6 +13,8 @@
 - Expanded headless Chromium, Python, firmware-catalog, and package checks.
 - Added the About screen, AGPL-3.0-only licensing, third-party notices, and Ko-fi
   links.
+- Added a page-by-page user guide with headless screenshots and a documentation
+  index.
 
 ## 0.1.12
 

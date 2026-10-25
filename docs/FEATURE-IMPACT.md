@@ -1,5 +1,7 @@
 # Privacy setting effects
 
+For where these controls appear in the app, see the [app guide](APP-GUIDE.md).
+
 Each switch changes one TV setting and reads it back. The recommended preset
 changes ten reviewed settings. Do Not Sell, the HbbTV master switch, HbbTV
 third-party cookies, Bluetooth wake, and Sleep on Absence remain separate

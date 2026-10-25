@@ -154,29 +154,11 @@ the second Back delegates to webOS's standard exit prompt. The app sets
 LG requires TV apps to support five-way navigation and documents Left/Up/Right/
 Down as 37/38/39/40, OK as 13, and Back as 461.
 
-## Samsung story context
-
-Samsung's public documentation describes a Pet Care and Family Care feature
-that uses SmartThings to analyze nearby noises such as barking or crying and
-send notifications. That disclosed feature does not establish the separate
-claim that a Samsung TV's audio service runs continuously or reports ambient
-sound events to Samsung without a user's activation.
-
-On October 24, 2026, a report summarized a researcher's posts about static
-analysis of a 2025 Samsung TV firmware, including a service name, event
-counters, and cloud endpoint. The report said the full technical writeup had
-not been published and no independent lab had reproduced the findings. Treat
-those claims as unverified; they do not establish behavior on this LG webOS
-TV. This assessment uses this set's own preference files and webOS Settings
-application, plus LG's model documentation and statements.
-
 ## Sources
 
 - [LG OLED77C6HUP product support and manuals](https://www.lg.com/us/support/product/lg-OLED77C6HUP.AUS)
 - [LG OLED77C6HUP owner manual](https://gscs-b2c.lge.com/open/downloadFile?fileId=wfynXPbF61Qz9tGNP8mg) — page 7 shows the two bottom-control layouts
 - [LG explanation of voice recognition and ACR](https://www.lgcorp.com/media/release/30566)
-- [Samsung support: Vision AI, including Pet Care and Family Care](https://www.samsung.com/us/support/answer/ANS10006930/)
-- [Report on the Samsung reverse-engineering claims and verification status](https://pasqualepillitteri.it/en/news/26796/samsung-tvs-researcher-claims-microphone-always-on)
 - [LG Privacy Statement for Smart TVs](https://www.lg.com/us/newsroom/corporate/statement-understanding-privacy-on-lg-smart-tvs)
 - [webOS TV Settings Service reference](https://webostv.developer.lge.com/develop/references/settings-service)
 - [webOS TV ACG guide](https://webostv.developer.lge.com/develop/guides/acg-guide)

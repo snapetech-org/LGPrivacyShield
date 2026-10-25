@@ -418,6 +418,61 @@ async function launchHeadless(origin, userDataDir) {
   }
 }
 
+async function captureDocumentationScreenshots(browser, outputDirectory) {
+  const targetDirectory = path.resolve(outputDirectory);
+  fs.mkdirSync(targetDirectory, { recursive: true });
+
+  // Use a synthetic matrix identity so documentation captures do not expose a
+  // specific physical TV's model or firmware details.
+  await browser.navigate("matrix-C5-p25");
+  await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').textContent")) === "TV status updated", "synthetic screenshot fixture");
+  await browser.evaluate("localStorage.clear(); document.querySelector('#main-content').scrollTop = 0");
+  await wait(120);
+
+  const capture = (name) => browser.screenshot(path.join(targetDirectory, name));
+  const selectView = async (view) => {
+    await browser.evaluate(`(() => {
+      document.querySelector('.tab[data-view="${view}"]').click();
+      document.activeElement.blur();
+      document.querySelectorAll('.remote-focused').forEach((element) => element.classList.remove('remote-focused'));
+      document.querySelector('#main-content').scrollTop = 0;
+    })()`);
+    await wait(120);
+  };
+
+  await capture("overview.png");
+
+  await selectView("controls");
+  await capture("controls-top.png");
+  await browser.evaluate("document.querySelector('[data-setting=livePlus]').focus()");
+  for (let index = 1; index < 17; index += 1) await browser.press("ArrowDown");
+  await capture("controls-bottom.png");
+
+  await selectView("agreements");
+  await capture("agreements-top.png");
+  await browser.evaluate("(() => { const main = document.querySelector('#main-content'); main.scrollTop = main.scrollHeight; })()");
+  await wait(120);
+  await capture("agreements-bottom.png");
+
+  await selectView("evidence");
+  await capture("tv-details-status.png");
+  await browser.evaluate(`(() => {
+    const main = document.querySelector('#main-content');
+    const target = document.querySelector('.compatibility-panel');
+    const map = document.querySelector('#mapped-settings-details');
+    map.open = true;
+    main.scrollTop += target.getBoundingClientRect().top - main.getBoundingClientRect().top;
+  })()`);
+  await wait(120);
+  await capture("tv-details-compatibility.png");
+
+  await selectView("about");
+  await capture("about.png");
+
+  const errors = await browser.evaluate("window.__privacyShieldFixture.errors");
+  if (errors.length) throw new Error(`Documentation screenshots loaded with browser errors: ${errors.join("; ")}`);
+}
+
 test("PrivacyShield works in headless Chromium with a simulated webOS remote and service bridge", async (t) => {
   const { server, origin } = await startServer();
   const userDataDir = fs.mkdtempSync(path.join(SCRATCH_ROOT, "privacyshield-headless-"));
@@ -1644,6 +1699,10 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
           }
         }
       }
+    }
+
+    if (process.env.PRIVACYSHIELD_DOC_SCREENSHOT_DIR) {
+      await captureDocumentationScreenshots(browser, process.env.PRIVACYSHIELD_DOC_SCREENSHOT_DIR);
     }
   } finally {
     if (browser) await browser.stop();

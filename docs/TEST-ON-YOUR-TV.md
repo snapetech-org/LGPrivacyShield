@@ -1,4 +1,7 @@
-# Test PrivacyShield on your LG TV
+# Install and check PrivacyShield on your LG TV
+
+For a tour of the app pages, see the [PrivacyShield app guide](APP-GUIDE.md).
+The [documentation index](README.md) links to user and technical references.
 
 PrivacyShield can collect read-only compatibility evidence from a TV whose exact
 model and software have not been mapped. This helps compare real sets instead

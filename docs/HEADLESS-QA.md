@@ -38,11 +38,13 @@ firmware image was extracted or that another physical TV was tested.
 
 ## Verification record · 2026-10-25
 
-- `npm test` passed: 62 Node.js tests and 51 Python tests.
-- `npm run package` passed and produced a 149,442-byte IPK.
-- `npm run test:ipk` passed: package metadata and all 22 packaged-app browser
+- `npm test` passed: 63 Node.js tests and 51 Python tests.
+- `npm run package` passed and produced a 150,372-byte IPK.
+- `npm run test:ipk` passed: package metadata and all 23 packaged-app browser
   tests passed after extraction.
-- SHA-256: `444f83109f52ae54a848804dba14f2bd38d5d0317595346ccabe99c8a8d62b30`
+- Homebrew manifest generator 0.10.0 produced a matching 0.4.0 manifest with
+  the same package size and SHA-256.
+- SHA-256: `5416c250489d780986499b3c6a3d0840aec029f239e17cf0acc1d47330711020`
 
 This verification includes the per-agreement effect map, TV-reported agreement
 titles, the region/model terms caveat, and unmapped-agreement display. The
@@ -137,9 +139,21 @@ particular contents.
 Chromium uses a temporary profile. Set `PRIVACYSHIELD_HEADLESS_DIR` to place it
 in a task-scoped scratch directory; otherwise the system temp directory is
 used. The suite closes Chromium and removes that profile on success or failure.
-To save headless screenshots for review, set `PRIVACYSHIELD_CAPTURE_PATH`,
-`PRIVACYSHIELD_REPORT_CAPTURE_PATH`, or `PRIVACYSHIELD_ABOUT_CAPTURE_PATH` to
-file paths.
+
+To regenerate the screenshots embedded in the README and app guide, use:
+
+```sh
+mkdir -p docs/screenshots
+PRIVACYSHIELD_DOC_SCREENSHOT_DIR=docs/screenshots npm run test:headless
+```
+
+The capture uses the synthetic C5/webOS 25 fixture and writes eight 1920×1080
+PNG files. These images document the layout; they are not evidence that the
+shown settings work on a physical TV. Other UI checks can save individual
+screenshots with `PRIVACYSHIELD_CAPTURE_PATH`,
+`PRIVACYSHIELD_REPORT_CAPTURE_PATH`, `PRIVACYSHIELD_ABOUT_CAPTURE_PATH`,
+`PRIVACYSHIELD_CONTROLS_TOP_CAPTURE_PATH`, or
+`PRIVACYSHIELD_CONTROLS_BOTTOM_CAPTURE_PATH` set to file paths.
 
 These checks verify application behavior against simulated bridge responses.
 They do not verify webOS permission registration, service access on a

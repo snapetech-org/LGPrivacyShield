@@ -1,5 +1,8 @@
 # LG TV compatibility maps
 
+TV owners can start with the [app guide](APP-GUIDE.md); this page describes the
+model and software maps that control setting availability.
+
 PrivacyShield builds a profile from the TV's model family and its **installed** webOS version. It supports the B1–B6, C1–C6, and G1–G6 OLED families. A series name does not prove that every setting exists on every size, region, or firmware. The app enables a mapped switch only after that TV returns a recognized value, and it reports success only after reading the requested value back.
 
 ## Profile layers

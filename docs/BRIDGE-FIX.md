@@ -1,8 +1,12 @@
 # Homebrew Channel permission map
 
-## Why the bridge was blocked
+This maintainer note records a permission failure and repair on one rooted C6
+test TV running Homebrew Channel 0.7.3. Check the active permission map on a TV
+before using these repair steps; the paths and observations may differ by build.
 
-The installed Homebrew Channel on the LG C6 is version 0.7.3. PrivacyShield
+## Failure recorded on the test TV
+
+The installed Homebrew Channel on the test LG C6 was version 0.7.3. PrivacyShield
 already declares the `lunabus.query` ACG in its app manifest and calls
 `org.webosbrew.hbchannel.service/exec`, but HBC's service manifest did not
 register an API-permission file for that ACG. The service therefore rejected
@@ -113,9 +117,9 @@ For final validation, make the next request from PrivacyShield itself. A root
 shell request can start the service but does not prove that the app's own
 client identity has access.
 
-## Current repair result
+## Historical repair and validation results
 
-The map and manifest entry are present in the HBC 0.7.3 development tree. The
+The map and manifest entry were present in the HBC 0.7.3 development tree. The
 first filesystem check and `ls-control scan-services` were insufficient: the
 active HBC service still had its old permission list. Restarting that dynamic
 service and making a new request caused it to register the updated groups.
@@ -128,10 +132,12 @@ bridge returned root identity, read three privacy settings and seven agreement
 flags, and completed idempotent `off` write/readback checks for those three
 controls. They were already `off`; that validation did not change them or
 agreement consent. A later v0.1.5 app session toggled Live Plus off and on;
-the other v0.1.5 additions were not individually tested live. The current
-v0.1.6 package has not been installed or run on the TV. Direct SettingsService
-reads remain denied on this firmware, so the app uses the HBC snapshot
-fallback. System information and network status calls succeeded directly.
+the other v0.1.5 additions were not individually tested live. At the time of
+this record, the v0.1.6 package had not been installed or run on the TV. Direct
+SettingsService reads were denied during that check, so the app used the HBC
+snapshot fallback. System information and network status calls succeeded
+directly. These are observations from the recorded test session, not current
+validation of every release or TV.
 
 ## Security scope
 

@@ -1,5 +1,7 @@
 # LG webOS privacy capability map
 
+For a user-facing walkthrough of these controls, see the [app guide](APP-GUIDE.md).
+
 This map covers controls and observable state traced on an LG C6 running webOS
 26. It distinguishes settings that can be read and changed from permission
 manager actions and other keys whose full behavior is not yet verified. A key,

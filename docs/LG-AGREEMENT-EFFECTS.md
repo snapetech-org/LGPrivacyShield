@@ -1,5 +1,8 @@
 # LG agreement effects
 
+For the agreements screen and how to change a saved choice, see the
+[app guide](APP-GUIDE.md).
+
 This document maps the agreement choices shown by PrivacyShield to the effects
 LG documents. It describes permissions and feature gates; an accepted status
 does not prove that a feature ran or that information was collected or sent.

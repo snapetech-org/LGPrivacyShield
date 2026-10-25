@@ -13,7 +13,7 @@ reviewed control candidates. The TV-local firmware key index lists 14; it does
 not list `hbbTvDnt`, so that candidate is unavailable on this build. Other
 B/C/G families use narrower installed-platform maps
 assembled from the published sources listed below. They do not claim that
-every control exists on every TV: PrivacyShield lists only settings in the
+every control exists on every TV: LGPrivacyShield lists only settings in the
 selected profile and the TV's firmware map. A listed switch remains read-only
 until the TV returns a recognized value. See
 [DEVICE-COMPATIBILITY.md](DEVICE-COMPATIBILITY.md) for the family/platform
@@ -60,7 +60,7 @@ proves payload contents when traffic is encrypted.
 ## Settings traced to LG's Settings app
 
 Sixteen switches use SettingsService category and key names in the current
-catalog. Do Not Sell uses LG's separate ad-manager method. PrivacyShield reads
+catalog. Do Not Sell uses LG's separate ad-manager method. LGPrivacyShield reads
 each value back before showing a successful change. The exact C6H profile
 contains 15 reviewed candidates, and the local firmware index lists 14 of
 them. Smart Tips are optional and
@@ -74,7 +74,7 @@ readback was previously confirmed for Live Plus and the two voice controls.
 Other candidates remain unverified for app-side writes on this physical TV; a
 headless pass is not device validation.
 
-| Setting | LG path | PrivacyShield action | Feature effect or limit | Confidence |
+| Setting | LG path | LGPrivacyShield action | Feature effect or limit | Confidence |
 |---|---|---|---|---|
 | Live Plus / ACR | `option.livePlus` | Preset: `off` | Disables the Live Plus viewing-recognition feature. Related recommendations and some viewing-based features may be unavailable. LG describes ACR as audio fingerprinting; this switch does not show agreement status. | High |
 | Hands-free voice recognition | `general.voiceLongDistance` | Preset: `off` | Stops far-field voice commands. It does not disconnect the built-in or remote microphone. | High |
@@ -103,27 +103,27 @@ app does not read or display it.
 
 For the exact `OLED65G5WUA` / webOS 10.2.1 overlay, the Level1Techs root guide
 names `general.aiNudge`, `general.screenSaverAd`, and `general.homePromotion`.
-PrivacyShield uses those as source-mapped candidates with Glasshouse's shared
+LGPrivacyShield uses those as source-mapped candidates with Glasshouse's shared
 SettingsService definitions; the app still requires a readable current value
 and matching readback on the TV. The guide omits numerical firmware and writes
 preference files directly. Its five other option keys are research evidence;
 the app does not read or display them. The guide also writes cached agreement
-state; PrivacyShield leaves that in the native webOS consent flow.
+state; LGPrivacyShield leaves that in the native webOS consent flow.
 
-Glasshouse also publishes a C5/webOS 10.3.1 key-reader investigation. PrivacyShield
+Glasshouse also publishes a C5/webOS 10.3.1 key-reader investigation. LGPrivacyShield
 uses the `voiceLongDistance` and `thirdPartyCookie` findings as candidates only
 on C5 devices reporting SDK 10.3.1 / webOS 25. The other four keys remain in
 the source research and are not read or displayed by the app. The report does
 not publish the scanned set's exact SKU or numeric firmware. `usageCare` is a
 Family Care menu setting in the report, not a demonstrated collection control.
-The Glasshouse source reports some readers but does not establish PrivacyShield
+The Glasshouse source reports some readers but does not establish LGPrivacyShield
 app permissions or the result of writing these values.
 
 The `webos_lockout` project adds a narrower C5 row: it identifies
 `OLED77C51LA` running Rockhopper 10.3.1-3006 and sets `usageCare`,
 `dbgLogUpload`, and `faultLogUpload` to false in the option preference file.
 The project does not publish a numeric firmware version or test the packaged
-app's setter. PrivacyShield does not read or display these values. It describes
+app's setter. LGPrivacyShield does not read or display these values. It describes
 `usageCare` as usage data, while Glasshouse found a Family Care menu effect and
 no collection behavior; its effect remains unresolved.
 
@@ -137,7 +137,7 @@ third-party cookies, Bluetooth wake, and Sleep on Absence for separate choice.
 
 ## LG agreement choices
 
-PrivacyShield reads the current selectable entries in
+LGPrivacyShield reads the current selectable entries in
 `eulaInfoNetwork.eulaList`. On the exact C6 firmware, seven entries of type
 `M` have verified ID/title pairs. The app displays those seven with the
 source-backed accepted and declined effects in
@@ -171,7 +171,7 @@ resources:
 | `usbFileAccess.privacy` | `usbFileAccess` | `usbFileAccess` | `com.webos.service.ppm/setPermission` with `allow` or `deny` |
 
 The PPM API permission file on the TV associates `ppm.query` with
-`queryPermissions` and `ppm.management` with permission writes. PrivacyShield
+`queryPermissions` and `ppm.management` with permission writes. LGPrivacyShield
 does not yet request these groups or expose per-app switches: a root-side
 `queryPermissions` attempt returned no parseable status, and the app's caller
 identity and readback behavior have not been validated. The empty camera and
@@ -182,7 +182,7 @@ readback are tested on supported firmware.
 ## One-time ID and history actions
 
 These are actions in LG Settings, not privacy switches. They are mapped but
-not included in PrivacyShield.
+not included in LGPrivacyShield.
 
 | LG action | Service path | What it does | Why it is separate |
 |---|---|---|---|
@@ -205,7 +205,7 @@ write/read/effect path is not yet established. They are not app controls.
 | `faultLogUpload`, `dbgLogUpload`, `autoUpload` | Diagnostic flags and local diagnostic services/configuration. The current app does not read or display these values. | Map the user-facing controls and past-report visibility. The current app cannot enumerate past uploads or report contents. |
 | `enableIpControl`, `enableSDDP` | Network/device-control preferences. | Determine discovery exposure and compatibility effects before recommending changes. |
 
-## PrivacyShield service permissions
+## LGPrivacyShield service permissions
 
 | Call | App permission or path | Purpose |
 |---|---|---|

@@ -1,6 +1,6 @@
 # Third-party notices
 
-PrivacyShield is licensed under AGPL-3.0-only. These notices cover third-party
+LGPrivacyShield is licensed under AGPL-3.0-only. These notices cover third-party
 code included in the application package; their licenses remain separate.
 
 ## webOSTV.js 1.2.13

@@ -2,15 +2,15 @@
   "id": "org.privacyshield.webos",
   "version": "0.4.0",
   "type": "web",
-  "title": "PrivacyShield",
+  "title": "LGPrivacyShield",
   "appDescription": "Review LG privacy settings and saved agreement choices.",
-  "iconUri": "https://raw.githubusercontent.com/snapetech-org/PrivacyShield/main/webos-app/assets/privacyshield-icon.png",
-  "sourceUrl": "https://github.com/snapetech-org/PrivacyShield",
+  "iconUri": "https://raw.githubusercontent.com/snapetech-org/LGPrivacyShield/main/webos-app/assets/lgprivacyshield-icon.png",
+  "sourceUrl": "https://github.com/snapetech-org/LGPrivacyShield",
   "rootRequired": "optional",
   "ipkUrl": "org.privacyshield.webos_0.4.0_all.ipk",
   "ipkHash": {
-    "sha256": "a2229f2b0b422dc898d473b37c0493e6583b3a0fb6fe8925d5c6447dc97b0c4a"
+    "sha256": "be2864e85260ca6049ad28db11f979eccb6f998eb1be4ea984f664660975f14b"
   },
-  "ipkSize": 73592,
-  "installedSize": 258561
+  "ipkSize": 73606,
+  "installedSize": 258613
 }

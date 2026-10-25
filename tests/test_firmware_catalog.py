@@ -89,7 +89,7 @@ class FirmwareCatalogTests(unittest.TestCase):
         self.assertEqual(catalog["coverage"]["C2"]["otaIds"], ["HE_DTV_W22O_AFABATPU"])
         self.assertEqual(catalog["coverage"]["G5"]["otaIds"], ["HE_DTV_W25O_AFABATAA"])
         self.assertEqual(catalog["packageBuildCount"], 3)
-        self.assertIn("PrivacyShieldFirmwareData", render_js(catalog))
+        self.assertIn("LGPrivacyShieldFirmwareData", render_js(catalog))
         self.assertNotIn("Samsung S90", render_js(catalog))
 
     def test_builder_rejects_unsafe_archive_paths_and_does_not_emit_unchecksummed_images(self):

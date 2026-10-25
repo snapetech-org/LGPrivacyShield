@@ -29,9 +29,9 @@
 
 - [x] 6.1 Add a sourced catalog for all 18 B1–B6, C1–C6, and G1–G6 cohorts with source-listed model sizes, launch year, launch webOS platform, and microphone evidence/scope; label regional variants and unknown/conflicting cases.
 - [x] 6.2 Import the canonical Glasshouse tested-TV rows, reported webOS/firmware values, and notes at a pinned revision; preserve and test the 48-declared-versus-49-listed count discrepancy.
-- [x] 6.3 Import the CleanYourTV tested-device table at a pinned revision and record that it uses root service/boot integration rather than PrivacyShield's packaged-app bridge.
+- [x] 6.3 Import the CleanYourTV tested-device table at a pinned revision and record that it uses root service/boot integration rather than LGPrivacyShield's packaged-app bridge.
 - [x] 6.4 Map published Glasshouse privacy findings to their source files and methods: Live Plus, ACR state and query side effects, LMT/readback, advertising-ID operations, consent-record effects, firmware settings readers, and the C5 physical mic switch. Record missing model scope as unknown.
-- [x] 6.5 Record CleanYourTV's reported ad/telemetry service actions as root-level service observations, not SettingsService mappings or PrivacyShield-supported controls.
+- [x] 6.5 Record CleanYourTV's reported ad/telemetry service actions as root-level service observations, not SettingsService mappings or LGPrivacyShield-supported controls.
 
 ## 7. Runtime menu references and app presentation
 
@@ -43,7 +43,7 @@
 
 ## 8. Documentation and final verification
 
-- [x] 8.1 Document each source, revision/date, evidence type, privilege context, tested model/software row, menu path scope, control/API mapping, and the remaining unknowns. Update README wording so it distinguishes public evidence coverage from PrivacyShield write support.
+- [x] 8.1 Document each source, revision/date, evidence type, privilege context, tested model/software row, menu path scope, control/API mapping, and the remaining unknowns. Update README wording so it distinguishes public evidence coverage from LGPrivacyShield write support.
 - [x] 8.2 Run OpenSpec validation and the full Node/Python/headless suite; confirm the existing exact C6 path still works and unsupported identities never write.
 - [x] 8.3 Build the versioned installable IPK, verify its manifest and package contents include the reference module, and report that no TV launch or Homebrew publication occurred.
 
@@ -51,7 +51,7 @@
 
 - [x] 9.1 Replace the stale Glasshouse fork snapshot with the canonical upstream revision; import every exact model/software report row, preserve the 48-declared-versus-49-listed discrepancy, and check the C6 sample against the local C6H tuple.
 - [x] 9.2 Import the complete CleanYourTV tested-device table and add separately scoped Glasshouse privacy research, C1 network baseline, and published ACR-study evidence; record model scope, access context, and unverified fields for each.
-- [x] 9.3 Add a separate physical microphone-switch evidence map and expand the control findings for consent effects, privacy keys, ACR status-call behavior, and root-only microphone mitigations without changing the PrivacyShield write registry.
+- [x] 9.3 Add a separate physical microphone-switch evidence map and expand the control findings for consent effects, privacy keys, ACR status-call behavior, and root-only microphone mitigations without changing the LGPrivacyShield write registry.
 - [x] 9.4 Update the TV details view, evidence documentation, contributor issue form, and compatibility matrix so owners can inspect the merged references and contributors can submit per-control evidence without current setting values.
 - [x] 9.5 Add source-scope/fail-closed tests, run OpenSpec and the full unit/headless/IPK checks once, and build the next local IPK without installing, launching, or publishing it.
 

@@ -1,4 +1,4 @@
-# PrivacyShield documentation
+# LGPrivacyShield documentation
 
 ## For TV owners
 

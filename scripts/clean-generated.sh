@@ -10,8 +10,8 @@ with open(sys.argv[1], "r", encoding="utf-8") as source:
     print(json.load(source).get("name", ""))
 PY
 )"
-if [ "${project_name}" != "privacyshield-webos" ]; then
-  echo "Refusing cleanup outside the PrivacyShield project" >&2
+if [ "${project_name}" != "lgprivacyshield-webos" ]; then
+  echo "Refusing cleanup outside the LGPrivacyShield project" >&2
   exit 2
 fi
 

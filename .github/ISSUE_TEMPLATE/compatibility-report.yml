@@ -1,11 +1,11 @@
 name: TV compatibility report
-description: Report model, firmware, and read-access evidence for PrivacyShield
+description: Report model, firmware, and read-access evidence for LGPrivacyShield
 title: "[Compatibility] "
 body:
   - type: markdown
     attributes:
       value: |
-        Install the current IPK from the [latest release](https://github.com/snapetech-org/PrivacyShield/releases/latest). On the TV, open **TV details** and choose **Prepare compatibility report**. Scan the QR code with a phone to open this form with the report JSON pre-filled.
+        Install the current IPK from the [latest release](https://github.com/snapetech-org/LGPrivacyShield/releases/latest). On the TV, open **Controls** and choose **Prepare compatibility report**. Scan the QR code with a phone to open this form with the report JSON pre-filled.
 
         Opening the link sends the report to GitHub as a URL parameter so this form can be filled in. It is not posted as an issue until you select Submit new issue.
 
@@ -35,6 +35,6 @@ body:
     attributes:
       label: Additional observation (optional)
       description: Identify the setting label/path and what behavior you observed. Do not include current setting values or agreement choices.
-      placeholder: Settings → General → System → Additional Settings → Live Plus is present; PrivacyShield reports the key readable.
+      placeholder: Settings → General → System → Additional Settings → Live Plus is present; LGPrivacyShield reports the key readable.
     validations:
       required: false

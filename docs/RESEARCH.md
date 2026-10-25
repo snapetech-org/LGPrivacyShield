@@ -14,7 +14,7 @@ confirms that `option.livePlus` is the Live Plus switch and that its help text
 describes recognition through the ACR module. LG's current statement says ACR
 uses audio fingerprinting on the TV's internal audio processor, not screenshots,
 screen recordings, video recordings, voice recordings, or other audio
-recordings. PrivacyShield therefore treats Live Plus as the ACR/viewing-
+recordings. LGPrivacyShield therefore treats Live Plus as the ACR/viewing-
 recognition control. Leave it off when the goal is to keep ACR disabled, even
 if the Viewing Information agreement is accepted for voice compatibility.
 Some context-aware voice commands may still be limited while ACR is off.
@@ -35,7 +35,7 @@ Communications Agreement's channels and TV effects are also not specified in
 LG's public summary. Additional selectable agreements are shown in the app
 with an unmapped-effect notice instead of guessed behavior.
 
-PrivacyShield's control catalog has 17 settings traced to LG's Settings UI:
+LGPrivacyShield's control catalog has 17 settings traced to LG's Settings UI:
 Live Plus / ACR, two voice controls, Limit Ad Tracking, Do Not Sell, Screen
 Saver Promotion, Home menu ads, Live Promotion, Home content recommendations,
 four HbbTV controls, Bluetooth wake, Sleep on Absence, and two Smart Tips
@@ -59,7 +59,7 @@ in [TV-PRIVACY-CAPABILITY-MAP.md](TV-PRIVACY-CAPABILITY-MAP.md) and
 [DEVICE-COMPATIBILITY.md](DEVICE-COMPATIBILITY.md).
 
 The per-firmware category/key index is stored on rooted sets at
-`/etc/palm/description.categorykeysmap.json`. PrivacyShield filters this local
+`/etc/palm/description.categorykeysmap.json`. LGPrivacyShield filters this local
 index to reviewed candidates and uses its category for reads and writes. This
 lets the app discover the installed firmware's registered keys on first use
 without shipping a speculative per-size map. A missing key remains
@@ -88,7 +88,7 @@ and readback. See [DEVICE-COMPATIBILITY.md](DEVICE-COMPATIBILITY.md) for the
 process and limits.
 
 The Settings bundle handles Do Not Sell through
-`com.webos.service.admanager/updateDNS` with a `status` value. PrivacyShield
+`com.webos.service.admanager/updateDNS` with a `status` value. LGPrivacyShield
 uses that same method rather than writing the cached preference directly.
 Other confirmed switches use their SettingsService category and key. Each
 change is read back before the app reports success. On the exact C6H profile,
@@ -112,7 +112,7 @@ controls disable voice features; they do not replace a hardware disconnect.
 
 ## webOS 26 and Homebrew access
 
-PrivacyShield queries SettingsService and falls back to a root snapshot that
+LGPrivacyShield queries SettingsService and falls back to a root snapshot that
 returns reviewed setting values, the TV's filtered firmware key map, and saved
 agreement choices. It does not inspect running processes, installed apps, or
 diagnostic-upload preferences. On webOS 26, the application declares
@@ -124,7 +124,7 @@ still advertised its old access groups. `ls-control scan-services` did not
 refresh that dynamic registration; restarting HBC and making a new request did.
 
 Live validation showed `lunabus.query` in the active `exec` method's
-`provides` list. From the running PrivacyShield app context, `exec id` returned
+`provides` list. From the running LGPrivacyShield app context, `exec id` returned
 root identity and the v0.1.4 snapshot returned the original three toggle
 values and seven agreement flags. The v0.1.4 allowlisted writer completed
 idempotent `off` write/readback for those three controls. A later v0.1.5 app

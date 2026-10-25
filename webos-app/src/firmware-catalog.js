@@ -1,9 +1,9 @@
 (function (root, factory) {
   const data = typeof module === "object" && module.exports
     ? require("./firmware-catalog-data.js")
-    : root.PrivacyShieldFirmwareData;
+    : root.LGPrivacyShieldFirmwareData;
   if (typeof module === "object" && module.exports) module.exports = factory(data);
-  else root.PrivacyShieldFirmwareCatalog = factory(data);
+  else root.LGPrivacyShieldFirmwareCatalog = factory(data);
 })(typeof globalThis !== "undefined" ? globalThis : this, function (data) {
   "use strict";
 

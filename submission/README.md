@@ -1,7 +1,7 @@
 # Homebrew catalog preparation
 
 The source repository is
-[snapetech-org/PrivacyShield](https://github.com/snapetech-org/PrivacyShield).
+[snapetech-org/LGPrivacyShield](https://github.com/snapetech-org/LGPrivacyShield).
 
 The draft metadata is in
 [org.privacyshield.webos.yml](org.privacyshield.webos.yml). It includes eight

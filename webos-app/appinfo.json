@@ -1,12 +1,12 @@
 {
   "id": "org.privacyshield.webos",
   "version": "0.4.0",
-  "vendor": "PrivacyShield contributors",
+  "vendor": "LGPrivacyShield contributors",
   "type": "web",
-  "title": "PrivacyShield",
+  "title": "LGPrivacyShield",
   "disableBackHistoryAPI": true,
   "main": "index.html",
-  "icon": "assets/privacyshield-icon.png",
+  "icon": "assets/lgprivacyshield-icon.png",
   "requiredACG": [
     "settings.query",
     "systemconfig.query",

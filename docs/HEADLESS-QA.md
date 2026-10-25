@@ -18,7 +18,7 @@ npm run test:headless
 The browser harness uses Chromium at 1920×1080 with a local HTTP server,
 mocked webOS service responses, and remote key events over DevTools Protocol.
 Set `CHROMIUM_BIN` if Chromium is not on `PATH`. Set
-`PRIVACYSHIELD_HEADLESS_DIR` and `TMPDIR` to task-scoped scratch paths when
+`LGPRIVACYSHIELD_HEADLESS_DIR` and `TMPDIR` to task-scoped scratch paths when
 running the suite in a shared environment.
 
 ## Coverage
@@ -46,7 +46,7 @@ packaged app. The harness does not install or launch the app on a TV.
 To generate the screenshots linked from the README:
 
 ```sh
-PRIVACYSHIELD_DOC_SCREENSHOT_DIR=docs/screenshots npm run test:headless
+LGPRIVACYSHIELD_DOC_SCREENSHOT_DIR=docs/screenshots npm run test:headless
 ```
 
 The command writes twelve 1920×1080 PNG files: dark and light captures of
@@ -84,5 +84,5 @@ request does not validate the app's own Luna permissions. See
   external links activated by users. Physical testing is on webOS 26 only.
 - Successful reads leave the footer clear, and Overview shows no read timestamp.
 - The installed app on an OLED77C6HUP (webOS 26, firmware 43.21.79) matches all
-  19 files in this IPK. PrivacyShield launched successfully; earlier webOS
+  19 files in this IPK. LGPrivacyShield launched successfully; earlier webOS
   releases remain untested.

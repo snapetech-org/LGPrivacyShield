@@ -19,7 +19,7 @@ package="${repo_root}/dist/${app_identity[0]}_${app_identity[1]}_all.ipk"
 command -v ar >/dev/null || { echo "The ar utility is required" >&2; exit 1; }
 command -v tar >/dev/null || { echo "The tar utility is required" >&2; exit 1; }
 
-test_root="$(mktemp -d "${TMPDIR:-/tmp}/privacyshield-ipk-test-XXXXXX")"
+test_root="$(mktemp -d "${TMPDIR:-/tmp}/lgprivacyshield-ipk-test-XXXXXX")"
 cleanup() {
   rm -rf -- "${test_root}"
 }
@@ -100,6 +100,6 @@ ar p "${package}" data.tar.gz | tar -xzf - -C "${test_root}/data"
 
 app_root="${test_root}/data/usr/palm/applications/${app_identity[0]}"
 [ -f "${app_root}/index.html" ] || { echo "App payload missing from IPK" >&2; exit 1; }
-PRIVACYSHIELD_APP_ROOT="${app_root}" \
-PRIVACYSHIELD_HEADLESS_DIR="${test_root}" \
+LGPRIVACYSHIELD_APP_ROOT="${app_root}" \
+LGPRIVACYSHIELD_HEADLESS_DIR="${test_root}" \
 node --test "${repo_root}/tests/headless-ui.test.cjs"

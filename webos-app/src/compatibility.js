@@ -3,7 +3,7 @@
     ? require("./device-profiles.js")
     : null;
   if (typeof module === "object" && module.exports) module.exports = factory(profiles, root);
-  else root.PrivacyShieldCompatibility = factory(root.PrivacyShieldDeviceProfiles, root);
+  else root.LGPrivacyShieldCompatibility = factory(root.LGPrivacyShieldDeviceProfiles, root);
 })(typeof globalThis !== "undefined" ? globalThis : this, function (profileData, globalRoot) {
   "use strict";
 
@@ -173,7 +173,7 @@
   ]);
 
   function profiles() {
-    return profileData || globalRoot.PrivacyShieldDeviceProfiles || null;
+    return profileData || globalRoot.LGPrivacyShieldDeviceProfiles || null;
   }
 
   function exactString(value) {

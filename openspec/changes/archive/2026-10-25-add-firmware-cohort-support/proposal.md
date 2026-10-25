@@ -2,7 +2,7 @@
 
 ## Why
 
-PrivacyShield currently presents the same setting map and write path on every LG webOS TV, although its reverse-engineered map is from one C6 firmware cohort. Model year, region, and webOS updates can change settings screens, keys, permissions, and hardware. Users need a clear compatibility status, and maintainers need reproducible device evidence before enabling controls on another cohort.
+LGPrivacyShield currently presents the same setting map and write path on every LG webOS TV, although its reverse-engineered map is from one C6 firmware cohort. Model year, region, and webOS updates can change settings screens, keys, permissions, and hardware. Users need a clear compatibility status, and maintainers need reproducible device evidence before enabling controls on another cohort.
 
 ## What Changes
 
@@ -15,7 +15,7 @@ PrivacyShield currently presents the same setting map and write path on every LG
 - Attach each available model-family privacy guide to its cohort, and show the actual SettingsService category/key map selected for the installed platform plus any narrowly scoped model/software overlay. Keep model/menu evidence distinct from internal API-key evidence so no guide is presented as a private per-model key table.
 - Include model-specific built-in microphone evidence as present, absent, conflicting, variant-limited, or unknown. Keep it separate from any physical switch or software voice control, and preserve region/SKU conflicts.
 - Aggregate published privacy-control findings from rooted LG projects, firmware reverse engineering, and independent network audits, including Live Plus/ACR, ad tracking and identifier APIs, consent records, diagnostics, ad-service processes, resolver behavior, and reversible network mitigations. Record which exact model/software sample and privilege context support each claim, including when the model was not published. Separate firmware component presence, runtime activation, and network transmission.
-- Show applicable community evidence and a read-only, installed-platform menu reference in the app. These references never imply current state, matching Luna keys, API permission, or PrivacyShield physical write testing.
+- Show applicable community evidence and a read-only, installed-platform menu reference in the app. These references never imply current state, matching Luna keys, API permission, or LGPrivacyShield physical write testing.
 - Use manually reviewed public SettingsService maps to define platform and exact-model overlays for other supported TVs. Keep the C6H exact-firmware profile separate; enable a mapped switch only when that TV returns a recognized value, and report success only after readback.
 - When available, read the TV's own firmware category/key index to filter reviewed candidates and obtain exact categories for that firmware. Keep missing or ambiguous keys unavailable; do not treat the index or firmware defaults as proof of a setting's current value, effect, or write behavior.
 - Add headless tests for exact matching, firmware mismatch, unsupported models, read-only behavior, report minimization, report validation, community-catalog completeness, platform detection, menu-path rendering, and the absence of writes for unmapped controls.

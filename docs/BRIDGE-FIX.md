@@ -6,7 +6,7 @@ before using these repair steps; the paths and observations may differ by build.
 
 ## Failure recorded on the test TV
 
-The installed Homebrew Channel on the test LG C6 was version 0.7.3. PrivacyShield
+The installed Homebrew Channel on the test LG C6 was version 0.7.3. LGPrivacyShield
 already declares the `lunabus.query` ACG in its app manifest and calls
 `org.webosbrew.hbchannel.service/exec`, but HBC's service manifest did not
 register an API-permission file for that ACG. The service therefore rejected
@@ -31,7 +31,7 @@ is the source for this mapping.
 | `org.privacyshield.webos` app | `public` method on this firmware | `com.webos.service.admanager/updateDNS` | Apply the Do Not Sell choice through LG's settings path. |
 | HBC `*.api.json` file (already installed) | `org.webosbrew.hbchannel.service.group`, `ares.webos.cli` | `org.webosbrew.hbchannel.service/*` | Existing HBC service and CLI access groups. |
 | HBC `*.api.public.json` file (already installed) | `public` | `org.webosbrew.hbchannel.service/*` | Existing public HBC API methods. |
-| HBC `*.api.lunabus.query.json` file (missing before repair) | `lunabus.query` | `org.webosbrew.hbchannel.service/*` | The missing webOS 26 caller group required by PrivacyShield's `exec` request. |
+| HBC `*.api.lunabus.query.json` file (missing before repair) | `lunabus.query` | `org.webosbrew.hbchannel.service/*` | The missing webOS 26 caller group required by LGPrivacyShield's `exec` request. |
 
 The app-side declarations are in `webos-app/appinfo.json`. The HBC-side map
 must be present in **both** the API-permission directory and the HBC app
@@ -112,7 +112,7 @@ request so the service registers again, and rerun `--verify-live`:
 luna-send -i -f -n 1 luna://org.webosbrew.hbchannel.service/quit '{}'
 ```
 
-For final validation, make the next request from PrivacyShield itself. A root
+For final validation, make the next request from LGPrivacyShield itself. A root
 shell request can start the service but does not prove that the app's own
 client identity has access.
 
@@ -125,7 +125,7 @@ service and making a new request caused it to register the updated groups.
 `ls-monitor -i` then showed `lunabus.query` in the live `exec` method's
 `provides` list.
 
-During v0.1.4 validation, the running PrivacyShield app's own Luna client
+During v0.1.4 validation, the running LGPrivacyShield app's own Luna client
 identity executed the bounded snapshot and allowlisted writer through HBC. The
 bridge returned root identity, read three privacy settings and seven agreement
 flags, and completed idempotent `off` write/readback checks for those three
@@ -144,9 +144,9 @@ The group mapping targets `org.webosbrew.hbchannel.service/*`, so it exposes
 every method that this HBC service registers to callers holding `lunabus.query`;
 it is broader than a permission for only `exec`. This matches the upstream HBC
 fix. The group gate is shared by clients with that ACG, not bound to the
-PrivacyShield app ID. HBC's elevated `exec` method is security-sensitive.
+LGPrivacyShield app ID. HBC's elevated `exec` method is security-sensitive.
 
-PrivacyShield uses the bridge only with app-owned script paths and allowlisted
+LGPrivacyShield uses the bridge only with app-owned script paths and allowlisted
 setting keys and values. Its snapshot returns reviewed privacy settings,
 the firmware key map, and saved agreement choices. It does not inspect running
 processes, installed apps, or diagnostic-upload configuration. The permission

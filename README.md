@@ -1,4 +1,4 @@
-# PrivacyShield
+# LGPrivacyShield
 
 ### Make your LG TV’s privacy controls easier to see and manage.
 
@@ -50,7 +50,7 @@ Find the app version, license and source code, plus the support QR code and [Ko-
 
 ## Local operation and privacy
 
-**Local-first:** PrivacyShield runs on your TV using local webOS services. The app and TV send no data.
+**Local-first:** LGPrivacyShield runs on your TV using local webOS services. The app and TV send no data.
 
 To report a missing model or unreadable control, scan the single QR code with your phone. It opens GitHub's prefilled form; opening the link sends the report, and submitting creates a public issue. The report includes TV model and software, service access, and which controls could be read—not current setting values or agreement choices. This helps us check support for your TV.
 
@@ -58,10 +58,10 @@ The app does not record audio or screenshots, run a background service, inspect 
 
 ## Install and help
 
-PrivacyShield is expected to work on LG webOS 6 and later. Physical testing is on a C6 running webOS 26; earlier releases have not been tested. Controls depend on your TV model, software, and Homebrew access. Install the [latest release](https://github.com/snapetech-org/PrivacyShield/releases/latest) with [webOS Dev Manager](https://github.com/webosbrew/dev-manager-desktop). Homebrew Channel on a rooted TV enables local setting access.
+LGPrivacyShield is expected to work on LG webOS 6 and later. Physical testing is on a C6 running webOS 26; earlier releases have not been tested. Controls depend on your TV model, software, and Homebrew access. Install the [latest release](https://github.com/snapetech-org/LGPrivacyShield/releases/latest) with [webOS Dev Manager](https://github.com/webosbrew/dev-manager-desktop). Homebrew Channel on a rooted TV enables local setting access.
 
 See the [installation guide](docs/TEST-ON-YOUR-TV.md), [setting effects](docs/FEATURE-IMPACT.md), [LG agreement effects](docs/LG-AGREEMENT-EFFECTS.md), and [model compatibility](docs/DEVICE-COMPATIBILITY.md).
 
 ## License
 
-PrivacyShield is licensed under the GNU Affero General Public License, version 3. See [LICENSE](LICENSE).
+LGPrivacyShield is licensed under the GNU Affero General Public License, version 3. See [LICENSE](LICENSE).

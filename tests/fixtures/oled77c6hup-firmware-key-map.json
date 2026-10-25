@@ -7,7 +7,7 @@
     "capturedOn": "2026-10-24",
     "sourcePath": "/etc/palm/description.categorykeysmap.json",
     "sourceSha256": "2c818cd342ae675fac4e425ec6d2078b328e281a8e5994449bd6662cab92eec1",
-    "note": "Sanitized to reviewed PrivacyShield control/reference key names and categories; no values or other firmware keys are included."
+    "note": "Sanitized to reviewed LGPrivacyShield control/reference key names and categories; no values or other firmware keys are included."
   },
   "categoryKeysMap": [
     {

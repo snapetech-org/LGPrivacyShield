@@ -3,7 +3,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 root = Path(__file__).resolve().parents[1]
-out = root / "webos-app" / "assets" / "privacyshield-icon.png"
+out = root / "webos-app" / "assets" / "lgprivacyshield-icon.png"
 scale = 4
 size = 130 * scale
 im = Image.new("RGBA", (size, size), "#e7ece8")

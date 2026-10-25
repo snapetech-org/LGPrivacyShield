@@ -1,9 +1,9 @@
 (function (root, factory) {
   const data = typeof module === "object" && module.exports
     ? require("./community-data.js")
-    : root.PrivacyShieldCommunityData;
+    : root.LGPrivacyShieldCommunityData;
   if (typeof module === "object" && module.exports) module.exports = factory(data);
-  else root.PrivacyShieldCommunityReference = factory(data);
+  else root.LGPrivacyShieldCommunityReference = factory(data);
 })(typeof globalThis !== "undefined" ? globalThis : this, function (data) {
   "use strict";
 
@@ -34,7 +34,7 @@
       declaredModelCount: 48,
       listedModelCount: 49,
       declaredSeriesCount: 33,
-      accessContext: "Root-run TV server/helper; not PrivacyShield app ACG access"
+      accessContext: "Root-run TV server/helper; not LGPrivacyShield app ACG access"
     }),
     glasshouseDashboard: Object.freeze({
       id: "glasshouse-dashboard-c2-lmt-2026-10-24",
@@ -54,7 +54,7 @@
       debloatUrl: "https://lasharor.github.io/cleanyourtv-WebOS/debloat/",
       revision: "5736f246d0192d78c9bed9b3ba66f8e2ac945c5b",
       checkedOn: "2026-10-24",
-      accessContext: "Root service and boot integration; not PrivacyShield app ACG access"
+      accessContext: "Root service and boot integration; not LGPrivacyShield app ACG access"
     }),
     webosUnclutter: Object.freeze({
       id: "webos-unclutter-2026-10-24",
@@ -71,7 +71,7 @@
       reportUrl: "https://www.reddit.com/r/Ubiquiti/comments/1wgzqo6/measured_what_an_lg_webos_tv_actually_phones_home/",
       revision: "486d45730c7f088cf7d25e235c9fc9e3cf27798d",
       checkedOn: "2026-10-24",
-      license: "No license stated; PrivacyShield records findings only and does not redistribute the script or domain list",
+      license: "No license stated; LGPrivacyShield records findings only and does not redistribute the script or domain list",
       accessContext: "Owner-run 40-minute gateway DNS/SNI capture of one European C1 after TV privacy settings were opted out; no exact model or firmware was published"
     }),
     lgTvBlocklist: Object.freeze({
@@ -158,7 +158,7 @@
       url: "https://forum.level1techs.com/t/lg-tv-block-mini-how-to/255178",
       scriptUrl: "https://forum.level1techs.com/uploads/short-url/ycufCLNAeQsvtaQgfbqJkJMGpML.txt",
       checkedOn: "2026-10-24",
-      accessContext: "The author names OLED65G5WUA on webOS 10.2.1 as the sole tested target. The numerical firmware version is not published. Its helper directly edits preference JSON as root; no PrivacyShield app-side SettingsService read/write test is reported. No license is stated for the attached script; PrivacyShield records findings and does not redistribute it."
+      accessContext: "The author names OLED65G5WUA on webOS 10.2.1 as the sole tested target. The numerical firmware version is not published. Its helper directly edits preference JSON as root; no LGPrivacyShield app-side SettingsService read/write test is reported. No license is stated for the attached script; LGPrivacyShield records findings and does not redistribute it."
     }),
     webosLockout: Object.freeze({
       id: "webos-lockout-c5-oled77c51la-2026-10-24",
@@ -169,7 +169,7 @@
       revision: "bc1b170f86aeb6bca176da5a9324158c759baa11",
       checkedOn: "2026-10-24",
       license: "MIT",
-      accessContext: "Root boot script built and verified on OLED77C51LA / Rockhopper 10.3.1-3006. The numeric LG firmware version is not published; the script edits preference JSON directly and is not a PrivacyShield app-side SettingsService test."
+      accessContext: "Root boot script built and verified on OLED77C51LA / Rockhopper 10.3.1-3006. The numeric LG firmware version is not published; the script edits preference JSON directly and is not a LGPrivacyShield app-side SettingsService test."
     }),
     acrResearch: Object.freeze({
       id: "imc-2024-acr-study",
@@ -188,7 +188,7 @@
     C1: Object.freeze({ status: "unknown", sourceType: "research-gap", sources: Object.freeze([]), summary: "This catalog contains no family-specific source that confirms microphone presence or absence." }),
     G1: Object.freeze({ status: "absent", sourceType: "manufacturer-specification", sources: Object.freeze(["https://www.lg.com/de/tvs-und-soundbars/oled-evo/oled65g19la/"]), summary: "LG's German specification lists Hands-free Voice Control as No." }),
     B2: Object.freeze({ status: "unknown", sourceType: "research-gap", sources: Object.freeze([]), summary: "This catalog contains no family-specific source that confirms microphone presence or absence." }),
-    C2: Object.freeze({ status: "reported-present", sourceType: "independent-review", sources: Object.freeze(["https://www.reviewed.com/televisions/content/lg-c2-oled-tv-review"]), summary: "A C2 review reports a built-in far-field microphone. This is a secondary source, not an exact PrivacyShield hardware check." }),
+    C2: Object.freeze({ status: "reported-present", sourceType: "independent-review", sources: Object.freeze(["https://www.reviewed.com/televisions/content/lg-c2-oled-tv-review"]), summary: "A C2 review reports a built-in far-field microphone. This is a secondary source, not an exact LGPrivacyShield hardware check." }),
     G2: Object.freeze({ status: "unknown", sourceType: "research-gap", sources: Object.freeze([]), summary: "This catalog contains no family-specific source that confirms microphone presence or absence." }),
     B3: Object.freeze({ status: "absent", sourceType: "manufacturer-specification", sources: Object.freeze(["https://dzrf1tezfwb3j.cloudfront.net/uploads/CEDocuments//2023-04-24-16-07-15.pdf"]), summary: "LG's US specification sheet marks hands-free voice control as not included." }),
     C3: Object.freeze({ status: "present", sourceType: "manufacturer-specification-copy", sources: Object.freeze(["https://valueelectronics.com/wp-content/uploads/2023/01/LG-OLED_C3_Series_2023_SpecSheet.pdf"]), summary: "LG's C3 specification sheet lists hands-free voice control for the listed C3 sizes." }),
@@ -237,7 +237,7 @@
   })));
 
   // Preserve upstream rows verbatim where possible. These report whether each
-  // project's own tool ran; they do not prove PrivacyShield's setting access.
+  // project's own tool ran; they do not prove LGPrivacyShield's setting access.
   const GLASSHOUSE_ROWS = Object.freeze(data.GLASSHOUSE_ROWS.map((row) => Object.freeze({
     ...row,
     sourceId: SOURCES.glasshouse.id
@@ -277,7 +277,7 @@
       method: "com.webos.service.settings/setSystemSettings · option.livePlus",
       observation: "Its ACR action writes livePlus and changes a separate ACR agreement flag through another handler.",
       scope: "The source does not tie this route to a specific row in the tested-TV table.",
-      limit: "Root-run server access; this does not establish PrivacyShield app permissions or justify editing stored consent.",
+      limit: "Root-run server access; this does not establish LGPrivacyShield app permissions or justify editing stored consent.",
       sourceId: SOURCES.glasshouse.id
     }),
     Object.freeze({
@@ -297,7 +297,7 @@
       method: "general.lmt; readback through com.webos.service.admanager/getAdid → LMT",
       observation: "The code writes general.lmt and verifies through ad-manager readback. Research notes report LMT on a CX and C5; a source comment describes a C2/webOS 9.2 check.",
       scope: "The C2 source comment does not give the exact model code; the research records different firmware cohorts separately.",
-      limit: "Root-run server result; it is not a PrivacyShield write profile.",
+      limit: "Root-run server result; it is not a LGPrivacyShield write profile.",
       sourceId: SOURCES.glasshouse.id
     }),
     Object.freeze({
@@ -317,7 +317,7 @@
       method: "com.webos.service.admanager/getAdid → resetIFA → getAdid",
       observation: "The helper compares the identifier before and after a reset. The tested-TV table says getAdid is absent on OLED65C8PUA firmware 05.50.15.",
       scope: "The API is known to vary by firmware; the project does not provide a full model-by-method matrix.",
-      limit: "A reset is not included in PrivacyShield's controls.",
+      limit: "A reset is not included in LGPrivacyShield's controls.",
       sourceId: SOURCES.glasshouse.id
     }),
     Object.freeze({
@@ -327,7 +327,7 @@
       method: "/var/luna/preferences/eula and eulaInfoNetwork",
       observation: "Consent flags differ between a CX on webOS 5.6.2 and a C5 on 10.3.1. The research traces generalTermsAllowed to native Terms of Use and Privacy Policy agreements; withdrawing them caused apps to enter LG's User Agreements screen on the CX.",
       scope: "Observed across those two model families/software cohorts; the research warns the same firmware can differ between CX devices.",
-      limit: "Agreement withdrawal can gate YouTube, Netflix, and the Content Store. PrivacyShield leaves agreement changes in LG's native screen and does not edit stored consent flags.",
+      limit: "Agreement withdrawal can gate YouTube, Netflix, and the Content Store. LGPrivacyShield leaves agreement changes in LG's native screen and does not edit stored consent flags.",
       sourceId: SOURCES.glasshouse.id
     }),
     Object.freeze({
@@ -337,7 +337,7 @@
       method: "Root service integration: stop selected services, prevent selected services from starting, and redirect selected ad hosts",
       observation: "Its guide names remotelogger, service-logger, contentminer, nudge, acr2, admanager, sportsalarm, and adoverlay-service.",
       scope: "Root service/boot integration; the project describes reversibility while its launcher is Home.",
-      limit: "These are root service and network changes, not TV settings. PrivacyShield does not apply or stop them.",
+      limit: "These are root service and network changes, not TV settings. LGPrivacyShield does not apply or stop them.",
       sourceId: SOURCES.cleanYourTV.id
     }),
     Object.freeze({
@@ -345,9 +345,9 @@
       project: "Glasshouse",
       feature: "Settings keys and readers",
       method: "Firmware search of /usr and /etc; key names include option.dbgLogUpload, option.faultLogUpload, option.thirdPartyCookie, general.voiceLongDistance, option.watchedListCollection, and general.lmt.",
-      observation: "The report identifies readers and limits for several keys on a C5 running webOS 10.3.1. It marks watchedListCollection as unknown, finds usageCare is a Family Care menu setting rather than a collection control, and notes a debug-log upload setting came back after boot. These keys remain in repository research; PrivacyShield does not read or display them.",
+      observation: "The report identifies readers and limits for several keys on a C5 running webOS 10.3.1. It marks watchedListCollection as unknown, finds usageCare is a Family Care menu setting rather than a collection control, and notes a debug-log upload setting came back after boot. These keys remain in repository research; LGPrivacyShield does not read or display them.",
       scope: "C5/webOS 10.3.1; the research does not publish the scanned set's exact model or firmware. Runtime-generated key reads can be missed by the documented search method.",
-      limit: "This is a firmware research map, not proof that PrivacyShield can read or write these values from its packaged app. The four status entries have no switch; a value is displayed only if the TV returns it.",
+      limit: "This is a firmware research map, not proof that LGPrivacyShield can read or write these values from its packaged app. The four status entries have no switch; a value is displayed only if the TV returns it.",
       sourceId: SOURCES.glasshouse.id
     }),
     Object.freeze({
@@ -357,7 +357,7 @@
       method: "A startup script backs up and edits the local preference file before LG settings load.",
       observation: "The script sets usageCare, dbgLogUpload, and faultLogUpload to false only if each key exists. The project reports those values persisted on its target across a reboot and remained false during the session. Glasshouse separately found the debug and fault-log readers; it describes usageCare as a Family Care menu setting, so its collection effect is unresolved.",
       scope: "Exact OLED77C51LA running Rockhopper 10.3.1-3006; numeric firmware version is not published.",
-      limit: "Direct file changes do not show that LG accepts the change through its settings service or that diagnostic uploads stop. These values are not app controls; PrivacyShield does not apply the root script.",
+      limit: "Direct file changes do not show that LG accepts the change through its settings service or that diagnostic uploads stop. These values are not app controls; LGPrivacyShield does not apply the root script.",
       sourceId: SOURCES.webosLockout.id
     }),
     Object.freeze({
@@ -385,7 +385,7 @@
       project: "own-your-glass",
       feature: "B5 Home and advertising settings map",
       method: "The owner reports changing and reading back settings through LG's settings service on an OLED55B56LA.",
-      observation: "The B5 report records screenSaverAd, adCookie, aiNudge, sportsAlarm, livePromotion, livePlus, webOSPromotionVideo, and Limit Ad Tracking. Its settings script also names option.hbbTV, option.hbbTvDnt, option.hbbTvDeviceId, and network.allowMobileDeviceAccess. PrivacyShield uses the HbbTV trio and general.aiNudge only on OLED55B56LA / webOS 25. The report found that turning network.allowMobileDeviceAccess off did not close SSAP; the app does not read that key. The report does not publish categories for adCookie, sportsAlarm, or webOSPromotionVideo, so the app does not query them.",
+      observation: "The B5 report records screenSaverAd, adCookie, aiNudge, sportsAlarm, livePromotion, livePlus, webOSPromotionVideo, and Limit Ad Tracking. Its settings script also names option.hbbTV, option.hbbTvDnt, option.hbbTvDeviceId, and network.allowMobileDeviceAccess. LGPrivacyShield uses the HbbTV trio and general.aiNudge only on OLED55B56LA / webOS 25. The report found that turning network.allowMobileDeviceAccess off did not close SSAP; the app does not read that key. The report does not publish categories for adCookie, sportsAlarm, or webOSPromotionVideo, so the app does not query them.",
       scope: "OLED55B56LA (B5), webOS 10.3.1; firmware version not published.",
       limit: "One exact B5 size/region and one software sample. A setting's reported value does not prove it cleared stored data or stopped a service; no C5/C6 or other B5 variant inherits this exact-device observation.",
       sourceId: SOURCES.ownYourGlass.id
@@ -395,9 +395,9 @@
       project: "Level1Techs G5 rooted privacy guide",
       feature: "G5 privacy preference names and intended values",
       method: "A root script conditionally edits /var/luna/preferences/general and /var/luna/preferences/option JSON files.",
-      observation: "For OLED65G5WUA, the script names general.aiNudge, general.screenSaverAd, general.homePromotion, option.watchedListCollection, option.usageCare, option.dbgLogUpload, option.faultLogUpload, and option.thirdPartyCookie. It writes off/false values only when a key already exists. PrivacyShield offers the three general settings as switches on this exact model and software version; the five option settings are read-only.",
+      observation: "For OLED65G5WUA, the script names general.aiNudge, general.screenSaverAd, general.homePromotion, option.watchedListCollection, option.usageCare, option.dbgLogUpload, option.faultLogUpload, and option.thirdPartyCookie. It writes off/false values only when a key already exists. LGPrivacyShield offers the three general settings as switches on this exact model and software version; the five option settings are read-only.",
       scope: "One rooted OLED65G5WUA running webOS 10.2.1; numerical firmware version is not published.",
-      limit: "The script edits local preference files but does not test changes through PrivacyShield or measure collection behavior. It also edits EULA/consent records; PrivacyShield leaves agreement changes to LG's native consent screen.",
+      limit: "The script edits local preference files but does not test changes through LGPrivacyShield or measure collection behavior. It also edits EULA/consent records; LGPrivacyShield leaves agreement changes to LG's native consent screen.",
       sourceId: SOURCES.level1techsG5.id
     }),
     Object.freeze({
@@ -407,7 +407,7 @@
       method: "Root scripts neutralize the TV's ALSA capture endpoints and the voiceinput_hidraw → voiceinput → voiceconductor remote-microphone path.",
       observation: "The project reports four physical capture endpoints on its LG OLED and preserves playback/internal audio loopbacks; it separately blocks the Magic Remote voice path.",
       scope: "LG OLED/webOS 10.3.2; exact model, firmware, and endpoint list for other devices are not published in the overview.",
-      limit: "Root-only, device-specific OS changes. This does not create a safe or available PrivacyShield toggle and must not be copied to another model by name alone.",
+      limit: "Root-only, device-specific OS changes. This does not create a safe or available LGPrivacyShield toggle and must not be copied to another model by name alone.",
       sourceId: SOURCES.ownYourGlass.id
     }),
     Object.freeze({
@@ -437,7 +437,7 @@
       method: "Two-week German root-level audit: about 44,800 captured packets, 267,000 DNS queries, and per-service investigation.",
       observation: "The project publishes evidence-annotated SAFE and STRICT lists. STRICT adds firmware OTA, ThinQ cloud, and LG Channels destinations and may degrade the Content Store; later revisions corrected regional aliases and moved app-update/billing infrastructure out of the default tier.",
       scope: "One LG G1 on a German network; exact model, firmware, and webOS build were not recorded.",
-      limit: "The maintainers explicitly say other models, regions, firmware, and resolver paths can differ. Do not use its blocklists as a universal PrivacyShield setting map or automatically apply them to another TV.",
+      limit: "The maintainers explicitly say other models, regions, firmware, and resolver paths can differ. Do not use its blocklists as a universal LGPrivacyShield setting map or automatically apply them to another TV.",
       sourceId: SOURCES.lgTvBlocklist.id
     }),
     Object.freeze({
@@ -446,8 +446,8 @@
       feature: "Rooted privacy and voice controls",
       method: "Homebrew app stops selected ad/ACR/voice services, bind-mounts inert stubs, applies domain blocks, and can install a boot hook; optional ConnMan DNS/IPv6, UPnP, ThinQ, QuickSet, and Home-session controls are separate.",
       observation: "The project's tested device is OLED65G45LW (EU), webOS TV 9.2.4, firmware 23.23.30. The README documents reversible service restoration and warns that SDP blocking can impair initialization/clock-dependent apps, QuickSet blocks remote-code lookup, Home-session blocking affects recommendations and metadata, UPnP blocking breaks casting, and voice settings may delay Settings launch.",
-      scope: "One exact G4 model/software tuple; root and Homebrew access, not PrivacyShield app ACG access.",
-      limit: "These actions do not prove that the same services, files, or settings exist on other G4 variants or webOS releases. They are source evidence, not PrivacyShield writes.",
+      scope: "One exact G4 model/software tuple; root and Homebrew access, not LGPrivacyShield app ACG access.",
+      limit: "These actions do not prove that the same services, files, or settings exist on other G4 variants or webOS releases. They are source evidence, not LGPrivacyShield writes.",
       sourceId: SOURCES.lifesGoodWithoutSpying.id
     }),
     Object.freeze({
@@ -457,7 +457,7 @@
       method: "Root shell calling com.webos.settingsservice getSystemSettings/setSystemSettings for general:homePromotion, general:sportsAlarm, option:livePromotion, option:webOSPromotionVideo, option:promotionStreamer, option:livePlus, and other:contentRecommendation.",
       observation: "The script skips missing keys, records original values once, offers a dry-run, and can restore those values. It separately edits launcher visibility and preload policy; hiding a tile alone does not stop its service or free memory.",
       scope: "One US 2026 LG OLED; model code not published; the author reports webOS 26 and firmware 11.2.",
-      limit: "This is a root-shell script map, not a PrivacyShield app permission or exact C6 model/firmware validation. PrivacyShield uses the overlapping keys only as webOS 26 platform candidates and still requires a readable value on the target TV; the other keys remain unmapped.",
+      limit: "This is a root-shell script map, not a LGPrivacyShield app permission or exact C6 model/firmware validation. LGPrivacyShield uses the overlapping keys only as webOS 26 platform candidates and still requires a readable value on the target TV; the other keys remain unmapped.",
       sourceId: SOURCES.webosDebloat.id
     }),
     Object.freeze({
@@ -467,7 +467,7 @@
       method: "network.allowMobileDeviceAccess via com.webos.settingsservice getSystemSettings/setSystemSettings.",
       observation: "The documented hidden setting controls the SSAP/LG Connect Apps protocol on ports 3000 and 3001. Turning it off is a candidate privacy measure that also disables local remote-control integrations using that protocol.",
       scope: "Public Homebrew SettingsService reference; no tested model, region, firmware, or value readback is listed.",
-      limit: "This documents a key and its described effect, not whether the key exists or is writable from PrivacyShield on a particular cohort.",
+      limit: "This documents a key and its described effect, not whether the key exists or is writable from LGPrivacyShield on a particular cohort.",
       sourceId: SOURCES.webosbrewHiddenSettings.id
     }),
     Object.freeze({
@@ -497,7 +497,7 @@
       method: "Owner-run root audit of settings and services, seven days of TV logs, and live connections sampled every three seconds for ten minutes; the companion boot hook masks selected logger services and bind-mounts no-op programs over on-demand services in RAM.",
       observation: "The author reports Live Plus/ACR events including HDMI source, ad ID, TV MAC, and nearby Wi-Fi access points; optional agreements remained accepted after Live Plus was turned off. It reports no stored voice recordings in the searched paths and ten audio-capture attempts failing while audio used HDMI eARC. The hook stops selected ACR, ads, recommendation, sports, and log-upload services; the author reports Home, the store, and streaming continued working.",
       scope: "One 2025 OLED C5 on webOS 11; exact model code, region, and firmware are not published.",
-      limit: "This is a single owner/root report, not a PrivacyShield app test. The eARC result does not establish behavior on the TV speakers; the author says that path may work. The hook also blocks firmware-update hosts, which can prevent OTA updates and preserve root; do not transfer its services or effects to C6/C6H.",
+      limit: "This is a single owner/root report, not a LGPrivacyShield app test. The eARC result does not establish behavior on the TV speakers; the author says that path may work. The hook also blocks firmware-update hosts, which can prevent OTA updates and preserve root; do not transfer its services or effects to C6/C6H.",
       sourceId: SOURCES.tvHomeC5Audit.id
     }),
     Object.freeze({

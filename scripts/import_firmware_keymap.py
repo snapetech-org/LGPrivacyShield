@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Sanitize an extracted LG firmware key registry against a pinned model build.
 
-Only reviewed PrivacyShield candidate names and their firmware categories are
+Only reviewed LGPrivacyShield candidate names and their firmware categories are
 written. Preference values and all unreviewed firmware keys are discarded.
 """
 
@@ -16,7 +16,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SNAPSHOT_PATH = ROOT / "webos-app/scripts/device_snapshot.py"
-SPEC = importlib.util.spec_from_file_location("privacyshield_device_snapshot", SNAPSHOT_PATH)
+SPEC = importlib.util.spec_from_file_location("lgprivacyshield_device_snapshot", SNAPSHOT_PATH)
 SNAPSHOT = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(SNAPSHOT)
 MODEL_PATTERN = re.compile(r"^(OLED\d{2,3}[BCG][1-6][A-Z0-9]+)(?:\.[A-Z0-9]+)?$", re.IGNORECASE)
@@ -79,7 +79,7 @@ def sanitize_registry(document):
     settings = firmware_map.get("settings", {})
     ambiguous = firmware_map.get("ambiguous", [])
     if not settings:
-        raise ValueError("firmware registry contains no reviewed PrivacyShield candidate keys")
+        raise ValueError("firmware registry contains no reviewed LGPrivacyShield candidate keys")
 
     by_category = {}
     for key, category in settings.items():
@@ -112,7 +112,7 @@ def import_registry(document, source_bytes, catalog, model, firmware, ota_id, im
                 "archiveUrl": build["archiveUrl"],
                 "archiveIndexSha256": catalog["source"]["sha256"],
             },
-            "note": "The supplied EPK image hash matches the archive. The registry file hash is recorded separately; this importer does not independently reproduce the extraction step. Only reviewed PrivacyShield candidate names and categories are included; preference values and other firmware keys are omitted.",
+            "note": "The supplied EPK image hash matches the archive. The registry file hash is recorded separately; this importer does not independently reproduce the extraction step. Only reviewed LGPrivacyShield candidate names and categories are included; preference values and other firmware keys are omitted.",
         },
         "categoryKeysMap": categories,
         "ambiguousKeys": ambiguous,

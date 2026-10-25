@@ -1,6 +1,6 @@
 (function (root, factory) {
   if (typeof module === "object" && module.exports) module.exports = factory();
-  else root.PrivacyShieldModel = factory();
+  else root.LGPrivacyShieldModel = factory();
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
@@ -158,9 +158,9 @@
       additional.set(entry.id, {
         id: entry.id,
         title: title || "Additional LG agreement",
-        evidence: "This TV reports the agreement and saved choice. Its feature effect is not mapped in PrivacyShield.",
-        acceptedEffect: "Acceptance is recorded by LG. PrivacyShield has no verified feature map for this agreement.",
-        declinedEffect: "This choice is not accepted. PrivacyShield has not verified which services or data uses it affects.",
+        evidence: "This TV reports the agreement and saved choice. Its feature effect is not mapped in LGPrivacyShield.",
+        acceptedEffect: "Acceptance is recorded by LG. LGPrivacyShield has no verified feature map for this agreement.",
+        declinedEffect: "This choice is not accepted. LGPrivacyShield has not verified which services or data uses it affects.",
         state: typeof entry.accepted === "boolean" ? (entry.accepted ? "accepted" : "withdrawn") : "unknown",
         unmapped: true
       });

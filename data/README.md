@@ -25,4 +25,4 @@ The source snapshot did not identify its original author or license. The
 project owner has chosen to retain this source-only research data; it is not
 included in the TV IPK. Remove the catalog if its source owner requests it.
 This project makes no claim that the archive metadata is LG-authored or covered
-by PrivacyShield's AGPL-3.0-only license.
+by LGPrivacyShield's AGPL-3.0-only license.

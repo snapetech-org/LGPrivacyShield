@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate a PrivacyShield compatibility report without changing support maps."""
+"""Validate a LGPrivacyShield compatibility report without changing support maps."""
 
 from __future__ import annotations
 

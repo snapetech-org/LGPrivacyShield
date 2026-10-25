@@ -1,11 +1,11 @@
 (function () {
   "use strict";
 
-  const Model = window.PrivacyShieldModel;
-  const Api = window.PrivacyShieldDeviceApi;
-  const Remote = window.PrivacyShieldRemoteNavigation;
-  const Compatibility = window.PrivacyShieldCompatibility;
-  const DeviceProfiles = window.PrivacyShieldDeviceProfiles;
+  const Model = window.LGPrivacyShieldModel;
+  const Api = window.LGPrivacyShieldDeviceApi;
+  const Remote = window.LGPrivacyShieldRemoteNavigation;
+  const Compatibility = window.LGPrivacyShieldCompatibility;
+  const DeviceProfiles = window.LGPrivacyShieldDeviceProfiles;
   const SAVE_KEY = "privacyshield.saved-controls.v1";
   const THEME_KEY = "privacyshield.theme.v1";
   const state = {
@@ -904,7 +904,7 @@
     const report = Compatibility.createReport(state.model, state.profile, state.apiAccess, Model.CONTROLS);
     const serialized = JSON.stringify(report);
     try {
-      const issueUrl = new URL("https://github.com/snapetech-org/PrivacyShield/issues/new");
+      const issueUrl = new URL("https://github.com/snapetech-org/LGPrivacyShield/issues/new");
       issueUrl.searchParams.set("template", "compatibility-report.yml");
       issueUrl.searchParams.set("title", `[Compatibility] ${report.device.model || "Unmapped TV"}`);
       issueUrl.searchParams.set("report", serialized);

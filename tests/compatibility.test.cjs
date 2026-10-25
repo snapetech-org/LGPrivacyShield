@@ -311,7 +311,7 @@ test("preserves exact public community rows and the Glasshouse count discrepancy
   assert.equal(glasshouse.find((sample) => sample.model === "OLED65CSPSA").series, null);
 });
 
-test("keeps published privacy-control findings separate from PrivacyShield write profiles", () => {
+test("keeps published privacy-control findings separate from LGPrivacyShield write profiles", () => {
   const findings = publicReferences.PUBLIC_CONTROL_FINDINGS;
   assert.equal(findings.length, 24);
   const byId = Object.fromEntries(findings.map((finding) => [finding.id, finding]));
@@ -339,7 +339,7 @@ test("keeps published privacy-control findings separate from PrivacyShield write
   assert.match(byId["lg-tv-blocklist-g1-audit"].scope, /one LG G1/i);
   assert.match(byId["lifesgood-g4-root-controls"].observation, /OLED65G45LW.*23\.23\.30/);
   assert.match(byId["webos-debloat-webos26-settings-map"].method, /option:webOSPromotionVideo/);
-  assert.match(byId["webos-debloat-webos26-settings-map"].limit, /not a PrivacyShield app permission or exact C6/);
+  assert.match(byId["webos-debloat-webos26-settings-map"].limit, /not a LGPrivacyShield app permission or exact C6/);
   assert.match(byId["webosbrew-mobile-device-access"].method, /network\.allowMobileDeviceAccess/);
   assert.match(byId["webosbrew-mobile-device-access"].observation, /ports 3000 and 3001/);
   assert.match(byId["webosbrew-mobile-device-access"].limit, /not whether the key exists/);

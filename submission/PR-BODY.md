@@ -1,6 +1,6 @@
 #### Application description
 
-PrivacyShield runs locally on LG webOS TVs. Overview shows the TV model,
+LGPrivacyShield runs locally on LG webOS TVs. Overview shows the TV model,
 software, Live Plus, and voice status. Controls lets users change settings the
 TV exposes, checks each change, and saves settings for later restoration. LG
 agreements shows saved choices and their documented effects. Dark mode is the

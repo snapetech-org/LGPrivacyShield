@@ -6,8 +6,9 @@ const os = require("node:os");
 const { spawn, spawnSync } = require("node:child_process");
 const test = require("node:test");
 
-const APP_ROOT = path.resolve(process.env.PRIVACYSHIELD_APP_ROOT || path.join(__dirname, "../webos-app"));
-const SCRATCH_ROOT = process.env.PRIVACYSHIELD_HEADLESS_DIR || os.tmpdir();
+const APP_ROOT = path.resolve(process.env.LGPRIVACYSHIELD_APP_ROOT || path.join(__dirname, "../webos-app"));
+const SCRATCH_ROOT = process.env.LGPRIVACYSHIELD_HEADLESS_DIR || os.tmpdir();
+fs.mkdirSync(SCRATCH_ROOT, { recursive: true });
 const CHROMIUM = process.env.CHROMIUM_BIN || "chromium";
 const C6_FIRMWARE_FIXTURE = require("./fixtures/oled77c6hup-firmware-key-map.json");
 const C6_FIRMWARE_SETTINGS_MAP = (() => {
@@ -91,7 +92,7 @@ const serviceFixture = String.raw`(() => {
   if (unreadableSetting && Object.prototype.hasOwnProperty.call(settings, unreadableSetting)) {
     settings[unreadableSetting] = "enabled";
   }
-  const firmwareSettingsMap = scenario === "success" ? window.__PRIVACYSHIELD_C6_FIRMWARE_SETTINGS_MAP__ : null;
+  const firmwareSettingsMap = scenario === "success" ? window.__LGPRIVACYSHIELD_C6_FIRMWARE_SETTINGS_MAP__ : null;
   const activeSettingsUri = /Chrome\/79\./.test(device.userAgent)
     ? "luna://com.webos.service.settings"
     : "luna://com.webos.settingsservice";
@@ -105,13 +106,13 @@ const serviceFixture = String.raw`(() => {
     { id: "S_SVC", type: "M", title: "Terms of Use", accepted: true }
   ];
   const calls = [];
-  window.__privacyShieldFixture = { scenario, settings, firmwareSettingsMap, calls, eulaList, errors: [], activeSettingsUri };
-  window.addEventListener("error", (event) => window.__privacyShieldFixture.errors.push(event.message));
-  window.addEventListener("unhandledrejection", (event) => window.__privacyShieldFixture.errors.push(String(event.reason)));
+  window.__lgPrivacyShieldFixture = { scenario, settings, firmwareSettingsMap, calls, eulaList, errors: [], activeSettingsUri };
+  window.addEventListener("error", (event) => window.__lgPrivacyShieldFixture.errors.push(event.message));
+  window.addEventListener("unhandledrejection", (event) => window.__lgPrivacyShieldFixture.errors.push(String(event.reason)));
   window.PalmSystem = {
     deviceInfo: JSON.stringify({ modelName, platformVersion: device.sdkVersion, platformVersionMajor: Number.parseInt(device.sdkVersion, 10), platformVersionMinor: 0 }),
     stageReady() {},
-    platformBack() { window.__privacyShieldFixture.backCalled = true; }
+    platformBack() { window.__lgPrivacyShieldFixture.backCalled = true; }
   };
   function answer(uri, payload) {
     const slash = uri.lastIndexOf("/");
@@ -302,7 +303,7 @@ async function waitFor(predicate, label, timeoutMs = 10000) {
 
 async function launchHeadless(origin, userDataDir) {
   fs.mkdirSync(userDataDir, { recursive: true });
-  const chromiumTempDir = fs.mkdtempSync(path.join(process.platform === "win32" ? os.tmpdir() : "/tmp", "psh-"));
+  const chromiumTempDir = fs.mkdtempSync(path.join(SCRATCH_ROOT, "c-"));
   const version = spawnSync(CHROMIUM, ["--version"], {
     encoding: "utf8",
     env: { ...process.env, TMPDIR: chromiumTempDir }
@@ -372,7 +373,7 @@ async function launchHeadless(origin, userDataDir) {
     await command("Runtime.enable");
     await command("Emulation.setDeviceMetricsOverride", { width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false });
     await command("Page.addScriptToEvaluateOnNewDocument", {
-      source: `window.__PRIVACYSHIELD_C6_FIRMWARE_SETTINGS_MAP__ = ${JSON.stringify(C6_FIRMWARE_SETTINGS_MAP)};\n${serviceFixture}`
+      source: `window.__LGPRIVACYSHIELD_C6_FIRMWARE_SETTINGS_MAP__ = ${JSON.stringify(C6_FIRMWARE_SETTINGS_MAP)};\n${serviceFixture}`
     });
     await command("Page.navigate", { url: `${origin}/index.html?scenario=success` });
     await waitFor(async () => (await evaluate("document.readyState")) === "complete", "app page load");
@@ -460,14 +461,14 @@ async function captureDocumentationScreenshots(browser, outputDirectory) {
     await selectView("about");
     await capture("about");
 
-    const errors = await browser.evaluate("window.__privacyShieldFixture.errors");
+    const errors = await browser.evaluate("window.__lgPrivacyShieldFixture.errors");
     if (errors.length) throw new Error(`${theme} documentation screenshots loaded with browser errors: ${errors.join("; ")}`);
   }
 }
 
-test("PrivacyShield works in headless Chromium with a simulated webOS remote and service bridge", async (t) => {
+test("LGPrivacyShield works in headless Chromium with a simulated webOS remote and service bridge", async (t) => {
   const { server, origin } = await startServer();
-  const userDataDir = fs.mkdtempSync(path.join(SCRATCH_ROOT, "privacyshield-headless-"));
+  const userDataDir = fs.mkdtempSync(path.join(SCRATCH_ROOT, "h-"));
   let browser;
   try {
     browser = await launchHeadless(origin, userDataDir);
@@ -479,8 +480,8 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
         title: document.title,
         runtime: (document.querySelector('#runtime-mode') || {}).textContent || null,
         bodyText: document.body.innerText.slice(0, 1200),
-        fixtureLoaded: Boolean(window.__privacyShieldFixture),
-        fixtureErrors: window.__privacyShieldFixture ? window.__privacyShieldFixture.errors : []
+        fixtureLoaded: Boolean(window.__lgPrivacyShieldFixture),
+        fixtureErrors: window.__lgPrivacyShieldFixture ? window.__lgPrivacyShieldFixture.errors : []
       }))()`).catch((diagnosticError) => ({ error: diagnosticError.message }));
       throw new Error(`${error.message}; page diagnostics: ${JSON.stringify(diagnostics)}`);
     }
@@ -577,7 +578,7 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       assert.equal(audit.summaryColumns, 2, "Overview uses both columns for its two setting summaries");
       assert.deepEqual(audit.aboutLinks.map(([label]) => label), ["GNU AGPL-3.0", "Source code", "ko-fi.com/snapetech"]);
       assert.equal(audit.aboutLinks[0][1], "https://www.gnu.org/licenses/agpl-3.0.html");
-      assert.equal(audit.aboutLinks[1][1], "https://github.com/snapetech-org/PrivacyShield");
+      assert.equal(audit.aboutLinks[1][1], "https://github.com/snapetech-org/LGPrivacyShield");
       assert.equal(audit.aboutLinks[2][1], "https://ko-fi.com/snapetech");
       assert.deepEqual(audit.supportQr, { visible: true, dataUrl: true, alt: "QR code for Ko-fi donations and support" });
       assert.match(audit.bodyCopy, /Donations and support/);
@@ -617,7 +618,7 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       await browser.press("Back");
       assert.equal(await browser.evaluate("document.querySelector('.view.is-visible').id"), "view-overview");
       await browser.press("Back");
-      assert.equal(await browser.evaluate("window.__privacyShieldFixture.backCalled"), true);
+      assert.equal(await browser.evaluate("window.__lgPrivacyShieldFixture.backCalled"), true);
 
       try {
         await browser.command("Emulation.setDeviceMetricsOverride", { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false });
@@ -639,11 +640,11 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
         await browser.command("Emulation.setDeviceMetricsOverride", { width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false });
       }
 
-      const before = await browser.evaluate("window.__privacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings').length");
+      const before = await browser.evaluate("window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings').length");
       await browser.evaluate("document.querySelector('#footer-refresh').focus()");
       await browser.press("Enter");
       await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').dataset.state")) === "ready", "footer refresh");
-      const after = await browser.evaluate("window.__privacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings').length");
+      const after = await browser.evaluate("window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings').length");
       assert.ok(after > before, "Refresh reads current TV values");
       assert.equal(await browser.evaluate("document.querySelector('.view.is-visible').id"), "view-overview");
       assert.equal(await browser.evaluate("document.querySelectorAll('#refresh-button').length"), 0);
@@ -676,8 +677,8 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       assert.equal(initial.progress, String(initial.visibleCount));
       assert.equal(initial.sticky, "sticky");
       assert.equal(initial.scrollTop, 0);
-      if (process.env.PRIVACYSHIELD_CONTROLS_TOP_CAPTURE_PATH) {
-        await browser.screenshot(process.env.PRIVACYSHIELD_CONTROLS_TOP_CAPTURE_PATH);
+      if (process.env.LGPRIVACYSHIELD_CONTROLS_TOP_CAPTURE_PATH) {
+        await browser.screenshot(process.env.LGPRIVACYSHIELD_CONTROLS_TOP_CAPTURE_PATH);
       }
 
       const rowKeys = await browser.evaluate("[...document.querySelectorAll('#control-list .control-row:not([hidden])')].map((row) => row.dataset.control)");
@@ -726,8 +727,8 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       assert.equal(bottom.progress, String(initial.total));
       assert.equal(bottom.lastRowVisible, true, `the final control row must fit below the sticky cue and inside the viewport: ${JSON.stringify(bottom)}`);
       assert.equal(bottom.switchVisible, true, `the final switch must remain below the sticky cue and inside the viewport: ${JSON.stringify(bottom)}`);
-      if (process.env.PRIVACYSHIELD_CONTROLS_BOTTOM_CAPTURE_PATH) {
-        await browser.screenshot(process.env.PRIVACYSHIELD_CONTROLS_BOTTOM_CAPTURE_PATH);
+      if (process.env.LGPRIVACYSHIELD_CONTROLS_BOTTOM_CAPTURE_PATH) {
+        await browser.screenshot(process.env.LGPRIVACYSHIELD_CONTROLS_BOTTOM_CAPTURE_PATH);
       }
       await browser.evaluate("document.querySelector('.tab[data-view=overview]').click()");
       assert.equal(await browser.evaluate("document.querySelector('.view.is-visible').id"), "view-overview", "leave the fixture on Overview for the next UI test");
@@ -741,12 +742,12 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
         viewing: document.querySelector('#summary-viewing').textContent,
         voice: document.querySelector('#summary-voice').textContent,
         states: [...document.querySelectorAll('[data-setting]')].map((input) => ({ key: input.dataset.setting, disabled: input.disabled, checked: input.checked, state: input.closest('.switch').querySelector('.switch-state').textContent, hidden: input.closest('.control-row').hidden, display: getComputedStyle(input.closest('.control-row')).display })),
-        livePlusReadCategories: window.__privacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings' && (call.parameters.keys || []).includes('livePlus')).map((call) => call.parameters.category),
-        hbbDntReads: window.__privacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings' && (call.parameters.keys || []).includes('hbbTvDnt')).length,
-        requestedKeys: window.__privacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings' && call.parameters.category).flatMap((call) => call.parameters.keys || []),
-        networkRequests: window.__privacyShieldFixture.calls.filter((call) => /connectionmanager/.test(call.service || '') || call.method === 'getStatus').length,
+        livePlusReadCategories: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings' && (call.parameters.keys || []).includes('livePlus')).map((call) => call.parameters.category),
+        hbbDntReads: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings' && (call.parameters.keys || []).includes('hbbTvDnt')).length,
+        requestedKeys: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings' && call.parameters.category).flatMap((call) => call.parameters.keys || []),
+        networkRequests: window.__lgPrivacyShieldFixture.calls.filter((call) => /connectionmanager/.test(call.service || '') || call.method === 'getStatus').length,
         bodyCopy: document.body.innerText,
-        errors: window.__privacyShieldFixture.errors
+        errors: window.__lgPrivacyShieldFixture.errors
       }))()`);
       assert.equal(ready.model, "OLED77C6HUP");
       assert.equal(ready.title, "Overview");
@@ -764,7 +765,7 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       assert.deepEqual(ready.states.map((item) => item.hidden), [...Array(9).fill(false), true, true, true, ...Array(5).fill(false)]);
       assert.ok(ready.states.filter((item) => item.hidden).every((item) => item.display === "none"), "unmapped control cards must not render");
       assert.deepEqual(ready.states.map((item) => item.state), ["On", "On", "On", "Off", "Off", "On", "On", "On", "On", "Not available", "Not available", "Not available", "On", "On", "On", "Off", "On"]);
-      assert.equal(await browser.evaluate("window.__privacyShieldFixture.calls.filter((call) => call.service === 'luna://com.webos.applicationManager' && call.method === 'launch').length"), 0);
+      assert.equal(await browser.evaluate("window.__lgPrivacyShieldFixture.calls.filter((call) => call.service === 'luna://com.webos.applicationManager' && call.method === 'launch').length"), 0);
 
       await browser.press("ArrowDown");
       assert.equal(await browser.evaluate("document.activeElement.closest('.view').id"), "view-overview");
@@ -774,8 +775,8 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       await browser.press("Enter");
       await waitFor(async () => (await browser.evaluate("document.querySelector('#control-status').textContent === 'Recommended privacy settings applied.'")), "privacy preset readback");
       const preset = await browser.evaluate(`(() => ({
-        settings: { ...window.__privacyShieldFixture.settings },
-        writes: window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings').length,
+        settings: { ...window.__lgPrivacyShieldFixture.settings },
+        writes: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings').length,
         status: document.querySelector('#control-status').textContent
       }))()`);
       assert.deepEqual(preset.settings, {
@@ -791,12 +792,12 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
 
       const absentSetting = await browser.evaluate(`(() => {
         const input = document.querySelector('[data-setting=hbbTvDnt]');
-        return { disabled: input.disabled, state: input.closest('.switch').querySelector('.switch-state').textContent, value: window.__privacyShieldFixture.settings.hbbTvDnt };
+        return { disabled: input.disabled, state: input.closest('.switch').querySelector('.switch-state').textContent, value: window.__lgPrivacyShieldFixture.settings.hbbTvDnt };
       })()`);
       assert.deepEqual(absentSetting, { disabled: true, state: "Not available", value: "off" });
-      const beforeAbsentWrite = await browser.evaluate("window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' && Object.prototype.hasOwnProperty.call(call.parameters.settings || {}, 'hbbTvDnt')).length");
+      const beforeAbsentWrite = await browser.evaluate("window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' && Object.prototype.hasOwnProperty.call(call.parameters.settings || {}, 'hbbTvDnt')).length");
       assert.equal(await browser.evaluate("document.querySelector('[data-setting=hbbTvDnt]').closest('.control-row').hidden"), true, "unmapped settings are omitted from Controls");
-      const afterAbsentWrite = await browser.evaluate("window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' && Object.prototype.hasOwnProperty.call(call.parameters.settings || {}, 'hbbTvDnt')).length");
+      const afterAbsentWrite = await browser.evaluate("window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' && Object.prototype.hasOwnProperty.call(call.parameters.settings || {}, 'hbbTvDnt')).length");
       assert.equal(afterAbsentWrite, beforeAbsentWrite, "an omitted firmware key must stay unwritable even when focused");
       await browser.evaluate("document.querySelector('#privacy-preset').focus()");
 
@@ -804,9 +805,9 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       await browser.press("Enter");
       await waitFor(async () => (await browser.evaluate("document.querySelector('[data-setting=livePlus]').closest('.switch').querySelector('.switch-state').textContent")) === "On", "verified Live Plus toggle");
       const write = await browser.evaluate(`(() => ({
-        value: window.__privacyShieldFixture.settings.livePlus,
-        writes: window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings').length,
-        category: window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' && Object.prototype.hasOwnProperty.call(call.parameters.settings || {}, 'livePlus')).at(-1)?.parameters.category,
+        value: window.__lgPrivacyShieldFixture.settings.livePlus,
+        writes: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings').length,
+        category: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' && Object.prototype.hasOwnProperty.call(call.parameters.settings || {}, 'livePlus')).at(-1)?.parameters.category,
         status: document.querySelector('#control-status').textContent
       }))()`);
       assert.equal(write.value, "on");
@@ -814,22 +815,22 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       assert.equal(write.category, "option", "writes must use the exact firmware-index category");
       assert.match(write.status, /Live Plus \(ACR\) turned on/i);
       assert.equal(await browser.evaluate("document.activeElement.dataset.setting"), "livePlus");
-      const capture = process.env.PRIVACYSHIELD_CAPTURE_PATH;
+      const capture = process.env.LGPRIVACYSHIELD_CAPTURE_PATH;
       if (capture) await browser.screenshot(capture);
 
       const toggleAgain = async (key, expected) => {
-        const before = await browser.evaluate(`window.__privacyShieldFixture.calls.filter((call) => (call.method === 'setSystemSettings' && Object.prototype.hasOwnProperty.call(call.parameters.settings || {}, '${key}')) || ('${key}' === 'doNotSellMyPersonalInformation' && call.method === 'updateDNS')).length`);
+        const before = await browser.evaluate(`window.__lgPrivacyShieldFixture.calls.filter((call) => (call.method === 'setSystemSettings' && Object.prototype.hasOwnProperty.call(call.parameters.settings || {}, '${key}')) || ('${key}' === 'doNotSellMyPersonalInformation' && call.method === 'updateDNS')).length`);
         await browser.press("Enter");
         await waitFor(async () => (await browser.evaluate(`(() => {
-          const calls = window.__privacyShieldFixture.calls.filter((call) => (call.method === 'setSystemSettings' && Object.prototype.hasOwnProperty.call(call.parameters.settings || {}, '${key}')) || ('${key}' === 'doNotSellMyPersonalInformation' && call.method === 'updateDNS')).length;
-          return window.PrivacyShieldModel.normalizeToggle(window.__privacyShieldFixture.settings['${key}']) === '${expected}' && calls > ${before};
+          const calls = window.__lgPrivacyShieldFixture.calls.filter((call) => (call.method === 'setSystemSettings' && Object.prototype.hasOwnProperty.call(call.parameters.settings || {}, '${key}')) || ('${key}' === 'doNotSellMyPersonalInformation' && call.method === 'updateDNS')).length;
+          return window.LGPrivacyShieldModel.normalizeToggle(window.__lgPrivacyShieldFixture.settings['${key}']) === '${expected}' && calls > ${before};
         })()`)), `${key} toggles to ${expected}`);
-        const state = await browser.evaluate(`(() => { const input = document.querySelector('[data-setting=${key}]'); return { value: window.PrivacyShieldModel.normalizeToggle(window.__privacyShieldFixture.settings['${key}']), raw: window.__privacyShieldFixture.settings['${key}'], disabled: input.disabled, focus: document.activeElement.dataset.setting }; })()`);
+        const state = await browser.evaluate(`(() => { const input = document.querySelector('[data-setting=${key}]'); return { value: window.LGPrivacyShieldModel.normalizeToggle(window.__lgPrivacyShieldFixture.settings['${key}']), raw: window.__lgPrivacyShieldFixture.settings['${key}'], disabled: input.disabled, focus: document.activeElement.dataset.setting }; })()`);
         assert.equal(state.value, expected);
         if (key === "thirdPartyCookie") assert.equal(state.raw, expected === "on" ? "onByUser" : "offByUser");
         assert.equal(state.disabled, false);
         assert.equal(state.focus, key, `${key} should keep remote focus after its write completes`);
-        const writes = await browser.evaluate(`window.__privacyShieldFixture.calls.filter((call) => (call.method === 'setSystemSettings' && Object.prototype.hasOwnProperty.call(call.parameters.settings || {}, '${key}')) || ('${key}' === 'doNotSellMyPersonalInformation' && call.method === 'updateDNS')).length`);
+        const writes = await browser.evaluate(`window.__lgPrivacyShieldFixture.calls.filter((call) => (call.method === 'setSystemSettings' && Object.prototype.hasOwnProperty.call(call.parameters.settings || {}, '${key}')) || ('${key}' === 'doNotSellMyPersonalInformation' && call.method === 'updateDNS')).length`);
         assert.equal(writes, before + 1, `${key} must make exactly one write per remote selection`);
       };
 
@@ -860,7 +861,7 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
         }
       }
       assert.deepEqual(
-        await browser.evaluate("window.__privacyShieldFixture.settings"),
+        await browser.evaluate("window.__lgPrivacyShieldFixture.settings"),
         {
           livePlus: "off", voiceLongDistance: "off", turnOnByVoice: "off",
           lmt: "on", doNotSellMyPersonalInformation: "off", screenSaverAd: "off",
@@ -881,7 +882,7 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       await browser.evaluate("document.querySelector('#restore-button').focus()");
       await browser.press("Enter");
       await waitFor(async () => (await browser.evaluate("document.querySelector('#control-status').textContent")) === "Saved settings restored.", "restore saved values");
-      assert.deepEqual(await browser.evaluate("window.__privacyShieldFixture.settings"), savedBaseline, "restore must return readable controls to their saved values");
+      assert.deepEqual(await browser.evaluate("window.__lgPrivacyShieldFixture.settings"), savedBaseline, "restore must return readable controls to their saved values");
       assert.equal(await browser.evaluate("document.querySelector('#restore-button').disabled"), true, "a successful restore clears the restore point");
       assert.equal(await browser.evaluate("document.querySelector('#save-settings-button').disabled"), false, "current readable settings can be saved before any change");
       await browser.evaluate("document.querySelector('#privacy-preset').focus()");
@@ -900,11 +901,11 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       assert.deepEqual(manuallySaved.settings, mappedBaseline, "manual save stores the current readable mapped settings locally");
       await browser.evaluate("document.querySelector('[data-setting=livePlus]').focus()");
       await browser.press("Enter");
-      await waitFor(async () => (await browser.evaluate("window.PrivacyShieldModel.normalizeToggle(window.__privacyShieldFixture.settings.livePlus)")) === "off", "change after manual save");
+      await waitFor(async () => (await browser.evaluate("window.LGPrivacyShieldModel.normalizeToggle(window.__lgPrivacyShieldFixture.settings.livePlus)")) === "off", "change after manual save");
       await browser.evaluate("document.querySelector('#restore-button').focus()");
       await browser.press("Enter");
       await waitFor(async () => (await browser.evaluate("document.querySelector('#control-status').textContent")) === "Saved settings restored.", "restore manually saved settings");
-      assert.deepEqual(await browser.evaluate("window.__privacyShieldFixture.settings"), savedBaseline, "manual save can be restored after another change");
+      assert.deepEqual(await browser.evaluate("window.__lgPrivacyShieldFixture.settings"), savedBaseline, "manual save can be restored after another change");
       assert.equal(await browser.evaluate("document.querySelector('#restore-button').disabled"), false, "a manual restore point remains available after restoring");
       await browser.evaluate("document.querySelector('.tab[data-view=controls]').focus()");
       await browser.press("ArrowRight");
@@ -913,11 +914,11 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       assert.equal(await browser.evaluate("document.activeElement.id"), "agreement-manager-button");
       await browser.press("Enter");
       await waitFor(async () => (await browser.evaluate("document.querySelector('#agreement-action-status').textContent")) === "Make your choices in LG User Agreements, then select Agree to save.", "native agreement action status");
-      const agreementLaunch = await browser.evaluate(`window.__privacyShieldFixture.calls.find((call) => call.service === 'luna://com.webos.applicationManager' && call.method === 'launch')`);
+      const agreementLaunch = await browser.evaluate(`window.__lgPrivacyShieldFixture.calls.find((call) => call.service === 'luna://com.webos.applicationManager' && call.method === 'launch')`);
       assert.deepEqual(agreementLaunch.parameters, { id: "com.webos.app.firstuse-overlay", params: { target: "eula", context: "all" } });
       await browser.evaluate(`(() => {
-        window.__privacyShieldFixture.eulaList.find((item) => item.id === 'S_TAG').accepted = false;
-        window.__privacyShieldFixture.eulaList.push({ id: 'S_DIA', type: 'M', title: 'Diagnostic Data Agreement', accepted: false });
+        window.__lgPrivacyShieldFixture.eulaList.find((item) => item.id === 'S_TAG').accepted = false;
+        window.__lgPrivacyShieldFixture.eulaList.push({ id: 'S_DIA', type: 'M', title: 'Diagnostic Data Agreement', accepted: false });
         document.dispatchEvent(new Event('visibilitychange'));
       })()`);
       await waitFor(async () => (await browser.evaluate("document.querySelector('[data-agreement=S_TAG] .status-pill').textContent")) === "Not accepted", "agreement status refresh after return");
@@ -930,10 +931,10 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       assert.deepEqual(extraAgreement, {
         title: "Diagnostic Data Agreement",
         tag: "Effect not mapped",
-        effect: "This choice is not accepted. PrivacyShield has not verified which services or data uses it affects.",
+        effect: "This choice is not accepted. LGPrivacyShield has not verified which services or data uses it affects.",
         code: "TV record S_DIA"
       });
-      assert.equal(await browser.evaluate("window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' && /eula/i.test(JSON.stringify(call.parameters))).length"), 0, "PrivacyShield must leave agreement writes to LG's consent screen");
+      assert.equal(await browser.evaluate("window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' && /eula/i.test(JSON.stringify(call.parameters))).length"), 0, "LGPrivacyShield must leave agreement writes to LG's consent screen");
 
     });
 
@@ -949,14 +950,14 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
         "matrix-B5-p25", "matrix-B6-p26", "matrix-C2-p22", "b5",
         "c5-exact-map", "g5"
       ];
-      const writerCount = (key) => browser.evaluate(`window.__privacyShieldFixture.calls.filter((call) =>
-        (call.service === window.__privacyShieldFixture.activeSettingsUri && call.method === 'setSystemSettings' && Object.prototype.hasOwnProperty.call(call.parameters.settings || {}, '${key}'))
+      const writerCount = (key) => browser.evaluate(`window.__lgPrivacyShieldFixture.calls.filter((call) =>
+        (call.service === window.__lgPrivacyShieldFixture.activeSettingsUri && call.method === 'setSystemSettings' && Object.prototype.hasOwnProperty.call(call.parameters.settings || {}, '${key}'))
         || ('${key}' === 'doNotSellMyPersonalInformation' && call.method === 'updateDNS')
       ).length`);
       const stateMatches = async (key, expected) => browser.evaluate(`(() => {
         const input = document.querySelector('[data-setting="${key}"]');
         return Boolean(input && !input.disabled
-          && window.PrivacyShieldModel.normalizeToggle(window.__privacyShieldFixture.settings['${key}']) === '${expected}'
+          && window.LGPrivacyShieldModel.normalizeToggle(window.__lgPrivacyShieldFixture.settings['${key}']) === '${expected}'
           && input.closest('.switch').querySelector('.switch-state').textContent === '${expected === "on" ? "On" : "Off"}');
       })()`);
 
@@ -967,8 +968,8 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
         const profile = await browser.evaluate(`(() => ({
           status: document.querySelector('#runtime-mode').dataset.state,
           keys: [...document.querySelectorAll('[data-setting]:not(:disabled)')].map((input) => input.dataset.setting),
-          writers: window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' || call.method === 'updateDNS' || (call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || ''))).length,
-          errors: window.__privacyShieldFixture.errors
+          writers: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' || call.method === 'updateDNS' || (call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || ''))).length,
+          errors: window.__lgPrivacyShieldFixture.errors
         }))()`);
         assert.ok(profile.status, `${scenario} must select or report its profile`);
         assert.ok(profile.keys.length > 0, `${scenario} must expose at least one TV-readable control`);
@@ -979,7 +980,7 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
         await browser.press("Enter");
         for (const key of profile.keys) {
           coveredKeys.add(key);
-          const initial = await browser.evaluate(`window.PrivacyShieldModel.normalizeToggle(window.__privacyShieldFixture.settings['${key}'])`);
+          const initial = await browser.evaluate(`window.LGPrivacyShieldModel.normalizeToggle(window.__lgPrivacyShieldFixture.settings['${key}'])`);
           assert.ok(initial === "on" || initial === "off", `${scenario}/${key} needs a readable initial value`);
           const changed = initial === "on" ? "off" : "on";
           const before = await writerCount(key);
@@ -992,9 +993,9 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
               runtime: document.querySelector('#runtime-mode').textContent,
               control: document.querySelector('[data-setting="${key}"]').outerHTML,
               switch: document.querySelector('[data-setting="${key}"]').closest('.switch').innerText,
-              current: window.__privacyShieldFixture.settings['${key}'],
-              calls: window.__privacyShieldFixture.calls.slice(-8),
-              errors: window.__privacyShieldFixture.errors
+              current: window.__lgPrivacyShieldFixture.settings['${key}'],
+              calls: window.__lgPrivacyShieldFixture.calls.slice(-8),
+              errors: window.__lgPrivacyShieldFixture.errors
             }))()`);
             throw new Error(`${error.message}; profile diagnostic=${JSON.stringify(diagnostic)}`);
           }
@@ -1021,9 +1022,9 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
             locked: [...document.querySelectorAll('[data-setting]')].filter((input) => input.disabled).map((input) => input.dataset.setting),
             missingState: document.querySelector('[data-setting="${key}"]').closest('.switch').querySelector('.switch-state').textContent,
             presetDisabled: document.querySelector('#privacy-preset').disabled,
-            settingReads: window.__privacyShieldFixture.calls.filter((call) => call.service === window.__privacyShieldFixture.activeSettingsUri && call.method === 'getSystemSettings' && call.parameters.category).map((call) => call.parameters.keys).flat(),
-            writers: window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' || call.method === 'updateDNS' || (call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || ''))).length,
-            errors: window.__privacyShieldFixture.errors
+            settingReads: window.__lgPrivacyShieldFixture.calls.filter((call) => call.service === window.__lgPrivacyShieldFixture.activeSettingsUri && call.method === 'getSystemSettings' && call.parameters.category).map((call) => call.parameters.keys).flat(),
+            writers: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' || call.method === 'updateDNS' || (call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || ''))).length,
+            errors: window.__lgPrivacyShieldFixture.errors
           }))()`);
           assert.deepEqual(
             result.locked.filter((lockedKey) => exactKeys.includes(lockedKey)),
@@ -1059,11 +1060,11 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       const result = await browser.evaluate(`(() => ({
         checked: document.querySelector('[data-setting=livePlus]').checked,
         state: document.querySelector('[data-setting=livePlus]').closest('.switch').querySelector('.switch-state').textContent,
-        tvValue: window.__privacyShieldFixture.settings.livePlus,
+        tvValue: window.__lgPrivacyShieldFixture.settings.livePlus,
         focused: document.activeElement.dataset.setting,
-        directWrites: window.__privacyShieldFixture.calls.filter((call) => call.service === window.__privacyShieldFixture.activeSettingsUri && call.method === 'setSystemSettings').length,
-        privilegedWrites: window.__privacyShieldFixture.calls.filter((call) => call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || '')).length,
-        errors: window.__privacyShieldFixture.errors
+        directWrites: window.__lgPrivacyShieldFixture.calls.filter((call) => call.service === window.__lgPrivacyShieldFixture.activeSettingsUri && call.method === 'setSystemSettings').length,
+        privilegedWrites: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || '')).length,
+        errors: window.__lgPrivacyShieldFixture.errors
       }))()`);
       assert.equal(result.checked, false);
       assert.equal(result.state, "Off");
@@ -1081,7 +1082,7 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       const fallback = await browser.evaluate(`(() => ({
         settings: [...document.querySelectorAll('[data-setting]')].map((input) => ({ key: input.dataset.setting, disabled: input.disabled, value: input.closest('.switch').querySelector('.switch-state').textContent })),
         consent: document.querySelector('[data-agreement="S_ADG"] .status-pill').textContent,
-        directFailures: window.__privacyShieldFixture.calls.filter((call) => call.service === 'luna://com.webos.settingsservice' && call.method === 'getSystemSettings').length
+        directFailures: window.__lgPrivacyShieldFixture.calls.filter((call) => call.service === 'luna://com.webos.settingsservice' && call.method === 'getSystemSettings').length
       }))()`);
       assert.deepEqual(fallback.settings.map((item) => item.value), ["On", "On", "On", "Off", "Off", "On", "On", "On", "On", "Not available", "Not available", "Off", "On", "On", "On", "Off", "On"]);
       assert.deepEqual(fallback.settings.map((item) => item.disabled), [...Array(9).fill(false), true, true, ...Array(6).fill(false)]);
@@ -1096,10 +1097,10 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       await browser.press("Enter");
       await waitFor(async () => (await browser.evaluate("document.querySelector('[data-setting=livePlus]').closest('.switch').querySelector('.switch-state').textContent")) === "Off", "root-bridge setting readback");
       const bridgeWrite = await browser.evaluate(`(() => ({
-        value: window.__privacyShieldFixture.settings.livePlus,
+        value: window.__lgPrivacyShieldFixture.settings.livePlus,
         status: document.querySelector('#control-status').textContent,
-        directWriteAttempts: window.__privacyShieldFixture.calls.filter((call) => call.service === 'luna://com.webos.settingsservice' && call.method === 'setSystemSettings').length,
-        rootCalls: window.__privacyShieldFixture.calls.filter((call) => call.service === 'luna://org.webosbrew.hbchannel.service' && call.method === 'exec'),
+        directWriteAttempts: window.__lgPrivacyShieldFixture.calls.filter((call) => call.service === 'luna://com.webos.settingsservice' && call.method === 'setSystemSettings').length,
+        rootCalls: window.__lgPrivacyShieldFixture.calls.filter((call) => call.service === 'luna://org.webosbrew.hbchannel.service' && call.method === 'exec'),
       }))()`);
       assert.equal(bridgeWrite.value, "off");
       assert.equal(bridgeWrite.directWriteAttempts, 1);
@@ -1115,8 +1116,8 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       const initial = await browser.evaluate(`(() => ({
         model: document.querySelector('#device-summary').textContent,
         toggleDisabled: document.querySelector('[data-setting=hbbTV]').disabled,
-        requestedKeys: window.__privacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings' && call.parameters.category).flatMap((call) => call.parameters.keys || []),
-        rootAvailable: window.__privacyShieldFixture.calls.some((call) => call.service === 'luna://org.webosbrew.hbchannel.service' && call.method === 'exec')
+        requestedKeys: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings' && call.parameters.category).flatMap((call) => call.parameters.keys || []),
+        rootAvailable: window.__lgPrivacyShieldFixture.calls.some((call) => call.service === 'luna://org.webosbrew.hbchannel.service' && call.method === 'exec')
       }))()`);
       assert.equal(initial.model, "OLED55B56LA");
       assert.equal(initial.toggleDisabled, false);
@@ -1125,10 +1126,10 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       await browser.evaluate("document.querySelector('[data-setting=hbbTV]').click()");
       await waitFor(async () => (await browser.evaluate("document.querySelector('[data-setting=hbbTV]').closest('.switch').querySelector('.switch-state').textContent")) === "Off", "B5 root writer readback");
       const write = await browser.evaluate(`(() => ({
-        value: window.__privacyShieldFixture.settings.hbbTV,
-        directWrites: window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings').length,
-        rootWrites: window.__privacyShieldFixture.calls.filter((call) => call.method === 'exec' && /device_control\.py/.test(call.parameters.command || '')).length,
-        errors: window.__privacyShieldFixture.errors
+        value: window.__lgPrivacyShieldFixture.settings.hbbTV,
+        directWrites: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings').length,
+        rootWrites: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'exec' && /device_control\.py/.test(call.parameters.command || '')).length,
+        errors: window.__lgPrivacyShieldFixture.errors
       }))()`);
       assert.equal(write.value, "off");
       assert.equal(write.directWrites, 1);
@@ -1145,9 +1146,9 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
         aiNudgeDisabled: document.querySelector('[data-setting=aiNudge]').disabled,
         screenSaverAdDisabled: document.querySelector('[data-setting=screenSaverAd]').disabled,
         homePromotionDisabled: document.querySelector('[data-setting=homePromotion]').disabled,
-        requestedKeys: window.__privacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings' && call.parameters.category).flatMap((call) => call.parameters.keys || []),
-        rootCalls: window.__privacyShieldFixture.calls.filter((call) => call.service === 'luna://org.webosbrew.hbchannel.service' && call.method === 'exec').length,
-        errors: window.__privacyShieldFixture.errors
+        requestedKeys: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings' && call.parameters.category).flatMap((call) => call.parameters.keys || []),
+        rootCalls: window.__lgPrivacyShieldFixture.calls.filter((call) => call.service === 'luna://org.webosbrew.hbchannel.service' && call.method === 'exec').length,
+        errors: window.__lgPrivacyShieldFixture.errors
       }))()`);
       assert.equal(initial.model, "OLED65G5WUA");
       assert.equal(initial.aiNudgeDisabled, false);
@@ -1160,9 +1161,9 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       await browser.evaluate("document.querySelector('[data-setting=aiNudge]').click()");
       await waitFor(async () => (await browser.evaluate("document.querySelector('[data-setting=aiNudge]').closest('.switch').querySelector('.switch-state').textContent")) === "Off", "G5 root writer readback");
       const write = await browser.evaluate(`(() => ({
-        value: window.__privacyShieldFixture.settings.aiNudge,
-        rootWrites: window.__privacyShieldFixture.calls.filter((call) => call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || '')).length,
-        unsupportedWrites: window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' && call.parameters.settings && Object.prototype.hasOwnProperty.call(call.parameters.settings, 'thirdPartyCookie')).length
+        value: window.__lgPrivacyShieldFixture.settings.aiNudge,
+        rootWrites: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || '')).length,
+        unsupportedWrites: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' && call.parameters.settings && Object.prototype.hasOwnProperty.call(call.parameters.settings, 'thirdPartyCookie')).length
       }))()`);
       assert.equal(write.value, "off");
       assert.equal(write.rootWrites, 1);
@@ -1178,9 +1179,9 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
         visibleKeys: [...document.querySelectorAll('.control-row:not([hidden]) [data-setting]')].map((input) => input.dataset.setting),
         reportPromptHidden: document.querySelector('#compatibility-report-prompt').hidden,
         reportPromptDisplay: getComputedStyle(document.querySelector('#compatibility-report-prompt')).display,
-        requestedKeys: window.__privacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings' && call.parameters.category).flatMap((call) => call.parameters.keys || []),
-        writerCalls: window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' || call.method === 'updateDNS' || (call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || ""))).length,
-        errors: window.__privacyShieldFixture.errors
+        requestedKeys: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings' && call.parameters.category).flatMap((call) => call.parameters.keys || []),
+        writerCalls: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' || call.method === 'updateDNS' || (call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || ""))).length,
+        errors: window.__lgPrivacyShieldFixture.errors
       }))()`);
       assert.equal(status.model, "OLED77C51LA");
       assert.ok(status.visibleKeys.length > 0);
@@ -1210,13 +1211,13 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
         const result = await browser.evaluate(`(() => ({
           checked: document.querySelector('[data-setting=livePlus]').checked,
           value: document.querySelector('[data-setting=livePlus]').closest('.switch').querySelector('.switch-state').textContent,
-          tvValue: window.__privacyShieldFixture.settings.livePlus,
+          tvValue: window.__lgPrivacyShieldFixture.settings.livePlus,
           status: document.querySelector('#control-status').textContent,
           toast: document.querySelector('#toast').textContent,
           focus: document.activeElement.dataset.setting,
-          directWrites: window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings').length,
-          rootWrites: window.__privacyShieldFixture.calls.filter((call) => call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || '')).length,
-          errors: window.__privacyShieldFixture.errors
+          directWrites: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings').length,
+          rootWrites: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || '')).length,
+          errors: window.__lgPrivacyShieldFixture.errors
         }))()`);
         assert.equal(result.checked, true);
         assert.equal(result.value, "On");
@@ -1261,8 +1262,8 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       const blocked = await browser.evaluate(`(() => ({
         status: document.querySelector('#control-status').textContent,
         toast: document.querySelector('#toast').textContent,
-        value: window.__privacyShieldFixture.settings.livePlus,
-        writes: window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings').length
+        value: window.__lgPrivacyShieldFixture.settings.livePlus,
+        writes: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings').length
       }))()`);
       assert.match(blocked.status, /did not return a current value/i);
       assert.match(blocked.toast, /did not return a current value/i);
@@ -1270,7 +1271,7 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       assert.equal(blocked.writes, 0);
       await browser.evaluate(`(() => { const button = document.querySelector('#restore-button'); button.disabled = false; button.click(); })()`);
       await waitFor(async () => (await browser.evaluate("document.querySelector('#control-status').textContent")) === "Current TV values are unavailable. Refresh before restoring settings.", "restore guard on unreadable state");
-      assert.equal(await browser.evaluate("window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' || call.method === 'updateDNS' || (call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || \"\"))).length"), 0, "unreadable restore must not reach any writer");
+      assert.equal(await browser.evaluate("window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' || call.method === 'updateDNS' || (call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || \"\"))).length"), 0, "unreadable restore must not reach any writer");
       await browser.press("ArrowDown");
       assert.equal(await browser.evaluate("document.activeElement.querySelector('[data-setting]').dataset.setting"), "voiceLongDistance");
       await browser.press("ArrowDown");
@@ -1290,8 +1291,8 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       const diagnostic = await browser.evaluate(`(() => ({
         runtime: document.querySelector('#runtime-mode').textContent,
         profile: document.querySelector('#runtime-mode').textContent,
-        errors: window.__privacyShieldFixture.errors,
-        calls: window.__privacyShieldFixture.calls.map(({ service, method, parameters }) => ({ service, method, keys: parameters.keys, category: parameters.category }))
+        errors: window.__lgPrivacyShieldFixture.errors,
+        calls: window.__lgPrivacyShieldFixture.calls.map(({ service, method, parameters }) => ({ service, method, keys: parameters.keys, category: parameters.category }))
       }))()`);
       throw new Error(`${error.message}; fixture=${JSON.stringify(diagnostic)}`);
     }
@@ -1309,11 +1310,11 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
         visibleRows: [...document.querySelectorAll('.control-row')].filter((row) => !row.hidden).length,
         promptHidden: document.querySelector('#compatibility-report-prompt').hidden,
         promptDisplay: getComputedStyle(document.querySelector('#compatibility-report-prompt')).display,
-        errors: window.__privacyShieldFixture.errors,
+        errors: window.__lgPrivacyShieldFixture.errors,
         presetDisabled: document.querySelector('#privacy-preset').disabled,
         restoreDisabled: document.querySelector('#restore-button').disabled,
         states: [...document.querySelectorAll('[data-setting]')].map((input) => ({ disabled: input.disabled, state: input.closest('.switch').querySelector('.switch-state').textContent })),
-        writerCalls: window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' || call.method === 'updateDNS' || (call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || ""))).length
+        writerCalls: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' || call.method === 'updateDNS' || (call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || ""))).length
       }))()`);
       assert.equal(status.model, "OLED65CSPSA");
       assert.match(status.software, /webOS 25/);
@@ -1336,10 +1337,10 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
 
       await browser.evaluate("document.querySelector('.tab[data-view=controls]').click()");
       await browser.evaluate(`(() => {
-        window.__privacyShieldFixture.clipboardAccesses = 0;
-        window.__privacyShieldFixture.qrPayloads = [];
+        window.__lgPrivacyShieldFixture.clipboardAccesses = 0;
+        window.__lgPrivacyShieldFixture.qrPayloads = [];
         Object.defineProperty(navigator, "clipboard", { configurable: true, get() {
-          window.__privacyShieldFixture.clipboardAccesses += 1;
+          window.__lgPrivacyShieldFixture.clipboardAccesses += 1;
           throw new Error("No TV clipboard");
         } });
         const createQr = window.qrcode;
@@ -1347,7 +1348,7 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
           const qr = createQr(...args);
           const addData = qr.addData.bind(qr);
           qr.addData = (data, ...options) => {
-            window.__privacyShieldFixture.qrPayloads.push(data);
+            window.__lgPrivacyShieldFixture.qrPayloads.push(data);
             return addData(data, ...options);
           };
           return qr;
@@ -1363,8 +1364,8 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
         shareVisible: !document.querySelector('#compatibility-report-share').hidden,
         reportBottom: document.querySelector('#compatibility-report-qr').getBoundingClientRect().bottom,
         footerTop: document.querySelector('.footer').getBoundingClientRect().top,
-        payloads: window.__privacyShieldFixture.qrPayloads,
-        clipboardAccesses: window.__privacyShieldFixture.clipboardAccesses
+        payloads: window.__lgPrivacyShieldFixture.qrPayloads,
+        clipboardAccesses: window.__lgPrivacyShieldFixture.clipboardAccesses
       }))()`);
       assert.equal(qr.hidden, false);
       assert.equal(qr.imageCount, 1);
@@ -1376,7 +1377,7 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       assert.equal(qr.payloads.length, 1, "one QR opens the prefilled form and includes the report");
       const issueUrl = new URL(qr.payloads[0]);
       assert.equal(issueUrl.origin, "https://github.com");
-      assert.equal(issueUrl.pathname, "/snapetech-org/PrivacyShield/issues/new");
+      assert.equal(issueUrl.pathname, "/snapetech-org/LGPrivacyShield/issues/new");
       assert.equal(issueUrl.searchParams.get("template"), "compatibility-report.yml");
       assert.equal(issueUrl.searchParams.get("title"), "[Compatibility] OLED65CSPSA");
       const generated = issueUrl.searchParams.get("report");
@@ -1410,9 +1411,9 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
         runtime: document.querySelector('#webos-version').textContent,
         controlsDisabled: [...document.querySelectorAll('[data-setting]')].every((input) => input.disabled),
         visibleRows: [...document.querySelectorAll('.control-row')].filter((row) => !row.hidden).length,
-        settingReads: window.__privacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings' && call.parameters.category).length,
-        writers: window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' || call.method === 'updateDNS' || (call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || ''))).length,
-        errors: window.__privacyShieldFixture.errors
+        settingReads: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'getSystemSettings' && call.parameters.category).length,
+        writers: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' || call.method === 'updateDNS' || (call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || ''))).length,
+        errors: window.__lgPrivacyShieldFixture.errors
       }))()`);
       assert.equal(status.model, "OLED65C6SIM");
       assert.match(status.runtime, /SIM-ENGINE-MISMATCH/);
@@ -1442,17 +1443,17 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
           await waitFor(async () => await browser.evaluate(`(() => {
             const runtime = document.querySelector('#runtime-mode').dataset.state;
             return runtime === 'ready' || runtime === 'unavailable'
-              || window.__privacyShieldFixture.errors.length > 0;
+              || window.__lgPrivacyShieldFixture.errors.length > 0;
           })()`), `${scenario} model fixture`);
           const status = await browser.evaluate(`(() => ({
             model: document.querySelector('#device-summary').textContent,
             version: document.querySelector('#webos-version').textContent,
-            errors: window.__privacyShieldFixture.errors,
+            errors: window.__lgPrivacyShieldFixture.errors,
             controls: [...document.querySelectorAll('[data-setting]')].map((input) => ({ key: input.dataset.setting, disabled: input.disabled, hidden: input.closest('.control-row').hidden, state: input.closest('.switch').querySelector('.switch-state').textContent })),
             presetDisabled: document.querySelector('#privacy-preset').disabled,
-            settingReads: window.__privacyShieldFixture.calls.filter((call) => call.service === window.__privacyShieldFixture.activeSettingsUri && call.method === 'getSystemSettings' && call.parameters.category).map((call) => call.parameters.keys),
-            missingCurrentServiceProbes: window.__privacyShieldFixture.calls.filter((call) => call.service === 'luna://com.webos.settingsservice' && call.service !== window.__privacyShieldFixture.activeSettingsUri && call.method === 'getSystemSettings' && call.parameters.category).length,
-            writerCalls: window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' || call.method === 'updateDNS' || (call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || ""))).length
+            settingReads: window.__lgPrivacyShieldFixture.calls.filter((call) => call.service === window.__lgPrivacyShieldFixture.activeSettingsUri && call.method === 'getSystemSettings' && call.parameters.category).map((call) => call.parameters.keys),
+            missingCurrentServiceProbes: window.__lgPrivacyShieldFixture.calls.filter((call) => call.service === 'luna://com.webos.settingsservice' && call.service !== window.__lgPrivacyShieldFixture.activeSettingsUri && call.method === 'getSystemSettings' && call.parameters.category).length,
+            writerCalls: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' || call.method === 'updateDNS' || (call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || ""))).length
           }))()`);
           assert.equal(status.model, model);
           assert.deepEqual(status.errors, [], `${scenario} browser profile errors`);
@@ -1481,8 +1482,8 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
             await browser.press("Enter");
             await waitFor(async () => (await browser.evaluate("document.querySelector('#control-status').textContent")) === "Recommended privacy settings applied.", "partial preset readback with one unavailable mapped setting");
             const partialPreset = await browser.evaluate(`(() => ({
-              settings: { ...window.__privacyShieldFixture.settings },
-              writes: window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' && call.service === 'luna://com.webos.service.settings').map((call) => call.parameters.settings)
+              settings: { ...window.__lgPrivacyShieldFixture.settings },
+              writes: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' && call.service === 'luna://com.webos.service.settings').map((call) => call.parameters.settings)
             }))()`);
             assert.equal(partialPreset.settings.screenSaverAd, "on", "the missing setting is left untouched");
             assert.equal(partialPreset.settings.livePlus, "off");
@@ -1495,8 +1496,8 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
             await browser.evaluate("document.querySelector('[data-setting=thirdPartyCookie]').click()");
             await waitFor(async () => (await browser.evaluate("document.querySelector('[data-setting=thirdPartyCookie]').closest('.switch').querySelector('.switch-state').textContent")) === "Off", "C5 HbbTV cookie value readback");
             const cookieWrite = await browser.evaluate(`(() => ({
-              value: window.__privacyShieldFixture.settings.thirdPartyCookie,
-              writes: window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings').map((call) => call.parameters.settings.thirdPartyCookie)
+              value: window.__lgPrivacyShieldFixture.settings.thirdPartyCookie,
+              writes: window.__lgPrivacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings').map((call) => call.parameters.settings.thirdPartyCookie)
             }))()`);
             assert.equal(cookieWrite.value, "offByUser");
             assert.deepEqual(cookieWrite.writes, ["offByUser"], "the C5 value domain is written and read back as published");
@@ -1505,8 +1506,8 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       }
     }
 
-    if (process.env.PRIVACYSHIELD_DOC_SCREENSHOT_DIR) {
-      await captureDocumentationScreenshots(browser, process.env.PRIVACYSHIELD_DOC_SCREENSHOT_DIR);
+    if (process.env.LGPRIVACYSHIELD_DOC_SCREENSHOT_DIR) {
+      await captureDocumentationScreenshots(browser, process.env.LGPRIVACYSHIELD_DOC_SCREENSHOT_DIR);
     }
   } finally {
     if (browser) await browser.stop();

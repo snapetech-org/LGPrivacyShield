@@ -1,16 +1,16 @@
-# Install and check PrivacyShield on your LG TV
+# Install and check LGPrivacyShield on your LG TV
 
 See the [app guide](APP-GUIDE.md) for the four app pages. The [documentation index](README.md) links to user and technical references.
 
 ## Install
 
-Download the IPK from the [latest PrivacyShield release](https://github.com/snapetech-org/PrivacyShield/releases/latest). Install it with a webOS Homebrew-compatible installer such as [webOS Dev Manager](https://github.com/webosbrew/dev-manager-desktop). Rooted/Homebrew TVs must use the manager's rooted connection. Do not enable LG Developer Mode on a TV that is already rooted.
+Download the IPK from the [latest LGPrivacyShield release](https://github.com/snapetech-org/LGPrivacyShield/releases/latest). Install it with a webOS Homebrew-compatible installer such as [webOS Dev Manager](https://github.com/webosbrew/dev-manager-desktop). Rooted/Homebrew TVs must use the manager's rooted connection. Do not enable LG Developer Mode on a TV that is already rooted.
 
-PrivacyShield is expected to work on webOS 6 and newer. Physical testing is currently limited to a C6 running webOS 26; earlier releases have not been tested. Homebrew Channel provides local service access used to read or change settings. On webOS 26, the Homebrew `lunabus.query` permission may not be registered; settings that cannot be read remain unavailable. Installing PrivacyShield does not change Homebrew permissions.
+LGPrivacyShield is expected to work on webOS 6 and newer. Physical testing is currently limited to a C6 running webOS 26; earlier releases have not been tested. Homebrew Channel provides local service access used to read or change settings. On webOS 26, the Homebrew `lunabus.query` permission may not be registered; settings that cannot be read remain unavailable. Installing LGPrivacyShield does not change Homebrew permissions.
 
 ## Check compatibility
 
-Open **Controls**. PrivacyShield lists settings mapped to the TV's model and software. A switch is available only when the TV returns a readable current value. If no settings are mapped, or a mapped setting cannot be read, the page offers a compatibility report.
+Open **Controls**. LGPrivacyShield lists settings mapped to the TV's model and software. A switch is available only when the TV returns a readable current value. If no settings are mapped, or a mapped setting cannot be read, the page offers a compatibility report.
 
 Send a report if the TV is not mapped or expected controls remain unavailable. The report helps maintainers check model and software coverage and see which controls the TV returns. It contains model and software versions, service access, and yes/no setting-read results; it does not include setting values or agreement choices.
 

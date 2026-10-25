@@ -13,7 +13,7 @@ choices.
 | Hands-free voice recognition | Disables far-field voice commands. | Wake-word commands stop working. This does not disconnect the built-in microphone or remote microphone. |
 | Voice wake | Stops voice commands from waking the TV from standby. | The power button and remote remain available. |
 | Limit Ad Tracking | Limits advertising-related use of personal data. | Ad personalization may change; advertisements remain. |
-| Do Not Sell My Personal Information | Asks LG to instruct third-party providers to stop commercializing personal information. | Some ad-supported services may remain. PrivacyShield calls LG's ad-manager service; it does not change DNS blocking. |
+| Do Not Sell My Personal Information | Asks LG to instruct third-party providers to stop commercializing personal information. | Some ad-supported services may remain. LGPrivacyShield calls LG's ad-manager service; it does not change DNS blocking. |
 | Screen Saver Promotion | Hides promotions shown by supported screen savers and apps. | Promotions in other TV apps or screens may remain. |
 | Home menu ads | Hides sponsored items shown in the Home menu. | Other advertisements on the TV may remain. |
 | Live Promotion | Disables custom ads and services while watching content. | LG makes this setting available when Live Plus is on. |
@@ -32,10 +32,10 @@ It leaves the five separate choices above unchanged.
 
 ## LG agreements
 
-PrivacyShield shows the saved agreement status, the documented accepted and
+LGPrivacyShield shows the saved agreement status, the documented accepted and
 declined effects, and any additional agreement the TV reports without a
 verified effect map. Changes remain in LG's native User Agreements screen.
-PrivacyShield does not write cached consent records.
+LGPrivacyShield does not write cached consent records.
 
 The Privacy Policy and Terms of Use are required for LG smart services such as
 Netflix and YouTube. Optional consents gate ACR, voice recognition, and

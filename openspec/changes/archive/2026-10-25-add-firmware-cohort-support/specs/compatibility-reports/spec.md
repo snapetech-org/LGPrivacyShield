@@ -18,7 +18,7 @@ The system MUST generate a compatibility report only after an explicit user acti
 - **THEN** the app does not create or transmit a community report
 
 ### Requirement: Minimize report contents
-The report MUST contain only its schema version, PrivacyShield version, model identity, webOS SDK version, firmware version, matched profile identity/status, service-read availability, and per-control read availability. It MUST exclude current setting values, agreement state, serial numbers, MAC/IP addresses, account data, SSIDs, installed-app lists, process lists, and network destinations.
+The report MUST contain only its schema version, LGPrivacyShield version, model identity, webOS SDK version, firmware version, matched profile identity/status, service-read availability, and per-control read availability. It MUST exclude current setting values, agreement state, serial numbers, MAC/IP addresses, account data, SSIDs, installed-app lists, process lists, and network destinations.
 
 #### Scenario: Sanitized report creation
 - **WHEN** a report is generated

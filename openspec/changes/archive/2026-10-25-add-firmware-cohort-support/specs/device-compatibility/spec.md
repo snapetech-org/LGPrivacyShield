@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Identifies the exact TV software cohort for which PrivacyShield has an evidence-backed settings map, then limits controls to that map.
+Identifies the exact TV software cohort for which LGPrivacyShield has an evidence-backed settings map, then limits controls to that map.
 
 ## ADDED Requirements
 
@@ -34,7 +34,7 @@ The system MUST enable a setting write only when the current device matches a pr
 
 #### Scenario: Mapped control with readable value
 - **WHEN** a control is mapped for the exact profile and its current value is known
-- **THEN** the user can change it and PrivacyShield reports success only after TV readback matches
+- **THEN** the user can change it and LGPrivacyShield reports success only after TV readback matches
 
 #### Scenario: Unmapped control or unreadable value
 - **WHEN** a profile does not map a control or the current value cannot be read
@@ -82,13 +82,13 @@ The system MUST show the matched profile, evidence level, and control availabili
 The system MUST maintain public evidence for the B1–B6, C1–C6, and G1–G6 series. Each entry MUST retain its source revision, evidence kind, exact model/software/firmware scope where available, and privilege/access context.
 
 #### Scenario: Community evidence is shown for an unmapped TV
-- **WHEN** a TV matches a family with public community observations but no exact PrivacyShield profile
+- **WHEN** a TV matches a family with public community observations but no exact LGPrivacyShield profile
 - **THEN** the app shows the matching family and relevant public evidence while settings remain read-only and unwritable
 
 ### Requirement: Review public evidence before adding a settings map
-The system MUST keep source records separate from the manually reviewed compatibility registry. A public finding or report MUST NOT change the registry automatically. A manually reviewed SettingsService map MAY define a source-mapped platform or model overlay, but MUST retain its original scope and MUST NOT claim PrivacyShield physical validation.
+The system MUST keep source records separate from the manually reviewed compatibility registry. A public finding or report MUST NOT change the registry automatically. A manually reviewed SettingsService map MAY define a source-mapped platform or model overlay, but MUST retain its original scope and MUST NOT claim LGPrivacyShield physical validation.
 
-#### Scenario: A community-tested model has no model-specific PrivacyShield overlay
+#### Scenario: A community-tested model has no model-specific LGPrivacyShield overlay
 - **WHEN** a TV matches a model family with public observations but no reviewed model-specific overlay
 - **THEN** no model-only controls are added; separately reviewed platform maps may still enable their own readable candidate keys
 
@@ -98,7 +98,7 @@ The system MUST keep source records separate from the manually reviewed compatib
 
 #### Scenario: A public report matches software but not the model variant
 - **WHEN** a community row has the same SDK and firmware but a different size or regional model code
-- **THEN** the app shows it as a comparison row and does not treat it as an exact PrivacyShield profile
+- **THEN** the app shows it as a comparison row and does not treat it as an exact LGPrivacyShield profile
 
 #### Scenario: A root preference script does not establish an app setter
 - **WHEN** a model-specific source writes a key directly to a preference file but does not document the SettingsService category, app access, or readback
@@ -117,7 +117,7 @@ The system MUST keep source records separate from the manually reviewed compatib
 - **THEN** the app shows the C5 result as a separate cohort finding and leaves the current TV's physical switch state unknown
 
 ### Requirement: Show menu references only for a detected platform
-The system MUST show documented menu paths only when the installed webOS platform is identified from a supported exact runtime signal. Menu paths MUST be labeled as documentation references and MUST NOT expose or imply the current value, a Luna setting key, or PrivacyShield write availability.
+The system MUST show documented menu paths only when the installed webOS platform is identified from a supported exact runtime signal. Menu paths MUST be labeled as documentation references and MUST NOT expose or imply the current value, a Luna setting key, or LGPrivacyShield write availability.
 
 #### Scenario: A supported platform is detected
 - **WHEN** the app runs on a webOS platform matched by the official browser-engine table

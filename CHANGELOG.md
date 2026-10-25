@@ -29,4 +29,4 @@
   its issue form.
 
 Earlier release history is available in the
-[GitHub release list](https://github.com/snapetech-org/PrivacyShield/releases).
+[GitHub release list](https://github.com/snapetech-org/LGPrivacyShield/releases).

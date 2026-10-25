@@ -1,7 +1,7 @@
 (function (root, factory) {
   const profiles = factory();
   if (typeof module === "object" && module.exports) module.exports = profiles;
-  else root.PrivacyShieldDeviceProfiles = profiles;
+  else root.LGPrivacyShieldDeviceProfiles = profiles;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 

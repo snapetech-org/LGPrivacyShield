@@ -154,7 +154,7 @@ def render_js(catalog):
     return (
         "(function (root, data) {\n"
         "  if (typeof module === \"object\" && module.exports) module.exports = data;\n"
-        "  else root.PrivacyShieldFirmwareData = data;\n"
+        "  else root.LGPrivacyShieldFirmwareData = data;\n"
         f"}})(typeof globalThis !== \"undefined\" ? globalThis : this, Object.freeze({payload}));\n"
     )
 

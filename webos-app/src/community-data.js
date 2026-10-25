@@ -1,11 +1,11 @@
 (function (root, factory) {
   if (typeof module === "object" && module.exports) module.exports = factory();
-  else root.PrivacyShieldCommunityData = factory();
+  else root.LGPrivacyShieldCommunityData = factory();
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
   // Pinned source snapshots: Glasshouse a1b93a218222034934004d502aeff3f111dfd411 and CleanYourTV 5736f246d0192d78c9bed9b3ba66f8e2ac945c5b.
-  // Keep these as observations from each upstream project; they are not PrivacyShield write profiles.
+  // Keep these as observations from each upstream project; they are not LGPrivacyShield write profiles.
   const GLASSHOUSE_ROWS = Object.freeze([
   {
     "project": "Glasshouse",
@@ -729,7 +729,7 @@
     "panel": "OLED",
     "series": "B5",
     "status": "owner-audited",
-    "note": "The owner report records a privacy audit and settings for this model. It does not list the firmware version or verify changes made from PrivacyShield."
+    "note": "The owner report records a privacy audit and settings for this model. It does not list the firmware version or verify changes made from LGPrivacyShield."
   },
   {
     "project": "webos_lockout",
@@ -741,7 +741,7 @@
     "panel": "OLED",
     "series": "C5",
     "status": "maintainer-tested",
-    "note": "The startup script changes usageCare, dbgLogUpload, and faultLogUpload preferences. The project reports that they remained changed after reboot. It does not verify that PrivacyShield can change them or that uploads stopped."
+    "note": "The startup script changes usageCare, dbgLogUpload, and faultLogUpload preferences. The project reports that they remained changed after reboot. It does not verify that LGPrivacyShield can change them or that uploads stopped."
   },
   {
     "project": "Level1Techs G5 rooted privacy guide",
@@ -753,7 +753,7 @@
     "panel": "OLED",
     "series": "G5",
     "status": "user-reported",
-    "note": "The guide lists privacy keys for this model and software version and changes preference files with root access. It omits the firmware number and does not test PrivacyShield access."
+    "note": "The guide lists privacy keys for this model and software version and changes preference files with root access. It omits the firmware number and does not test LGPrivacyShield access."
   },
   {
     "project": "webOS Unclutter",

@@ -1,4 +1,4 @@
-# PrivacyShield app guide
+# LGPrivacyShield app guide
 
 See the [README screenshots](../README.md#screenshots) for every page in dark and light themes. They use sample C5/webOS 25 data.
 
@@ -8,7 +8,7 @@ Shows your TV software, Live Plus and voice status. **Review controls** opens th
 
 ## Controls
 
-PrivacyShield shows settings available on the connected TV. A switch is enabled after its current value can be read, and each change is checked on the TV.
+LGPrivacyShield shows settings available on the connected TV. A switch is enabled after its current value can be read, and each change is checked on the TV.
 
 Use **Apply recommended settings** or change switches individually. **Save current settings** saves readable values as a reusable restore point. If no point exists, the first change saves the starting values. **Restore saved settings** reapplies the saved values; a manual save remains available afterward.
 
@@ -24,7 +24,7 @@ Shows the app version, license, source code, and a Ko-fi support QR code and lin
 
 ## Remote and theme
 
-Use arrows to move and OK to select. Back returns to Overview, then exits the app. PrivacyShield starts in dark theme; **Use light theme** switches palettes and saves your choice on the TV.
+Use arrows to move and OK to select. Back returns to Overview, then exits the app. LGPrivacyShield starts in dark theme; **Use light theme** switches palettes and saves your choice on the TV.
 
 ## Compatibility report
 

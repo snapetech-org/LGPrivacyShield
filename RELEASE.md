@@ -37,8 +37,9 @@ or updating a Homebrew catalog entry, or merging a Homebrew repository change.
 ## Current state
 
 Version 0.4.0 is prepared in source but has not been published. The latest
-published release is v0.1.12. The Homebrew PR #296 remains open and describes
-an older app. Do not update, merge, publish, or submit it until the project
-owner decides to proceed. The current source has no npm audit findings; the
-vulnerable webOS CLI packaging dependency was removed and IPK creation now uses
-the local Python packager.
+published release is v0.1.12. Homebrew PR #296 now describes the current app,
+includes screenshots and the AI-use declaration, and remains open. Its stable
+manifest URL still resolves to v0.1.12. Do not merge the PR until the 0.4.0 IPK
+and matching manifest are published. The current source has no npm audit
+findings; the vulnerable webOS CLI packaging dependency was removed and IPK
+creation now uses the local Python packager.

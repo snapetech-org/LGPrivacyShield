@@ -24,16 +24,21 @@ screenshots:
   - url: https://raw.githubusercontent.com/snapetech-org/PrivacyShield/main/docs/screenshots/about-light.png
     caption: About in light mode
 description: |
-  Review supported LG TV privacy settings and saved agreement choices. Save
-  settings to restore later; each change is checked on the TV.
+  See your TV model, software, Live Plus, and voice status. Change settings
+  exposed by the TV, verify each change, and save settings to restore later.
+  Review LG agreement choices and their documented effects. Dark mode is the
+  default; your light-theme choice is saved on the TV.
 
-  PrivacyShield runs locally. The app and TV send nothing. To report a missing
-  model or unreadable control, scan the compatibility QR code with your phone.
-  GitHub opens with a prefilled report; submit it to share it with maintainers.
+  PrivacyShield runs locally. It does not upload TV settings or viewing
+  activity. Compatibility reports are prepared locally. Scan one QR code with
+  a phone to open a prefilled GitHub form. The report includes model, software,
+  service access, and control readability—not setting values or agreement
+  choices. Opening the link sends the report to GitHub; submitting the form
+  creates a public issue. This helps maintainers add support for your TV.
 
-  Controls depend on your model, software, and Homebrew permissions. The
-  listing declares webOS 6+ as expected compatibility; physical testing is on
-  a C6 running webOS 26. Earlier releases have not been tested.
+  Expected to work on webOS 6 and later. Physical testing is on a C6 running
+  webOS 26 (Rockhopper release 11.2.0-3512, firmware 43.21.79); earlier
+  releases are untested. Controls depend on your model and Homebrew access.
   Support development on [Ko-fi](https://ko-fi.com/snapetech).
 funding:
   ko_fi: [snapetech]

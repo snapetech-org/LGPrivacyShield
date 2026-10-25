@@ -39,12 +39,16 @@ firmware image was extracted or that another physical TV was tested.
 ## Verification record · 2026-10-25
 
 - `npm test` passed: 63 Node.js tests and 51 Python tests.
-- `npm run package` passed and produced a 150,372-byte IPK.
+- `npm run package` passed and produced a 150,420-byte IPK.
 - `npm run test:ipk` passed: package metadata and all 23 packaged-app browser
   tests passed after extraction.
 - Homebrew manifest generator 0.10.0 produced a matching 0.4.0 manifest with
   the same package size and SHA-256.
-- SHA-256: `5416c250489d780986499b3c6a3d0840aec029f239e17cf0acc1d47330711020`
+- SHA-256: `2c04d5d1a21a531d2b9970d3574b9737120869a5546487718fefb79b07743deb`
+
+The clean `npm ci` install reported six vulnerabilities in the installed
+dependency tree (one moderate, four high, one critical). No dependency updates
+were applied; review the dependency audit before publishing.
 
 This verification includes the per-agreement effect map, TV-reported agreement
 titles, the region/model terms caveat, and unmapped-agreement display. The

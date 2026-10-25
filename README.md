@@ -16,7 +16,7 @@ See Live Plus and voice status, adjust the controls your TV supports, and save s
 
 ## Screenshots
 
-Images use sample C5/webOS 25 data. Each pair shows dark first, then light; click an image to enlarge. Dark mode is the default, and your light-theme choice is saved on the TV.
+Click an image to enlarge. Dark mode is the default, and your light-theme choice is saved on the TV.
 
 ### Overview
 

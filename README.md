@@ -1,7 +1,7 @@
 # PrivacyShield
 
-PrivacyShield lets you review and manage privacy settings on an LG webOS TV. It reads the TV's settings, LG agreement choices, and local
-status through webOS services on the TV.
+PrivacyShield lets you review and manage privacy settings on an LG webOS TV. It reads and changes the TV's privacy settings, LG agreement choices, and advertising toggles
+through webOS services on the TV.
 
 ## What you can do
 

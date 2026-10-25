@@ -13,8 +13,6 @@
     "clean": "bash scripts/clean-generated.sh"
   },
   "devDependencies": {
-    "@webos-tools/cli": "3.2.6",
-    "esbuild": "0.28.2",
-    "qrcode-generator": "1.4.4"
+    "esbuild": "0.28.2"
   }
 }

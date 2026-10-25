@@ -72,16 +72,17 @@ request does not validate the app's own Luna permissions. See
 
 2026-10-25:
 
-- `npm test`: 58 Node.js tests and 48 Python tests passed.
-- `npm run package`: produced a 66,432-byte 0.4.0 IPK, SHA-256
-  `fb8c983fdc577e71fdf63014654296f15b31422f3d6c696f3c2d51979e0b9b2d`.
+- `npm audit`: 0 vulnerabilities after removing the shrinkwrapped webOS CLI
+  dependency; IPKs are built locally from the prepared app tree.
+- `npm test`: 59 Node.js tests and 49 Python tests passed.
+- `npm run package`: produced a 73,592-byte 0.4.0 IPK, SHA-256
+  `a2229f2b0b422dc898d473b37c0493e6583b3a0fb6fe8925d5c6447dc97b0c4a`.
 - `npm run test:ipk`: package metadata, licenses, research-file exclusions, and
   all 18 packaged-app browser checks passed.
 - Homebrew's `webosbrew-ipk-verify` exited successfully for webOS 6.4.0. Its
-  runtime API check warns for manual verification; it also lists seven
-  user-activated external links. The physical TV test record covers webOS 26,
-  not webOS 6.
+  Runtime APIs check warns for manual verification; it also finds seven
+  external links activated by users. Physical testing is on webOS 26 only.
 - Successful reads leave the footer clear, and Overview shows no read timestamp.
-- Installed and launched the IPK on an OLED77C6HUP running webOS 26,
-  firmware 43.21.79. The app-manager reported PrivacyShield running after
-  launch. This confirms install and startup on that TV.
+- The installed app on an OLED77C6HUP (webOS 26, firmware 43.21.79) matches all
+  19 files in this IPK. PrivacyShield launched successfully; earlier webOS
+  releases remain untested.

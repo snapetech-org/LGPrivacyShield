@@ -63,6 +63,13 @@ test("uses the title reported by this TV while retaining the sourced agreement e
   assert.match(agreement.evidence, /recorded.*on the C6/i);
 });
 
+test("decodes agreement-title entities once", () => {
+  const summary = model.featureConsentSummary({ eulaInfoNetwork: { eulaList: [
+    { id: "S_DIA", type: "M", accepted: true, title: "A &amp;lt;tag&amp;gt; &amp;amp; B" }
+  ] } });
+  assert.equal(summary.find(({ id }) => id === "S_DIA").title, "A &lt;tag&gt; &amp; B");
+});
+
 test("privacy preset applies only reviewed reversible choices", () => {
   const preset = model.privacyPreset();
   assert.deepEqual(preset.map((entry) => entry.key), [

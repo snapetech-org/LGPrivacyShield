@@ -31,7 +31,9 @@ description: |
   model or unreadable control, scan the compatibility QR code with your phone.
   GitHub opens with a prefilled report; submit it to share it with maintainers.
 
-  Controls depend on your model, software, and Homebrew permissions.
+  Controls depend on your model, software, and Homebrew permissions. The
+  listing declares webOS 6+ as expected compatibility; physical testing is on
+  a C6 running webOS 26. Earlier releases have not been tested.
   Support development on [Ko-fi](https://ko-fi.com/snapetech).
 funding:
   ko_fi: [snapetech]

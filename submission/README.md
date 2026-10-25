@@ -14,6 +14,7 @@ The existing
 still describes the v0.1.11 listing and its two-QR clipboard report flow. The
 current app uses one QR code to open a prefilled GitHub form on a phone. Refresh
 the PR description, screenshots, compatibility claim, and validation record
-before submission. Do not update or merge it until the project owner signs off.
-See [release preparation](../RELEASE.md) and the
+before submission. The draft declares webOS 6+ as expected compatibility;
+physical testing is limited to webOS 26. Do not update or merge the PR until the
+project owner decides to proceed. See [release preparation](../RELEASE.md) and the
 [TV testing guide](../docs/TEST-ON-YOUR-TV.md).

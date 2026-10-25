@@ -29,6 +29,17 @@ mkdir -p "${staged_app}"
 cp -a "${repo_root}/webos-app/." "${staged_app}/"
 cp "${repo_root}/LICENSE" "${staged_app}/LICENSE"
 cp "${repo_root}/THIRD-PARTY-NOTICES.md" "${staged_app}/THIRD-PARTY-NOTICES.md"
+python3 - "${staged_app}" <<'PY'
+import shutil
+import sys
+from pathlib import Path
+
+staged_app = Path(sys.argv[1])
+for cache in staged_app.rglob("__pycache__"):
+    shutil.rmtree(cache)
+for bytecode in staged_app.rglob("*.pyc"):
+    bytecode.unlink()
+PY
 rm -f \
   "${staged_app}/src/community-data.js" \
   "${staged_app}/src/community-reference.js" \
@@ -48,11 +59,8 @@ while IFS= read -r -d '' source_file; do
     --outfile="${output_file}"
 done < <(find "${repo_root}/webos-app" -type f -name '*.js' -print0)
 
-cd "${build_dir}"
-"${repo_root}/node_modules/.bin/ares-package" \
-  --app-exclude "__pycache__" \
-  --app-exclude "*.pyc" \
-  "${staged_app}"
-[ -f "${build_package}" ] || { echo "Package output missing: ${build_package}" >&2; exit 1; }
+python3 "${repo_root}/scripts/package_ipk.py" \
+  --app-dir "${staged_app}" \
+  --output "${build_package}"
 cp "${build_package}" "${dist_package}"
 sha256sum "${dist_package}"

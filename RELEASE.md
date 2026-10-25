@@ -12,15 +12,16 @@ or updating a Homebrew catalog entry, or merging a Homebrew repository change.
    usernames, private paths, serial numbers, unredacted reports, and network
    addresses. Model and software identifiers used as compatibility evidence are
    intentional.
-3. Confirm redistribution terms for research data in the public source tree.
-   The firmware catalog has no stated source license; it is excluded from the
-   IPK but remains in this repository. Resolve its terms or remove it before
-   further redistribution.
+3. Record known attribution for research data in the public source tree. The
+   firmware catalog's original author and license are unknown. It is excluded
+   from the IPK, retained at the project owner's direction, and will be removed
+   if requested by its source owner.
 4. Run `npm ci`, `npm audit`, `npm test`, `npm run package`, and
    `npm run test:ipk`.
 5. Run the [Homebrew compatibility checker](https://github.com/webosbrew/dev-toolbox-cli)
-   on the IPK. Install from a clean state and launch on a real TV; test the
-   oldest webOS release claimed and record the model and webOS release.
+   on the IPK. Record the model and webOS versions tested on real TVs. The
+   listing declares webOS 6+ as expected compatibility; physical testing is
+   currently limited to webOS 26.
 6. Verify that the IPK contains the app sources, root AGPL license, and
    third-party notices. Record its SHA-256 and size.
 7. Generate the Homebrew manifest from the final IPK and public icon/source
@@ -36,10 +37,8 @@ or updating a Homebrew catalog entry, or merging a Homebrew repository change.
 ## Current state
 
 Version 0.4.0 is prepared in source but has not been published. The latest
-published release is v0.1.12. The catalog metadata in `submission/` is a local
-release-preparation artifact; it must not be submitted or merged without
-project-owner signoff.
-
-As of 2026-10-25, GitHub lists seven open Dependabot alerts in the
-`@webos-tools/cli` 3.2.6 npm shrinkwrap. The CLI is a development dependency and
-is not included in the IPK; recheck for an upstream fix before publication.
+published release is v0.1.12. The Homebrew PR #296 remains open and describes
+an older app. Do not update, merge, publish, or submit it until the project
+owner decides to proceed. The current source has no npm audit findings; the
+vulnerable webOS CLI packaging dependency was removed and IPK creation now uses
+the local Python packager.

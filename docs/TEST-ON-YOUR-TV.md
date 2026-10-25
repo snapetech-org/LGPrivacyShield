@@ -6,7 +6,7 @@ See the [app guide](APP-GUIDE.md) for the four app pages. The [documentation ind
 
 Download the IPK from the [latest PrivacyShield release](https://github.com/snapetech-org/PrivacyShield/releases/latest). Install it with a webOS Homebrew-compatible installer such as [webOS Dev Manager](https://github.com/webosbrew/dev-manager-desktop). Rooted/Homebrew TVs must use the manager's rooted connection. Do not enable LG Developer Mode on a TV that is already rooted.
 
-PrivacyShield targets webOS 6 and newer. Homebrew Channel provides local service access used to read or change settings. On webOS 26, the Homebrew `lunabus.query` permission may not be registered; settings that cannot be read remain unavailable. Installing PrivacyShield does not change Homebrew permissions.
+PrivacyShield is expected to work on webOS 6 and newer. Physical testing is currently limited to a C6 running webOS 26; earlier releases have not been tested. Homebrew Channel provides local service access used to read or change settings. On webOS 26, the Homebrew `lunabus.query` permission may not be registered; settings that cannot be read remain unavailable. Installing PrivacyShield does not change Homebrew permissions.
 
 ## Check compatibility
 

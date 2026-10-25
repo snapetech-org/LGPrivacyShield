@@ -58,7 +58,7 @@ The app does not record audio or screenshots, run a background service, inspect 
 
 ## Install and help
 
-PrivacyShield supports LG webOS 6 and later. Controls depend on your TV model, software, and Homebrew access. Install the [latest release](https://github.com/snapetech-org/PrivacyShield/releases/latest) with [webOS Dev Manager](https://github.com/webosbrew/dev-manager-desktop). Homebrew Channel on a rooted TV enables local setting access.
+PrivacyShield is expected to work on LG webOS 6 and later. Physical testing is on a C6 running webOS 26; earlier releases have not been tested. Controls depend on your TV model, software, and Homebrew access. Install the [latest release](https://github.com/snapetech-org/PrivacyShield/releases/latest) with [webOS Dev Manager](https://github.com/webosbrew/dev-manager-desktop). Homebrew Channel on a rooted TV enables local setting access.
 
 See the [installation guide](docs/TEST-ON-YOUR-TV.md), [setting effects](docs/FEATURE-IMPACT.md), [LG agreement effects](docs/LG-AGREEMENT-EFFECTS.md), and [model compatibility](docs/DEVICE-COMPATIBILITY.md).
 

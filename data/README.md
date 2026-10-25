@@ -21,9 +21,8 @@ Regenerate both outputs after downloading the source index:
 python3 scripts/build_firmware_catalog.py --input /path/to/processed_fw.json
 ```
 
-The source JSON did not include a license declaration in the retrieved
-snapshot. The generated data is checked into this public source repository but
-is not included in the TV IPK. This project records its source and checksum and
-makes no claim that the archive's metadata is LG-authored or licensed under
-PrivacyShield's AGPL-3.0-only license. Resolve the archive's terms or remove
-this snapshot before further redistribution.
+The source snapshot did not identify its original author or license. The
+project owner has chosen to retain this source-only research data; it is not
+included in the TV IPK. Remove the catalog if its source owner requests it.
+This project makes no claim that the archive metadata is LG-authored or covered
+by PrivacyShield's AGPL-3.0-only license.

@@ -116,12 +116,10 @@
   function agreementTitle(value) {
     if (typeof value !== "string") return "";
     return value.replace(/<[^>]*>/g, " ")
-      .replace(/&nbsp;|&#160;/gi, " ")
-      .replace(/&amp;/gi, "&")
-      .replace(/&lt;/gi, "<")
-      .replace(/&gt;/gi, ">")
-      .replace(/&quot;/gi, '"')
-      .replace(/&#39;|&apos;/gi, "'")
+      .replace(/&(?:nbsp|#160|amp|lt|gt|quot|#39|apos);/gi, (entity) => ({
+        "&nbsp;": " ", "&#160;": " ", "&amp;": "&", "&lt;": "<",
+        "&gt;": ">", "&quot;": '"', "&#39;": "'", "&apos;": "'"
+      })[entity.toLowerCase()] || entity)
       .replace(/\s+/g, " ").trim().slice(0, 160);
   }
 

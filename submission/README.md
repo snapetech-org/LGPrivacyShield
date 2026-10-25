@@ -12,9 +12,9 @@ test record, and AI-use declaration.
 
 The existing
 [catalog pull request #296](https://github.com/webosbrew/apps-repo/pull/296)
-has been updated to describe the current app and screenshots. The PR remains
-open. Its stable manifest URL currently resolves to the public v0.1.12 release;
-the 0.4.0 candidate and matching manifest are not published. Do not merge the
-PR until that release is available. The listing expects webOS 6+; the C6 on
-webOS 26 is the only physical test, and earlier releases remain untested. See
-[release preparation](../RELEASE.md) and the [TV testing guide](../docs/TEST-ON-YOUR-TV.md).
+is open. Its stable manifest URL resolves to the published v0.4.0 package.
+Source version 0.4.1 includes security fixes but is not released; update the
+Homebrew listing and release manifest together before merging the PR. The
+listing expects webOS 6+; the C6 on webOS 26 is the only physical test, and
+earlier releases remain untested. See [release preparation](../RELEASE.md) and
+the [TV testing guide](../docs/TEST-ON-YOUR-TV.md).

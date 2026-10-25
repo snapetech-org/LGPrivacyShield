@@ -11,18 +11,13 @@ fi
 
 icon_url="$1"
 source_url="$2"
-mapfile -t app_identity < <(python3 - "${repo_root}/webos-app/appinfo.json" <<'PY'
-import json
-import sys
-
-with open(sys.argv[1], "r", encoding="utf-8") as source:
-    app = json.load(source)
-
-print(app["id"])
-print(app["version"])
-PY
-)
-package="${dist_dir}/${app_identity[0]}_${app_identity[1]}_all.ipk"
+app_identity="$(python3 "${repo_root}/scripts/package_identity.py" "${repo_root}/webos-app/appinfo.json")"
+IFS=$'\t' read -r app_id app_version <<< "${app_identity}"
+if [ -z "${app_id}" ] || [ -z "${app_version}" ]; then
+  echo "Could not read a valid package identity." >&2
+  exit 1
+fi
+package="${dist_dir}/${app_id}_${app_version}_all.ipk"
 output="${dist_dir}/org.privacyshield.webos.manifest.json"
 
 if [ -n "${WEBOSBREW_GEN_MANIFEST:-}" ]; then

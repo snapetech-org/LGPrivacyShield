@@ -63,6 +63,43 @@ class PackageIpkTests(unittest.TestCase):
                 self.assertFalse(any("__pycache__" in name or name.endswith(".pyc") for name in names))
                 self.assertTrue(all(member.mtime == 1792950000 for member in archive.getmembers()))
 
+    def test_rejects_package_identity_path_traversal_and_control_fields(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            app = root / "app"
+            app.mkdir()
+            output = root / "result.ipk"
+            for identity in (
+                {"id": "../../tmp/escaped", "version": "1.2.3"},
+                {"id": "org.example", "version": "1.2.3\nPackage: injected"},
+                {"id": f"org.{'x' * 150}", "version": "1.2.3"},
+            ):
+                (app / "appinfo.json").write_text(json.dumps(identity), encoding="utf-8")
+                with self.subTest(identity=identity), self.assertRaises(ValueError):
+                    build_ipk(app, output)
+                self.assertFalse(output.exists(), "invalid identity must be rejected before writing the package")
+
+    def test_default_package_timestamp_is_reproducible_and_invalid_epochs_are_rejected(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            app = root / "app"
+            app.mkdir()
+            (app / "appinfo.json").write_text(json.dumps({"id": "org.example", "version": "1.2.3"}))
+            (app / "index.html").write_text("<main>hello</main>")
+            first = root / "first.ipk"
+            second = root / "second.ipk"
+            with patch.dict(os.environ, {}, clear=True):
+                build_ipk(app, first)
+                build_ipk(app, second)
+            self.assertEqual(first.read_bytes(), second.read_bytes())
+
+            with patch.dict(os.environ, {"SOURCE_DATE_EPOCH": "not-an-epoch"}):
+                with self.assertRaisesRegex(ValueError, "SOURCE_DATE_EPOCH"):
+                    build_ipk(app, root / "bad.ipk")
+            with patch.dict(os.environ, {"SOURCE_DATE_EPOCH": "8589934592"}):
+                with self.assertRaisesRegex(ValueError, "SOURCE_DATE_EPOCH"):
+                    build_ipk(app, root / "too-new.ipk")
+
 
 if __name__ == "__main__":
     unittest.main()

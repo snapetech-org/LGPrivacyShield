@@ -6,6 +6,15 @@
   const HBC = "luna://org.webosbrew.hbchannel.service";
   const ADMANAGER = "luna://com.webos.service.admanager";
   const APPLICATION_MANAGER = "luna://com.webos.applicationManager";
+  const DEV_APP_ROOT = "/media/developer/apps/usr/palm/applications/org.privacyshield.webos";
+  const SYSTEM_APP_ROOT = "/usr/palm/applications/org.privacyshield.webos";
+  const APP_ROOTS = new Set([DEV_APP_ROOT, SYSTEM_APP_ROOT]);
+  const ROOT_SETTING_KEYS = new Set([
+    "livePlus", "turnOnByVoice", "voiceLongDistance", "lmt", "screenSaverAd",
+    "homePromotion", "livePromotion", "contentRecommendation", "thirdPartyCookie",
+    "hbbTV", "hbbTvDnt", "hbbTvDeviceId", "bleAdvertisingOnOff", "homeSenseAbsence",
+    "aiNudge", "aiSettingsNudge", "doNotSellMyPersonalInformation"
+  ]);
 
   function request(uri, method, parameters) {
     return new Promise((resolve, reject) => {
@@ -78,23 +87,42 @@
     });
   }
 
-  function rootExec(command) {
-    return request(HBC, "exec", { command });
-  }
-
   function appRootPath() {
     try {
       if (root.webOS && typeof root.webOS.fetchAppRootPath === "function") {
         const path = root.webOS.fetchAppRootPath();
         if (typeof path === "string" && path.length) {
+          let appPath = path;
           if (/^file:\/\//i.test(path)) {
-            return decodeURIComponent(new URL(path).pathname).replace(/\/$/, "");
+            appPath = decodeURIComponent(new URL(path).pathname);
           }
-          return path.replace(/\/$/, "");
+          appPath = appPath.replace(/\/+$/, "");
+          if (APP_ROOTS.has(appPath)) return appPath;
         }
       }
     } catch (_) { /* older webOS builds may not expose this helper */ }
-    return "/media/developer/apps/usr/palm/applications/org.privacyshield.webos";
+    return DEV_APP_ROOT;
+  }
+
+  function shellQuote(value) {
+    return `'${String(value).replace(/'/g, `'\\''`)}'`;
+  }
+
+  function runBundledScript(scriptName, args = []) {
+    const scriptPath = `${appRootPath()}/scripts/${scriptName}`;
+    const command = ["python3", scriptPath, ...args].map(shellQuote).join(" ");
+    return request(HBC, "exec", { command });
+  }
+
+  function rootSnapshot() {
+    return runBundledScript("device_snapshot.py");
+  }
+
+  function rootSetSetting(key, value) {
+    if (!ROOT_SETTING_KEYS.has(key) || (value !== "on" && value !== "off")) {
+      return Promise.reject(new Error("Unsupported setting or value"));
+    }
+    return runBundledScript("device_control.py", [key, value]);
   }
 
   const api = Object.freeze({
@@ -103,8 +131,8 @@
     getSystemInfo,
     missingSettingsService,
     openAgreements,
-    rootExec,
-    appRootPath,
+    rootSetSetting,
+    rootSnapshot,
     setDoNotSell,
     setSetting
   });

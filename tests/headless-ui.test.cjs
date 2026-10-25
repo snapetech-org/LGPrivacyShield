@@ -160,7 +160,7 @@ const serviceFixture = String.raw`(() => {
     }
     if (service === "luna://org.webosbrew.hbchannel.service" && method === "exec") {
       if (rootSnapshotDenied) return { returnValue: false, errorText: 'Denied method call "exec" for category "/"' };
-      const controlChange = (parameters.command || "").match(/\s(livePlus|voiceLongDistance|turnOnByVoice|lmt|doNotSellMyPersonalInformation|screenSaverAd|homePromotion|livePromotion|contentRecommendation|thirdPartyCookie|hbbTvDnt|hbbTvDeviceId|hbbTV|bleAdvertisingOnOff|homeSenseAbsence|aiNudge|aiSettingsNudge)\s+(on|off)\s*$/);
+      const controlChange = (parameters.command || "").match(/\s'?(livePlus|voiceLongDistance|turnOnByVoice|lmt|doNotSellMyPersonalInformation|screenSaverAd|homePromotion|livePromotion|contentRecommendation|thirdPartyCookie|hbbTvDnt|hbbTvDeviceId|hbbTV|bleAdvertisingOnOff|homeSenseAbsence|aiNudge|aiSettingsNudge)'?\s+'?(on|off)'?\s*$/);
       if (controlChange) {
         if (rootWriterDenied) return { returnValue: false, errorText: 'Denied method call "exec" for category "/"' };
         const [key, value] = controlChange.slice(1);

@@ -518,13 +518,8 @@
     try { return JSON.parse(text); } catch (_) { return null; }
   }
 
-  function shellQuote(value) {
-    return `'${String(value).replace(/'/g, `'\\''`)}'`;
-  }
-
   async function rootSnapshot() {
-    const scriptPath = `${Api.appRootPath()}/scripts/device_snapshot.py`;
-    return Api.rootExec(`python3 ${shellQuote(scriptPath)}`);
+    return Api.rootSnapshot();
   }
 
   async function loadState() {
@@ -706,8 +701,7 @@
     if (actual !== target) {
       // Some LG firmware exposes writes only to privileged clients. Try the
       // Homebrew root bridge, which fails closed if firmware denies access.
-      const scriptPath = `${Api.appRootPath()}/scripts/device_control.py`;
-      const result = await Api.rootExec(`python3 ${shellQuote(scriptPath)} ${control.key} ${target}`);
+      const result = await Api.rootSetSetting(mappedControl.key, target);
       if (!result || (result.error && result.error !== "")) {
         throw new Error((directError && directError.message) || "The TV denied this setting change.");
       }

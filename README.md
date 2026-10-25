@@ -50,11 +50,13 @@ Find the app version, license and source code, plus the support QR code and [Ko-
 
 ## Local operation and privacy
 
-**Local-first:** LGPrivacyShield runs on your TV using local webOS services. The app and TV send no data.
+**Local-first:** LGPrivacyShield runs on your TV and uses local webOS services. The app sends no data during normal use.
 
 To report a missing model or unreadable control, scan the single QR code with your phone. It opens GitHub's prefilled form; opening the link sends the report, and submitting creates a public issue. The report includes TV model and software, service access, and which controls could be read—not current setting values or agreement choices. This helps us check support for your TV.
 
 The app does not record audio or screenshots, run a background service, inspect encrypted network traffic, or upload TV settings or viewing activity. Network destination history requires separate router or DNS logs. A software voice switch does not disconnect a physical microphone if the TV does not expose a verified microphone-disconnect control to this app.
+
+The TV's system software and other apps may still use the network. LGPrivacyShield does not monitor or block their traffic. See the [security notes](SECURITY.md) for the app's trust boundary and review limits.
 
 ## Install and help
 

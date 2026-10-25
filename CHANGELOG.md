@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1 (unreleased)
+
+- Restrict the app's Homebrew root bridge to its bundled snapshot and allowlisted setting scripts.
+- Add a content security policy, validate package identity before building paths, and package only tracked app files.
+- Make IPK timestamps reproducible from the source commit and document security limits.
+
 ## 0.4.0 (2026-10-25)
 
 - Added source-scoped settings profiles for B, C, and G OLED families across

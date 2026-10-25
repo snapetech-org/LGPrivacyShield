@@ -42,6 +42,9 @@ manifest. Its SHA-256 is
 size is 73,610 bytes. Homebrew PR #296 is open for maintainer review and points
 to the stable latest-release manifest URL. The catalog PR checks passed before
 v0.4.0 was published; rerunning them requires Homebrew repository admin access.
-The current source has no npm audit findings; the vulnerable webOS CLI
-packaging dependency was removed and IPK creation now uses the local Python
-packager.
+The current source is 0.4.1 and is not released. It includes security
+hardening documented in [SECURITY-REVIEW.md](docs/SECURITY-REVIEW.md). The
+Homebrew PR still resolves to the published 0.4.0 manifest; do not merge it
+until a matching 0.4.1 IPK and manifest are published. Project-owner signoff is
+required before that release and PR update. IPK creation uses the local Python
+packager and includes only tracked app files.

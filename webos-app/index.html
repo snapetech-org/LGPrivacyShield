@@ -4,14 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="color-scheme" content="dark light">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
     <title>LGPrivacyShield</title>
-    <script>
-      try {
-        if (localStorage.getItem("privacyshield.theme.v1") === "light") {
-          document.documentElement.setAttribute("data-theme", "light");
-        }
-      } catch (_) {}
-    </script>
+    <script src="src/theme.js"></script>
     <link rel="stylesheet" href="styles.css">
     <script src="webOSTV.js"></script>
   </head>
@@ -241,7 +236,7 @@
             <h1 id="about-title">About LGPrivacyShield</h1>
             <p>Version <span id="app-version">Checking…</span></p>
           </div>
-          <p class="about-privacy">LGPrivacyShield uses local webOS services and sends no data from the app or TV.</p>
+          <p class="about-privacy">LGPrivacyShield runs locally and uses TV settings services. It does not send telemetry or upload TV settings or viewing activity.</p>
           <nav class="about-links" aria-label="LGPrivacyShield information">
             <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener noreferrer">GNU AGPL-3.0</a>
             <a href="https://github.com/snapetech-org/LGPrivacyShield" target="_blank" rel="noopener noreferrer">Source code</a>

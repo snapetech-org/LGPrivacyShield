@@ -10,8 +10,9 @@ import json
 import os
 import stat
 import tarfile
-import time
 from pathlib import Path
+
+from package_identity import validate_package_identity
 
 
 def _tar_info(name: str, mode: int, mtime: int, size: int = 0) -> tarfile.TarInfo:
@@ -69,16 +70,20 @@ def build_ipk(app_dir: Path, output: Path) -> None:
     app_dir = app_dir.resolve()
     appinfo_path = app_dir / "appinfo.json"
     appinfo = json.loads(appinfo_path.read_text(encoding="utf-8"))
-    app_id = appinfo["id"]
-    version = appinfo["version"]
-    if not app_id or "/" in app_id or not version:
-        raise ValueError("appinfo.json must contain a valid id and version")
+    if not isinstance(appinfo, dict):
+        raise ValueError("appinfo.json must contain a JSON object")
+    app_id, version = validate_package_identity(appinfo.get("id"), appinfo.get("version"))
 
     packageinfo = json.dumps(
         {"id": app_id, "version": version, "app": app_id},
         separators=(",", ":"),
     ).encode("utf-8")
-    mtime = int(os.environ.get("SOURCE_DATE_EPOCH", time.time()))
+    source_date_epoch = os.environ.get("SOURCE_DATE_EPOCH", "0")
+    if not source_date_epoch.isascii() or not source_date_epoch.isdecimal():
+        raise ValueError("SOURCE_DATE_EPOCH must be a nonnegative integer")
+    mtime = int(source_date_epoch)
+    if mtime > 8_589_934_591:
+        raise ValueError("SOURCE_DATE_EPOCH is too large for a reproducible USTAR archive")
     base = f"usr/palm/applications/{app_id}"
     packageinfo_path = f"usr/palm/packages/{app_id}/packageinfo.json"
 

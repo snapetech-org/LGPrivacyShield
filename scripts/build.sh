@@ -6,19 +6,24 @@ build_dir="${repo_root}/build"
 dist_dir="${repo_root}/dist"
 staged_app="${build_dir}/app"
 
-mapfile -t app_identity < <(python3 - "${repo_root}/webos-app/appinfo.json" <<'PY'
-import json
-import sys
+app_identity="$(python3 "${repo_root}/scripts/package_identity.py" "${repo_root}/webos-app/appinfo.json")"
+IFS=$'\t' read -r app_id app_version <<< "${app_identity}"
+if [ -z "${app_id}" ] || [ -z "${app_version}" ]; then
+  echo "Could not read a valid package identity." >&2
+  exit 1
+fi
 
-with open(sys.argv[1], "r", encoding="utf-8") as source:
-    app = json.load(source)
+if [ -z "${SOURCE_DATE_EPOCH:-}" ]; then
+  SOURCE_DATE_EPOCH="$(git -C "${repo_root}" log -1 --format=%ct)"
+fi
+if [[ ! "${SOURCE_DATE_EPOCH}" =~ ^[0-9]{1,10}$ ]] \
+  || { [ "${#SOURCE_DATE_EPOCH}" -eq 10 ] && [ "${SOURCE_DATE_EPOCH}" -gt 8589934591 ]; }; then
+  echo "SOURCE_DATE_EPOCH must be a nonnegative USTAR timestamp." >&2
+  exit 1
+fi
+export SOURCE_DATE_EPOCH
 
-print(app["id"])
-print(app["version"])
-PY
-)
-
-package_name="${app_identity[0]}_${app_identity[1]}_all.ipk"
+package_name="${app_id}_${app_version}_all.ipk"
 build_package="${build_dir}/${package_name}"
 dist_package="${dist_dir}/${package_name}"
 
@@ -26,7 +31,36 @@ mkdir -p "${build_dir}" "${dist_dir}"
 rm -f "${build_package}"
 rm -rf "${staged_app}"
 mkdir -p "${staged_app}"
-cp -a "${repo_root}/webos-app/." "${staged_app}/"
+tracked_files="$(mktemp "${build_dir}/tracked-app-files.XXXXXX")"
+cleanup() {
+  [ -z "${tracked_files:-}" ] || rm -f -- "${tracked_files}"
+}
+trap cleanup EXIT
+git -C "${repo_root}" ls-files -z -- webos-app/ > "${tracked_files}"
+if [ ! -s "${tracked_files}" ]; then
+  echo "No tracked webOS application files were found." >&2
+  exit 1
+fi
+while IFS= read -r -d '' relative_file; do
+  relative_path="${relative_file#webos-app/}"
+  case "${relative_path}" in
+    src/community-data.js|src/community-reference.js|src/firmware-catalog-data.js|src/firmware-catalog.js) continue ;;
+  esac
+  source_file="${repo_root}/${relative_file}"
+  output_file="${staged_app}/${relative_path}"
+  mkdir -p "$(dirname "${output_file}")"
+  if [[ "${relative_path}" == *.js ]]; then
+    "${repo_root}/node_modules/.bin/esbuild" "${source_file}" \
+      --target=chrome79 \
+      --charset=utf8 \
+      --outfile="${output_file}"
+  else
+    cp -a -- "${source_file}" "${output_file}"
+  fi
+done < "${tracked_files}"
+rm -f -- "${tracked_files}"
+tracked_files=""
+trap - EXIT
 cp "${repo_root}/LICENSE" "${staged_app}/LICENSE"
 cp "${repo_root}/THIRD-PARTY-NOTICES.md" "${staged_app}/THIRD-PARTY-NOTICES.md"
 python3 - "${staged_app}" <<'PY'
@@ -40,25 +74,6 @@ for cache in staged_app.rglob("__pycache__"):
 for bytecode in staged_app.rglob("*.pyc"):
     bytecode.unlink()
 PY
-rm -f \
-  "${staged_app}/src/community-data.js" \
-  "${staged_app}/src/community-reference.js" \
-  "${staged_app}/src/firmware-catalog-data.js" \
-  "${staged_app}/src/firmware-catalog.js"
-
-while IFS= read -r -d '' source_file; do
-  relative_path="${source_file#"${repo_root}/webos-app/"}"
-  case "${relative_path}" in
-    src/community-data.js|src/community-reference.js|src/firmware-catalog-data.js|src/firmware-catalog.js) continue ;;
-  esac
-  output_file="${staged_app}/${relative_path}"
-  mkdir -p "$(dirname "${output_file}")"
-  "${repo_root}/node_modules/.bin/esbuild" "${source_file}" \
-    --target=chrome79 \
-    --charset=utf8 \
-    --outfile="${output_file}"
-done < <(find "${repo_root}/webos-app" -type f -name '*.js' -print0)
-
 python3 "${repo_root}/scripts/package_ipk.py" \
   --app-dir "${staged_app}" \
   --output "${build_package}"

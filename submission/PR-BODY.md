@@ -7,12 +7,14 @@ settings to restore later. I can also review saved LG agreement choices and
 their documented effects. Dark mode is the default; my light-theme choice is
 saved on the TV.
 
-The app runs locally. The app and TV send no data during normal use. It does
-not record audio or screenshots, run a background service, inspect encrypted
-network traffic, or upload TV settings or viewing activity. Network destination
-history requires separate router or DNS logs. A software voice switch cannot
-disconnect a physical microphone unless the TV exposes a verified disconnect
-control to the app.
+The app runs locally using webOS settings services and sends no app data during
+normal use. The TV's system software and other apps may still use the network;
+LGPrivacyShield does not monitor that traffic. It does not record audio or
+screenshots, run a background service, inspect encrypted network traffic, or
+upload TV settings or viewing activity. Network destination history requires
+separate router or DNS logs. A software voice switch cannot disconnect a
+physical microphone unless the TV exposes a verified disconnect control to the
+app.
 
 When I find a compatibility problem, I can prepare a report in Controls and
 scan one QR code with my phone. Opening its link sends the allowlisted report to
@@ -55,6 +57,13 @@ the TV's model, software, firmware, and permissions.
 I listed it in Homebrew's system category and open-source `main` pool, with
 paired dark and light screenshots. I also included my Ko-fi link for support:
 [ko-fi.com/snapetech](https://ko-fi.com/snapetech).
+
+#### Current status
+
+The source now includes 0.4.1 security fixes, but 0.4.1 is not released. This
+listing uses the latest-release manifest, which still serves 0.4.0. Please hold
+the PR until I publish 0.4.1 and update the catalog entry to its matching
+manifest.
 
 #### Validation
 

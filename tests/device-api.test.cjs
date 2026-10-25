@@ -3,15 +3,69 @@ const test = require("node:test");
 
 const api = require("../webos-app/src/device-api.js");
 
-test("converts webOSTV.js file URL into a root filesystem path", () => {
+test("runs only the bundled root snapshot script", async () => {
+  let captured;
   globalThis.webOS = {
-    fetchAppRootPath: () => "file:///media/developer/apps/usr/palm/applications/org.privacyshield.webos/"
+    fetchAppRootPath: () => "file:///media/developer/apps/usr/palm/applications/org.privacyshield.webos/",
+    service: {
+      request(uri, options) {
+        captured = { uri, method: options.method, parameters: options.parameters };
+        options.onSuccess({ returnValue: true, stdoutString: "{}" });
+      }
+    }
   };
 
+  await api.rootSnapshot();
+  assert.deepEqual(captured, {
+    uri: "luna://org.webosbrew.hbchannel.service",
+    method: "exec",
+    parameters: {
+      command: "'python3' '/media/developer/apps/usr/palm/applications/org.privacyshield.webos/scripts/device_snapshot.py'"
+    }
+  });
+  assert.equal(api.rootExec, undefined, "the app API must not expose an arbitrary root command");
+
+  delete globalThis.webOS;
+});
+
+test("rejects a webOS app root outside the two supported install directories", async () => {
+  let command;
+  globalThis.webOS = {
+    fetchAppRootPath: () => "/tmp/untrusted-app",
+    service: {
+      request(uri, options) {
+        command = options.parameters.command;
+        options.onSuccess({ returnValue: true, stdoutString: "{}" });
+      }
+    }
+  };
+
+  await api.rootSnapshot();
   assert.equal(
-    api.appRootPath(),
-    "/media/developer/apps/usr/palm/applications/org.privacyshield.webos"
+    command,
+    "'python3' '/media/developer/apps/usr/palm/applications/org.privacyshield.webos/scripts/device_snapshot.py'"
   );
+  delete globalThis.webOS;
+});
+
+test("root setting writes accept only allowlisted keys and on/off values", async () => {
+  const commands = [];
+  globalThis.webOS = {
+    service: {
+      request(uri, options) {
+        commands.push(options.parameters.command);
+        options.onSuccess({ returnValue: true });
+      }
+    }
+  };
+
+  await api.rootSetSetting("livePlus", "off");
+  assert.deepEqual(commands, [
+    "'python3' '/media/developer/apps/usr/palm/applications/org.privacyshield.webos/scripts/device_control.py' 'livePlus' 'off'"
+  ]);
+  await assert.rejects(api.rootSetSetting("livePlus; touch /tmp/pwned", "off"), /Unsupported setting/);
+  await assert.rejects(api.rootSetSetting("livePlus", "on; touch /tmp/pwned"), /Unsupported setting/);
+  assert.equal(commands.length, 1, "invalid root write requests must not reach Homebrew");
 
   delete globalThis.webOS;
 });

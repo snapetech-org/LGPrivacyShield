@@ -16,7 +16,8 @@ or updating a Homebrew catalog entry, or merging a Homebrew repository change.
    The firmware catalog has no stated source license; it is excluded from the
    IPK but remains in this repository. Resolve its terms or remove it before
    further redistribution.
-4. Run `npm ci`, `npm test`, `npm run package`, and `npm run test:ipk`.
+4. Run `npm ci`, `npm audit`, `npm test`, `npm run package`, and
+   `npm run test:ipk`.
 5. Run the [Homebrew compatibility checker](https://github.com/webosbrew/dev-toolbox-cli)
    on the IPK. Install from a clean state and launch on a real TV; test the
    oldest webOS release claimed and record the model and webOS release.
@@ -38,3 +39,7 @@ Version 0.4.0 is prepared in source but has not been published. The latest
 published release is v0.1.12. The catalog metadata in `submission/` is a local
 release-preparation artifact; it must not be submitted or merged without
 project-owner signoff.
+
+As of 2026-10-25, GitHub lists seven open Dependabot alerts in the
+`@webos-tools/cli` 3.2.6 npm shrinkwrap. The CLI is a development dependency and
+is not included in the IPK; recheck for an upstream fix before publication.

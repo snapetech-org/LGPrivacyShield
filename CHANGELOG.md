@@ -15,6 +15,7 @@
   links.
 - Use one QR code to open GitHub's compatibility form with the report pre-filled.
   The issue is created only when the form is submitted.
+- Add a dark default theme and a saved light-theme option.
 - Added a page-by-page user guide with headless screenshots and a documentation
   index.
 

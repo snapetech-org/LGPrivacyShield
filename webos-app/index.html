@@ -1,10 +1,17 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="color-scheme" content="light">
+    <meta name="color-scheme" content="dark light">
     <title>PrivacyShield</title>
+    <script>
+      try {
+        if (localStorage.getItem("privacyshield.theme.v1") === "light") {
+          document.documentElement.setAttribute("data-theme", "light");
+        }
+      } catch (_) {}
+    </script>
     <link rel="stylesheet" href="styles.css">
     <script src="webOSTV.js"></script>
   </head>
@@ -18,7 +25,10 @@
             <p class="brand-subtitle">TV privacy settings and status</p>
           </div>
         </div>
-        <div class="device-chip" id="device-summary">Reading TV…</div>
+        <div class="topbar-actions">
+          <button class="theme-toggle" type="button" id="theme-toggle">Use light theme</button>
+          <div class="device-chip" id="device-summary">Reading TV…</div>
+        </div>
       </header>
 
       <nav class="tabs" aria-label="App sections">

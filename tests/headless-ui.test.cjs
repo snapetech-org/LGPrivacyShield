@@ -502,6 +502,36 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       }))()`).catch((diagnosticError) => ({ error: diagnosticError.message }));
       throw new Error(`${error.message}; page diagnostics: ${JSON.stringify(diagnostics)}`);
     }
+    await t.test("dark is the default and the light-theme choice persists across launches", async () => {
+      const initialTheme = await browser.evaluate(`(() => ({
+        theme: document.documentElement.getAttribute('data-theme'),
+        label: document.querySelector('#theme-toggle').textContent,
+        stored: localStorage.getItem('privacyshield.theme.v1')
+      }))()`);
+      assert.deepEqual(initialTheme, { theme: "dark", label: "Use light theme", stored: null });
+
+      await browser.press("ArrowUp");
+      assert.equal(await browser.evaluate("document.activeElement.id"), "theme-toggle", "the theme button must be reachable from the section tab by remote");
+      await browser.press("Enter");
+      assert.deepEqual(await browser.evaluate(`(() => ({
+        theme: document.documentElement.getAttribute('data-theme'),
+        label: document.querySelector('#theme-toggle').textContent,
+        stored: localStorage.getItem('privacyshield.theme.v1')
+      }))()`), { theme: "light", label: "Use dark theme", stored: "light" });
+
+      await browser.navigate("success");
+      await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').textContent")) === "TV status updated", "theme preference reload");
+      assert.equal(await browser.evaluate("document.documentElement.getAttribute('data-theme')"), "light");
+      assert.equal(await browser.evaluate("document.querySelector('#theme-toggle').textContent"), "Use dark theme");
+      await browser.press("ArrowUp");
+      assert.equal(await browser.evaluate("document.activeElement.id"), "theme-toggle");
+      await browser.press("Enter");
+      assert.deepEqual(await browser.evaluate(`(() => ({
+        theme: document.documentElement.getAttribute('data-theme'),
+        label: document.querySelector('#theme-toggle').textContent,
+        stored: localStorage.getItem('privacyshield.theme.v1')
+      }))()`), { theme: "dark", label: "Use light theme", stored: "dark" });
+    });
     await t.test("all sections, actions, and switches are labeled and reachable by remote", async () => {
       const audit = await browser.evaluate(`(() => {
         const views = [...document.querySelectorAll('.view')];

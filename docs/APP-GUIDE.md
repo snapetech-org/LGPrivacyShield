@@ -16,9 +16,10 @@ the setting, model, and developer references.
 
 ## Screenshots
 
-These 1920×1080 captures were rendered in headless Chromium with synthetic
-webOS service responses. The sample identity and values are test data, not a
-live TV or a report of model support. The thumbnails open the full-size PNGs.
+These 1920×1080 captures show the default dark theme. They were rendered in
+headless Chromium with synthetic webOS service responses. The sample identity
+and values are test data, not a live TV or a report of model support. The
+thumbnails open the full-size PNGs.
 
 ## Overview
 
@@ -97,6 +98,11 @@ Use the remote's arrow keys to move between tabs, controls, and buttons. Press
 OK to select or toggle; Back returns to Overview, then exits the app. Privacy
 settings are read from the TV. The app reports a change as successful only
 after reading the new value back.
+
+The app starts in dark theme. Choose **Use light theme** in the header to
+switch; the choice is saved locally on this TV and restored the next time the
+app opens. With the remote, press **Up** from the section tabs to reach the
+theme button, **OK** to switch, and **Down** to return to the current tab.
 
 Availability varies by model, region, webOS version, firmware, and Homebrew
 permissions. See [model compatibility](DEVICE-COMPATIBILITY.md) for profiles

@@ -7,6 +7,7 @@
   const Compatibility = window.PrivacyShieldCompatibility;
   const PublicReferences = window.PrivacyShieldCommunityReference;
   const SAVE_KEY = "privacyshield.saved-controls.v1";
+  const THEME_KEY = "privacyshield.theme.v1";
   const state = {
     settings: {}, agreements: null, model: null, profile: null, network: null, root: null,
     referenceSettings: {}, firmwareSettingsMap: null, controlReads: {}, apiAccess: {}, errors: []
@@ -18,6 +19,28 @@
 
   const $ = (selector, parent) => (parent || document).querySelector(selector);
   const $$ = (selector, parent) => Array.from((parent || document).querySelectorAll(selector));
+
+  function readThemePreference() {
+    try { return localStorage.getItem(THEME_KEY) === "light" ? "light" : "dark"; }
+    catch (_) { return "dark"; }
+  }
+
+  function setTheme(theme, persist) {
+    const selected = theme === "light" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", selected);
+    $("#theme-toggle").textContent = selected === "dark" ? "Use light theme" : "Use dark theme";
+    if (persist) {
+      try { localStorage.setItem(THEME_KEY, selected); } catch (_) {}
+    }
+  }
+
+  function initializeThemeToggle() {
+    const button = $("#theme-toggle");
+    setTheme(readThemePreference(), false);
+    button.addEventListener("click", () => {
+      setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark", true);
+    });
+  }
 
   function replaceContent(node, children = []) {
     while (node.firstChild) node.removeChild(node.firstChild);
@@ -188,14 +211,22 @@
     const focused = document.activeElement;
     const tab = activeTab();
     const view = activeView();
+    const themeToggle = $("#theme-toggle");
     const onTab = focused && focused.classList.contains("tab");
     const main = $("#main-content");
 
+    if (focused === themeToggle) {
+      if (key === "ArrowDown") return focusRemote(tab);
+      return false;
+    }
     if (onTab && (key === "ArrowLeft" || key === "ArrowRight")) {
       return switchSectionByKey(key);
     }
     if (onTab) {
-      if (key === "ArrowUp") return scrollMainPage(-1);
+      if (key === "ArrowUp") {
+        if (main.scrollTop > 0) return scrollMainPage(-1);
+        return focusRemote(themeToggle);
+      }
       if (main.scrollTop > 0) return scrollMainPage(1);
       const first = focusableElements(view)[0];
       if (first) return focusRemote(first);
@@ -1195,6 +1226,7 @@
   }
 
   function bindUI() {
+    initializeThemeToggle();
     $$(".tab").forEach((button) => button.addEventListener("click", () => setView(button.dataset.view, button)));
     $$("[data-go]").forEach((button) => button.addEventListener("click", () => setView(button.dataset.go, "first")));
     $$("[data-setting]").forEach((input) => input.addEventListener("change", toggleChanged));

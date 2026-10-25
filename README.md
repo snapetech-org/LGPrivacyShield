@@ -23,6 +23,8 @@ agreement choices and local TV status.
 
 - Review available controls for Live Plus, voice, advertising, recommendations,
   HbbTV, Bluetooth wake, and Sleep on Absence.
+- Use the dark theme by default or switch to light theme. The choice is saved on
+  this TV.
 - Change supported settings one at a time or apply the recommended settings.
   PrivacyShield saves a local restore point before the first change, which you
   can restore later. It reads a setting before enabling its switch and checks
@@ -37,9 +39,10 @@ agreement choices and local TV status.
 ## App tour
 
 The images are 1920×1080 headless Chromium captures using synthetic TV and
-service data. They show the app layout and controls; real settings and control
-availability depend on the connected TV. Click an image to open its full-size
-version. The [app guide](docs/APP-GUIDE.md) explains each page in more detail.
+service data in the default dark theme. They show the app layout and controls;
+real settings and control availability depend on the connected TV. Click an
+image to open its full-size version. The [app guide](docs/APP-GUIDE.md) explains
+each page in more detail.
 
 ### Overview
 

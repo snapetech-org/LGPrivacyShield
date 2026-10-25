@@ -38,22 +38,23 @@ firmware image was extracted or that another physical TV was tested.
 
 ## Verification record · 2026-10-25
 
-- `npm test` passed: 64 Node.js tests and 51 Python tests.
-- `npm run package` passed and produced a 150,318-byte IPK.
-- `npm run test:ipk` passed: package metadata and all 24 packaged-app browser
+- `npm test` passed: 65 Node.js tests and 51 Python tests.
+- `npm run package` passed and produced a 151,566-byte IPK.
+- `npm run test:ipk` passed: package metadata and all 25 packaged-app browser
   tests passed after extraction.
 - Homebrew manifest generator 0.10.0 produced a matching 0.4.0 manifest with
   the same package size and SHA-256.
-- SHA-256: `70439642e71de14b2265c0d87bccaa2bc68b13a57748aa3418d90680c5ad1b14`
+- SHA-256: `d82b617857618a931895240bad26ca31606062b3be67256c5b205e76b0d8d2b6`
 
 The clean `npm ci` install reported six vulnerabilities in the installed
 dependency tree (one moderate, four high, one critical). No dependency updates
 were applied; review the dependency audit before publishing.
 
-This verification includes the per-agreement effect map, TV-reported agreement
-titles, the region/model terms caveat, unmapped-agreement display, and the
-single-QR GitHub report form. The package was tested in Chromium and was not
-installed or launched on a TV.
+This verification includes the dark default theme, saved light-theme choice,
+remote-control access to the theme switch, the per-agreement effect map,
+TV-reported agreement titles, the region/model terms caveat, unmapped-agreement
+display, and the single-QR GitHub report form. The package was tested in
+Chromium and was not installed or launched on a TV.
 
 The browser scenarios cover:
 
@@ -147,7 +148,8 @@ Chromium uses a temporary profile. Set `PRIVACYSHIELD_HEADLESS_DIR` to place it
 in a task-scoped scratch directory; otherwise the system temp directory is
 used. The suite closes Chromium and removes that profile on success or failure.
 
-To regenerate the screenshots embedded in the README and app guide, use:
+To regenerate the screenshots embedded in the README and app guide in the
+default dark theme, use:
 
 ```sh
 mkdir -p docs/screenshots

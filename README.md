@@ -104,10 +104,11 @@ checks. See [docs/HEADLESS-QA.md](docs/HEADLESS-QA.md).
 
 The public repository is
 [snapetech-org/PrivacyShield](https://github.com/snapetech-org/PrivacyShield).
-The current package version is v0.1.11. The IPK and matching manifest are built
-locally in `dist/`. The local Homebrew catalog draft includes a clickable Ko-fi
-link and the catalog's `funding.ko_fi` entry. Homebrew publication is a separate
-release step and requires maintainer sign-off.
+The current package version is v0.1.11. Its IPK and matching manifest are
+attached to the [GitHub release](https://github.com/snapetech-org/PrivacyShield/releases/tag/v0.1.11).
+The Homebrew catalog submission is [PR #296](https://github.com/webosbrew/apps-repo/pull/296);
+the central catalog will list the app after upstream maintainers merge it. The
+listing includes a clickable Ko-fi link and the catalog's `funding.ko_fi` entry.
 
 ## Privacy and permissions
 

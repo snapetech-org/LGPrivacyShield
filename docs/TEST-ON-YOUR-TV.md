@@ -26,24 +26,26 @@ provides the installable IPK in the meantime.
 
 ## Send a report
 
+Send a report if your model/software is unmapped or expected controls remain
+read-only. The model, software, and read-access results help maintainers review
+compatibility coverage.
+
 1. Open **TV details** in PrivacyShield.
 2. Choose **Prepare compatibility report**.
-3. Scan the first QR code with a phone camera and copy the decoded JSON text.
-4. Scan the second QR code to open the compatibility report form, then paste
-   the JSON.
-5. Add the full model code, TV region, SDK and firmware versions, and the exact
-   Settings menu path you checked.
+3. Scan the QR code once with a phone. It opens GitHub's form with the report
+   filled in.
+4. Review the report. Add the TV region or a menu-path observation if useful.
+5. Submit the form to create the issue.
 
-The code contains the app version, model/software versions, bridge access
-results, and yes/no read-access results for PrivacyShield's current candidate
-keys. It does not contain setting values, agreement choices, account details,
-serial numbers, network addresses, SSIDs, installed app lists, or process
-names. The TV does not upload the report. Posting it to GitHub is an explicit
-choice by the owner.
+The report contains the app version, model/software versions, bridge access
+results, and yes/no read-access results for 17 controls. It does not contain
+setting values, agreement choices, account details, serial numbers, network
+addresses, SSIDs, installed app lists, or process names. The TV app does not
+send the report. Opening the QR link sends the report to GitHub in the URL so
+the form can be filled in. GitHub creates a public issue only when you submit.
 
-If the QR scanner cannot copy text, the JSON is also shown below the code. Use
-the phone camera or a local QR reader; do not send a photo of the rest of the TV
-screen if it includes private information.
+The JSON is displayed below the code for review. Do not send a photo of the
+rest of the TV screen if it includes private information.
 
 ## What to test
 

@@ -346,23 +346,18 @@
             </section>
             </details>
             <button class="button button-primary" type="button" id="prepare-compatibility-report">Prepare compatibility report</button>
-            <p id="compatibility-report-status" role="status">The report stays on this TV. PrivacyShield does not upload it.</p>
+            <p id="compatibility-report-status" role="status">Preparing the report is local. Scanning the QR sends it to GitHub in the URL; submitting creates a public issue.</p>
             <section id="compatibility-report-share" class="report-share" aria-label="Share compatibility report" hidden>
               <div class="report-qr-grid">
                 <div class="report-qr-item">
-                  <img id="compatibility-report-qr" alt="QR code containing the sanitized compatibility report" hidden>
-                  <p>1. Scan to copy the report.</p>
-                </div>
-                <div class="report-qr-item">
-                  <img id="compatibility-report-form-qr" alt="QR code that opens the PrivacyShield compatibility issue form" hidden>
-                  <p>2. Scan to open the report form.</p>
+                  <img id="compatibility-report-qr" alt="QR code linking to a prefilled GitHub compatibility report form" hidden>
+                  <p>Scan once to open the prefilled form.</p>
                 </div>
               </div>
               <div>
-                <h3>Share device compatibility details</h3>
-                <p>Scan both codes with a phone. Paste the copied report into the form.</p>
-                <p class="report-issue-url">github.com/snapetech-org/PrivacyShield/issues/new?template=compatibility-report.yml</p>
-                <p>The report contains model, software, and read-access results. It contains no setting values. Nothing is uploaded automatically.</p>
+                <h3>Send compatibility report</h3>
+                <p>Scan this code once with a phone. Opening the link sends the report to GitHub in the URL and fills the form. Review it; Submit creates a public issue.</p>
+                <p>Send a report when your model or software is unmapped, or controls remain read-only. It gives maintainers model/software identity and read-access results to review compatibility. It contains no current setting values or agreement choices.</p>
               </div>
             </section>
             <textarea id="compatibility-report-output" aria-label="Sanitized compatibility report" rows="9" readonly hidden></textarea>

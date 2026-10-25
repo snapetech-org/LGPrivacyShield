@@ -5,106 +5,36 @@ body:
   - type: markdown
     attributes:
       value: |
-        Install the current IPK from the [latest release](https://github.com/snapetech-org/PrivacyShield/releases/latest). On the TV, open **TV details** and choose **Prepare compatibility report**. Scan the first on-screen code to copy the sanitized JSON, then scan the second code to open this form and paste it below.
+        Install the current IPK from the [latest release](https://github.com/snapetech-org/PrivacyShield/releases/latest). On the TV, open **TV details** and choose **Prepare compatibility report**. Scan the QR code with a phone to open this form with the report JSON pre-filled.
+
+        Opening the link sends the report to GitHub as a URL parameter so this form can be filled in. It is not posted as an issue until you select Submit new issue.
+
+        Use a report when your model or software is unmapped, or a control remains read-only. The report helps maintainers review model coverage and setting read access.
 
         Controls remain read-only on unmapped TVs. Do not try changing settings on an unmapped model to produce a report. To reproduce an observation, use the TV's native settings and report only the menu path and whether a read was available.
 
-        Do not include a serial number, MAC or IP address, SSID, LG account, current setting values, agreement choices, or complete firmware/app bundles. PrivacyShield does not upload this report; posting here is your choice.
-  - type: input
-    id: model
+        Do not include a serial number, MAC or IP address, SSID, LG account, current setting values, agreement choices, or complete firmware/app bundles.
+  - type: textarea
+    id: report
     attributes:
-      label: Full model code
-      description: Include the regional suffix shown by the TV.
-      placeholder: OLED65C4PUA
+      label: Compatibility report JSON
+      description: The QR code fills this field. Review it before submitting; do not add setting values or identifiers.
+      render: json
     validations:
       required: true
   - type: input
     id: region
     attributes:
-      label: Country or TV region
+      label: Country or TV region (optional)
+      description: The report does not include the TV region.
       placeholder: Canada
     validations:
-      required: true
-  - type: input
-    id: software
-    attributes:
-      label: webOS SDK and firmware versions
-      placeholder: SDK 11.2.0; firmware 43.21.79
-    validations:
-      required: true
-  - type: textarea
-    id: report
-    attributes:
-      label: Validated compatibility report JSON
-      description: Paste the complete output from Prepare compatibility report. Check it for private data before posting.
-      render: json
-    validations:
-      required: true
+      required: false
   - type: textarea
     id: observation
     attributes:
-      label: Menu path or observation
+      label: Additional observation (optional)
       description: Identify the setting label/path and what behavior you observed. Do not include current setting values or agreement choices.
       placeholder: Settings → General → System → Additional Settings → Live Plus is present; PrivacyShield reports the key readable.
-    validations:
-      required: true
-  - type: input
-    id: control
-    attributes:
-      label: Control label
-      description: One setting, agreement, service, microphone path, or network behavior per issue.
-      placeholder: Live Plus / ACR
-    validations:
-      required: false
-  - type: textarea
-    id: implementation_map
-    attributes:
-      label: Service, method, key, or file path
-      description: Include only the mapped interface or source path and its allowed value names. Do not include the TV's current value or private data.
-      placeholder: com.webos.service.settings / setSystemSettings / option.livePlus
-    validations:
-      required: false
-  - type: dropdown
-    id: access_context
-    attributes:
-      label: Where was this observed?
-      options:
-        - PrivacyShield packaged app
-        - LG native Settings or First Use app
-        - Root shell or boot service
-        - Another rooted dashboard or app
-        - Router, DNS, or packet capture
-        - Published source or documentation only
-        - Other or unknown
-    validations:
-      required: true
-  - type: dropdown
-    id: read_result
-    attributes:
-      label: Read result
-      options:
-        - Not tested
-        - Read succeeded (value omitted)
-        - Read denied or unavailable
-        - Conflicting results
-    validations:
-      required: true
-  - type: dropdown
-    id: write_result
-    attributes:
-      label: Reversible write and readback
-      description: Keep this as Not tested for unmapped models. Do not attempt a setting write unless PrivacyShield identifies your exact model, SDK, and firmware as a supported profile.
-      options:
-        - Not tested
-        - Write and matching readback confirmed
-        - Readback did not match
-        - Change could not be restored
-    validations:
-      required: true
-  - type: textarea
-    id: feature_effect
-    attributes:
-      label: Feature effects or limits
-      description: Note which feature changed, whether the value survived a restart, and any known limits. Do not include setting values, personal data, or screenshots containing private TV information.
     validations:
       required: false

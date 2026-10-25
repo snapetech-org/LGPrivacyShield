@@ -206,11 +206,11 @@ Menu versions covered are webOS 6.x, 22, 23, 24, 25, and 26. The entries include
 
 ## Contributing a map
 
-1. In TV details, choose **Prepare compatibility report**. It remains on the TV until the owner copies it; PrivacyShield does not upload it.
-2. Run `python3 scripts/validate_compatibility_report.py report.json`. The validator rejects extra fields and identifiers.
-3. Open a compatibility issue and include one control per report. The form separates model/firmware, menu label, service/method/key, app/root/network access context, read result, write/readback result, and observed feature effects.
+1. In TV details, choose **Prepare compatibility report** and review the JSON. Scan the single QR code with a phone to open the GitHub form with the report filled in. Opening the link sends the report to GitHub; submitting creates a public issue.
+2. Add the TV region or a menu-path observation in the optional form fields when useful. The report already includes model/software identity, API access, and read availability for all 17 controls.
+3. Validate a saved report with `python3 scripts/validate_compatibility_report.py report.json`. The validator rejects extra fields and identifiers.
 4. Do not include setting or agreement values, serial/MAC/IP, SSID, account information, full firmware or app bundles, or private screenshots. Exact-setting code can be shared as a short path/handler description and an artifact hash.
-5. Mark the result as untested, reported, source-mapped, device-read-verified, write-readback-verified, or cross-validated. Do not promote an owner report directly to a writable profile.
+5. Mark findings as untested, reported, source-mapped, device-read-verified, write-readback-verified, or cross-validated. Do not promote an owner report directly to a writable profile.
 
 For a new PrivacyShield profile, map the native Settings/First Use path to the service call, key, valid values, dependent agreements, side effects, and required ACG. Confirm app-context read access; test one reversible write with matching readback; check persistence and feature effects; restore the original state; and compare an independent set before calling the cohort cross-validated. Split profiles when model variant, region, firmware, UI bundle, permission, key, value domain, or behavior differs.
 

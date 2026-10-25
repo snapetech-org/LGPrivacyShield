@@ -232,7 +232,9 @@ LG's official webOS Simulator can run platform versions 6.0 and 22–26. Its Set
 
 ## Optional compatibility report
 
-From **TV details**, choose **Prepare compatibility report**. The version 2 report contains the model, SDK, firmware, profile ID, map scope, API access state, and a boolean for whether each known control was readable. It excludes setting values, agreements, serial/MAC/IP addresses, SSID, account data, app lists, process names, and network destinations. It stays on the TV unless the owner explicitly copies it. It is a diagnostic aid, not a request for owners to build or supply our maps.
+From **TV details**, choose **Prepare compatibility report**. The version 2 report contains the model, SDK, firmware, profile ID, map scope, API access state, and a boolean for whether each of the 17 controls was readable. It excludes setting values, agreements, serial/MAC/IP addresses, SSID, account data, app lists, process names, and network destinations.
+
+Use the report when the model or software is unmapped or a control remains read-only. One QR code opens GitHub's report form with the JSON filled in. Opening the link sends the report to GitHub in the URL; submitting the form creates a public issue for maintainers to review model coverage and read access.
 
 Validate a saved report offline:
 

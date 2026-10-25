@@ -38,21 +38,22 @@ firmware image was extracted or that another physical TV was tested.
 
 ## Verification record · 2026-10-25
 
-- `npm test` passed: 63 Node.js tests and 51 Python tests.
-- `npm run package` passed and produced a 150,420-byte IPK.
-- `npm run test:ipk` passed: package metadata and all 23 packaged-app browser
+- `npm test` passed: 64 Node.js tests and 51 Python tests.
+- `npm run package` passed and produced a 150,318-byte IPK.
+- `npm run test:ipk` passed: package metadata and all 24 packaged-app browser
   tests passed after extraction.
 - Homebrew manifest generator 0.10.0 produced a matching 0.4.0 manifest with
   the same package size and SHA-256.
-- SHA-256: `2c04d5d1a21a531d2b9970d3574b9737120869a5546487718fefb79b07743deb`
+- SHA-256: `70439642e71de14b2265c0d87bccaa2bc68b13a57748aa3418d90680c5ad1b14`
 
 The clean `npm ci` install reported six vulnerabilities in the installed
 dependency tree (one moderate, four high, one critical). No dependency updates
 were applied; review the dependency audit before publishing.
 
 This verification includes the per-agreement effect map, TV-reported agreement
-titles, the region/model terms caveat, and unmapped-agreement display. The
-package was tested in Chromium and was not installed or launched on a TV.
+titles, the region/model terms caveat, unmapped-agreement display, and the
+single-QR GitHub report form. The package was tested in Chromium and was not
+installed or launched on a TV.
 
 The browser scenarios cover:
 
@@ -125,10 +126,12 @@ all six platform profiles (534 profile selections) and cover each model-bearing
 community row; this validates profile selection, not the presence of a setting
 on each size or regional firmware.
 
-The unmapped-device report scenario checks that the app generates two local QR
-codes: one encodes the sanitized JSON, and one opens the public issue form. When
-`zbarimg` is installed, the test decodes both images and compares the exact
-payloads. QR generation uses no network request.
+The unmapped-device report scenario checks that the app generates one QR code
+containing a GitHub issue-form URL with the JSON in its `report` field. It
+checks the template, title, and report contents. When `zbarimg` is installed,
+the test decodes the image and compares its payload with the generated URL. QR
+generation on the TV makes no network request; opening the link sends the JSON
+to GitHub to pre-fill the form, and submitting creates the issue.
 
 The catalog unit test checks all 18 family row counts against the pinned
 49-row Glasshouse, 10-row CleanYourTV, and one-row webOS Unclutter snapshots.

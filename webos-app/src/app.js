@@ -575,7 +575,7 @@
       }
     } else {
       statusPill($("#compatibility-status"), "Read-only", "unknown");
-      $("#compatibility-summary").textContent = "No controls are available for this model and software version. A compatibility report stays on this TV until shared.";
+      $("#compatibility-summary").textContent = "No controls are available for this model and software version. Send a compatibility report to us through GitHub so we can review this TV's read-access results.";
     }
     paintMappedSettings(state.profile);
     paintPublicReferences(model);
@@ -1157,59 +1157,41 @@
     }
   }
 
-  async function prepareCompatibilityReport() {
+  function prepareCompatibilityReport() {
     const button = $("#prepare-compatibility-report");
     const output = $("#compatibility-report-output");
     const status = $("#compatibility-report-status");
     const share = $("#compatibility-report-share");
     const qrImage = $("#compatibility-report-qr");
-    const formQrImage = $("#compatibility-report-form-qr");
     const hadFocus = hasFocusWithin(button);
     let qrReady = false;
-    const serialized = JSON.stringify(
-      Compatibility.createReport(state.model, state.profile, state.apiAccess, Model.CONTROLS),
-      null,
-      2
-    );
-    output.value = serialized;
+    const report = Compatibility.createReport(state.model, state.profile, state.apiAccess, Model.CONTROLS);
+    const serialized = JSON.stringify(report);
+    output.value = JSON.stringify(report, null, 2);
     output.hidden = false;
     output.tabIndex = 0;
     try {
+      const issueUrl = new URL("https://github.com/snapetech-org/PrivacyShield/issues/new");
+      issueUrl.searchParams.set("template", "compatibility-report.yml");
+      issueUrl.searchParams.set("title", `[Compatibility] ${report.device.model || "Unmapped TV"}`);
+      issueUrl.searchParams.set("report", serialized);
       const qr = window.qrcode(0, "M");
-      qr.addData(serialized, "Byte");
+      qr.addData(issueUrl.toString(), "Byte");
       qr.make();
       qrImage.src = qr.createDataURL(7, 8);
       qrImage.hidden = false;
-      const formQr = window.qrcode(0, "M");
-      formQr.addData("https://github.com/snapetech-org/PrivacyShield/issues/new?template=compatibility-report.yml", "Byte");
-      formQr.make();
-      formQrImage.src = formQr.createDataURL(7, 8);
-      formQrImage.hidden = false;
       share.hidden = false;
       qrReady = true;
     } catch (_) {
       qrImage.hidden = true;
-      formQrImage.hidden = true;
       share.hidden = false;
-      status.textContent = "Report ready below. QR transfer is unavailable; nothing was sent.";
     }
     if (hadFocus && typeof share.scrollIntoView === "function") {
       share.scrollIntoView({ block: "start" });
     }
-    try {
-      if (!navigator.clipboard || typeof navigator.clipboard.writeText !== "function") throw new Error("Clipboard is unavailable");
-      await navigator.clipboard.writeText(serialized);
-      status.textContent = qrReady
-        ? "Report copied to this TV's clipboard. Scan both codes with a phone to carry it to the form; nothing was uploaded."
-        : "Report copied to this TV's clipboard. QR transfer is unavailable; nothing was uploaded.";
-    } catch (_) {
-      if (qrReady) {
-        status.textContent = "Scan the codes with a phone to copy the report and open its form. Nothing was uploaded.";
-      } else {
-        status.textContent = "Report ready below. Clipboard and QR access are unavailable; nothing was sent.";
-      }
-      if (hadFocus) focusRemote(button);
-    }
+    status.textContent = qrReady
+      ? "Scan once to open the prefilled GitHub form. The report is sent to GitHub in the link; Submit creates the public issue."
+      : "Report ready below. The QR code could not be generated; nothing was sent.";
   }
 
   function bindUI() {

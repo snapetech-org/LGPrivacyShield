@@ -12,8 +12,8 @@
 
 ## 3. Local compatibility report
 
-- [x] 3.1 Implement the report allowlist and a user-triggered copy/fallback view; verify the generated JSON contains no settings/agreement values or device/network identifiers and that clipboard failure is reported.
-- [x] 3.2 Document the report fields and no-upload behavior; verify the published example matches the generated schema.
+- [x] 3.1 Implement the report allowlist and user-triggered single-QR GitHub form link; verify the generated JSON contains no settings/agreement values or device/network identifiers and the URL pre-fills the report field.
+- [x] 3.2 Document report fields and the QR submission flow; verify the published example matches the generated schema.
 
 ## 4. Community validation workflow
 

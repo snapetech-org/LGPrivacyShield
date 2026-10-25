@@ -215,7 +215,7 @@ h1 span { color:var(--current); }
 .compatibility-panel > .button { margin-top:14px; }
 .report-share { display:grid; grid-template-columns:minmax(300px, 430px) minmax(0, 1fr); align-items:center; gap:20px; margin-top:14px; padding:16px; border:1px solid var(--line); border-radius:5px; background:#f1f5f2; scroll-margin-top:190px; }
 .report-share[hidden] { display:none; }
-.report-qr-grid { display:grid; grid-template-columns:minmax(0, 1.4fr) minmax(0, 1fr); align-items:center; gap:12px; }
+.report-qr-grid { display:grid; grid-template-columns:minmax(0, 1fr); align-items:center; gap:12px; }
 .report-qr-item { min-width:0; text-align:center; }
 .report-share img { display:block; width:100%; height:auto; image-rendering:pixelated; background:#fff; }
 .report-share img[hidden] { display:none; }

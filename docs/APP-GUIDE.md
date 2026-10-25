@@ -78,8 +78,11 @@ Device compatibility shows the model and installed software profile, the
 settings mapped for that profile, and any source-backed read-only findings.
 Expand **Technical setting details** to inspect mapped setting names and source
 notes. The compatibility report includes model/software identity and yes/no
-setting read-access results; it does not include current setting values. The
-report stays on the TV until you choose to share it.
+setting read-access results; it does not include current setting values or
+agreement choices. Use it when your model/software is unmapped or controls
+remain read-only. The single QR code opens GitHub's report form with the JSON
+pre-filled. Opening the link sends the report to GitHub in the URL; submitting
+the form posts it as an issue for maintainers to review.
 
 ## About
 

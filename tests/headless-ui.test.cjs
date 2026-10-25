@@ -18,6 +18,16 @@ const C6_FIRMWARE_SETTINGS_MAP = (() => {
   return { available: true, settings, ambiguous: [] };
 })();
 
+test("compatibility issue form accepts the QR prefill with no other required fields", () => {
+  const issueForm = fs.readFileSync(path.join(__dirname, "../.github/ISSUE_TEMPLATE/compatibility-report.yml"), "utf8");
+  const reportFieldStart = issueForm.indexOf("  - type: textarea\n    id: report\n");
+  assert.notEqual(reportFieldStart, -1, "the issue form needs a textarea with id: report");
+  const nextFieldStart = issueForm.indexOf("\n  - type:", reportFieldStart + 1);
+  const reportField = issueForm.slice(reportFieldStart, nextFieldStart === -1 ? issueForm.length : nextFieldStart);
+  assert.match(reportField, /^      required: true$/m, "the prefilled report field must be required");
+  assert.equal((issueForm.match(/^      required: true\s*$/gm) || []).length, 1, "all other issue form fields must be optional");
+});
+
 const serviceFixture = String.raw`(() => {
   const scenario = new URLSearchParams(location.search).get("scenario") || "success";
   const b5RootFallback = scenario === "b5-root-fallback";
@@ -939,24 +949,47 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       }
       assert.equal(reportButtonFocused, true, "the report button must be reachable with the remote from the top of TV details");
       assert.match(await browser.evaluate("document.querySelector('#compatibility-summary').textContent"), /15 settings are documented for this model and software.*3 changes were previously confirmed through PrivacyShield/i);
-      await browser.evaluate(`Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async () => { throw new Error("clipboard blocked"); } } })`);
+      await browser.evaluate(`(() => {
+        window.__privacyShieldFixture.clipboardAccesses = 0;
+        window.__privacyShieldFixture.qrPayloads = [];
+        Object.defineProperty(navigator, "clipboard", { configurable: true, get() {
+          window.__privacyShieldFixture.clipboardAccesses += 1;
+          throw new Error("TV clipboard is unavailable");
+        } });
+        const createQr = window.qrcode;
+        window.qrcode = (...args) => {
+          const qr = createQr(...args);
+          const addData = qr.addData.bind(qr);
+          qr.addData = (data, ...options) => {
+            window.__privacyShieldFixture.qrPayloads.push(data);
+            return addData(data, ...options);
+          };
+          return qr;
+        };
+      })()`);
       await browser.press("Enter");
       await waitFor(async () => (await browser.evaluate("document.querySelector('#compatibility-report-output').hidden")) === false, "local compatibility report output");
       const report = await browser.evaluate(`(() => ({
         status: document.querySelector('#compatibility-report-status').textContent,
-        json: document.querySelector('#compatibility-report-output').value
+        json: document.querySelector('#compatibility-report-output').value,
+        clipboardAccesses: window.__privacyShieldFixture.clipboardAccesses,
+        qrPayloads: window.__privacyShieldFixture.qrPayloads
       }))()`);
-      assert.equal(report.status, "Scan the codes with a phone to copy the report and open its form. Nothing was uploaded.");
+      assert.equal(report.status, "Scan once to open the prefilled GitHub form. The report is sent to GitHub in the link; Submit creates the public issue.");
+      assert.equal(report.clipboardAccesses, 0, "report generation must not use a TV clipboard");
       const reportJson = JSON.parse(report.json);
       assert.equal(reportJson.compatibility.profileId, "lg-oled77c6hup-webos26-43.21.79");
       assert.deepEqual(Object.keys(reportJson.controlReads).length, 17);
       assert.doesNotMatch(report.json, /eulaList|serialNumber|macAddress|ssid|192\.168\.|"livePlus":\s*"on"/i);
+      assert.equal(report.qrPayloads.length, 1, "the report flow must use one QR code");
+      const reportUrl = new URL(report.qrPayloads[0]);
+      assert.equal(reportUrl.origin, "https://github.com");
+      assert.equal(reportUrl.pathname, "/snapetech-org/PrivacyShield/issues/new");
+      assert.equal(reportUrl.searchParams.get("template"), "compatibility-report.yml");
+      assert.equal(reportUrl.searchParams.get("title"), `[Compatibility] ${reportJson.device.model}`);
+      assert.deepEqual(JSON.parse(reportUrl.searchParams.get("report")), reportJson);
       const reportCapture = process.env.PRIVACYSHIELD_REPORT_CAPTURE_PATH;
       if (reportCapture) await browser.screenshot(reportCapture);
-      await browser.evaluate(`Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async (value) => { window.__privacyShieldFixture.copiedReport = value; } } })`);
-      await browser.press("Enter");
-      await waitFor(async () => (await browser.evaluate("document.querySelector('#compatibility-report-status').textContent")) === "Report copied to this TV's clipboard. Scan both codes with a phone to carry it to the form; nothing was uploaded.", "explicit compatibility report copy");
-      assert.equal(await browser.evaluate("window.__privacyShieldFixture.copiedReport === document.querySelector('#compatibility-report-output').value"), true);
       await browser.press("ArrowDown");
       assert.equal(await browser.evaluate("document.activeElement.id"), "compatibility-report-output");
       await browser.press("ArrowDown");
@@ -1369,40 +1402,52 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
         reportButtonFocused = await browser.evaluate("document.activeElement.id === 'prepare-compatibility-report'");
       }
       assert.equal(reportButtonFocused, true, "the report button must be reachable with the remote from the top of TV details");
+      await browser.evaluate(`(() => {
+        window.__privacyShieldFixture.qrPayloads = [];
+        const createQr = window.qrcode;
+        window.qrcode = (...args) => {
+          const qr = createQr(...args);
+          const addData = qr.addData.bind(qr);
+          qr.addData = (data, ...options) => {
+            window.__privacyShieldFixture.qrPayloads.push(data);
+            return addData(data, ...options);
+          };
+          return qr;
+        };
+      })()`);
       await browser.press("Enter");
       await waitFor(async () => (await browser.evaluate("document.querySelector('#compatibility-report-output').hidden")) === false, "unmapped compatibility report output");
       const qr = await browser.evaluate(`(() => ({
         hidden: document.querySelector('#compatibility-report-qr').hidden,
         src: document.querySelector('#compatibility-report-qr').src,
-        formHidden: document.querySelector('#compatibility-report-form-qr').hidden,
-        formSrc: document.querySelector('#compatibility-report-form-qr').src,
         alt: document.querySelector('#compatibility-report-qr').alt,
+        imageCount: document.querySelectorAll('#compatibility-report-share img').length,
         shareVisible: !document.querySelector('#compatibility-report-share').hidden,
         reportBottom: document.querySelector('#compatibility-report-qr').getBoundingClientRect().bottom,
-        formBottom: document.querySelector('#compatibility-report-form-qr').getBoundingClientRect().bottom,
-        footerTop: document.querySelector('.footer').getBoundingClientRect().top
+        footerTop: document.querySelector('.footer').getBoundingClientRect().top,
+        payloads: window.__privacyShieldFixture.qrPayloads
       }))()`);
       assert.equal(qr.hidden, false);
-      assert.equal(qr.formHidden, false);
+      assert.equal(qr.imageCount, 1);
       assert.equal(qr.shareVisible, true);
       assert.ok(qr.reportBottom <= qr.footerTop, "the full report QR must remain above the fixed footer");
-      assert.ok(qr.formBottom <= qr.footerTop, "the report form QR must remain above the fixed footer");
       assert.match(qr.src, /^data:image\/gif;base64,/);
-      assert.match(qr.formSrc, /^data:image\/gif;base64,/);
-      assert.match(qr.alt, /sanitized compatibility report/i);
+      assert.match(qr.alt, /prefilled GitHub compatibility report form/i);
+      assert.equal(qr.payloads.length, 1, "the report flow must use one QR code");
       const generated = await browser.evaluate("document.querySelector('#compatibility-report-output').value");
+      const issueUrl = new URL(qr.payloads[0]);
+      assert.equal(issueUrl.origin, "https://github.com");
+      assert.equal(issueUrl.pathname, "/snapetech-org/PrivacyShield/issues/new");
+      assert.equal(issueUrl.searchParams.get("template"), "compatibility-report.yml");
+      assert.equal(issueUrl.searchParams.get("title"), "[Compatibility] OLED65CSPSA");
+      assert.deepEqual(JSON.parse(issueUrl.searchParams.get("report")), JSON.parse(generated));
       const qrDecoder = spawnSync("zbarimg", ["--version"], { encoding: "utf8" });
       if (!qrDecoder.error && qrDecoder.status === 0) {
-        for (const [source, expected, filename] of [
-          [qr.src, generated, "compatibility-report.gif"],
-          [qr.formSrc, "https://github.com/snapetech-org/PrivacyShield/issues/new?template=compatibility-report.yml", "compatibility-form.gif"]
-        ]) {
-          const qrPath = path.join(userDataDir, filename);
-          fs.writeFileSync(qrPath, Buffer.from(source.split(",", 2)[1], "base64"));
-          const decodedQr = spawnSync("zbarimg", ["--quiet", "--raw", qrPath], { encoding: "utf8" });
-          assert.equal(decodedQr.status, 0, decodedQr.stderr);
-          assert.equal(decodedQr.stdout.trimEnd(), expected);
-        }
+        const qrPath = path.join(userDataDir, "compatibility-report-link.gif");
+        fs.writeFileSync(qrPath, Buffer.from(qr.src.split(",", 2)[1], "base64"));
+        const decodedQr = spawnSync("zbarimg", ["--quiet", "--raw", qrPath], { encoding: "utf8" });
+        assert.equal(decodedQr.status, 0, decodedQr.stderr);
+        assert.equal(decodedQr.stdout.trimEnd(), qr.payloads[0]);
       }
       const json = JSON.parse(generated);
       assert.equal(json.device.model, "OLED65CSPSA");
@@ -1413,7 +1458,7 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       assert.deepEqual(Object.keys(json.controlReads).length, 17);
       assert.ok(Object.values(json.controlReads).every((value) => value === false));
       assert.doesNotMatch(generated, /eulaList|serialNumber|macAddress|ssid|192\.168\.|"livePlus":\s*"on"/i);
-      assert.match(await browser.evaluate("document.querySelector('#compatibility-report-status').textContent"), /nothing was uploaded/i);
+      assert.match(await browser.evaluate("document.querySelector('#compatibility-report-status').textContent"), /report is sent to GitHub in the link.*Submit creates the public issue/i);
     });
 
     await browser.evaluate("localStorage.clear()");

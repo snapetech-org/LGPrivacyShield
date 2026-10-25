@@ -77,9 +77,9 @@ Use the documented webOS menu paths together with the SettingsService key maps w
 
 Menu records are per software platform, not per television family. Current documented entries cover Live Plus, User Agreements, Home Promotion, Content Recommendation where documented, Live Promotion where documented, Screen Saver Promotion where documented, and Limit AD Tracking where documented. On webOS 6.0, label the separate `Advertisement` item as the legacy frequency-capping-cookie setting; the manual does not call it Limit AD Tracking. Do not invent an option for a platform where the cited source does not list it. The cited webOS 22/23 Limit AD Tracking path is under General → System → Additional Settings → Advertisement, not Support.
 
-### Sanitized report and local export
+### Sanitized report and GitHub form prefill
 
-The compatibility view adds a user-activated report action. `compatibility.js` builds an allowlisted JSON object containing schema/app versions, model, SDK, firmware, profile ID/evidence level, service-access outcomes, and booleans for whether each known control key was readable. It never includes values. It has no network code. The report is copied only after a button press; if clipboard access is unavailable, a read-only text area exposes the exact JSON for manual retrieval. Copy failure is shown honestly.
+The compatibility view adds a user-activated report action. `compatibility.js` builds an allowlisted JSON object containing schema/app versions, model, SDK, firmware, profile ID/evidence level, service-access outcomes, and booleans for whether each known control key was readable. It never includes values and the TV app has no report-upload code. The view displays the JSON and generates one QR code containing a GitHub issue-form URL with the `report` field pre-filled. Opening that link sends the report to GitHub as a URL parameter; submitting the form creates the issue.
 
 Add a dependency-free Python validator for the published schema. It validates types, enum values, known control keys, and exact top-level/nested properties; unexpected fields are rejected. It prints only a short valid-cohort summary and never edits the profile registry. Documentation directs users to remove any identifiers before sharing and maintainers to treat reports as leads.
 
@@ -95,15 +95,16 @@ Use unit tests for profile match/mismatch, per-control gating, report allowlisti
 
 - **[Strict matching locks a TV after an OTA]** → Show its observed identity and a useful read-only explanation; allow maintainers to add a reviewed profile for the new build.
 - **[A model string varies by region or API version]** → Add an explicit alias only after corroborating it from a device report and official/system evidence; do not add fuzzy matching.
-- **[Clipboard APIs vary on webOS]** → Provide a visible read-only fallback and test both copy success and failure headlessly.
-- **[Community reports may contain private identifiers]** → Generate only allowlisted fields, reject extras offline, show the exact report before copy, and never auto-submit.
+- **[The GitHub form field ID can drift from the QR query parameter]** → Keep the `report` field ID aligned with the query key and test the generated URL.
+- **[Opening the QR URL sends report data to GitHub]** → Explain this before the form is submitted; the issue is created only after the user submits it.
+- **[Community reports may contain private identifiers]** → Generate only allowlisted fields, reject extras offline, and show the exact report before generating the QR link.
 - **[A source-mapped key may still behave differently at runtime]** → Require readback for every success, track write evidence per control, and preserve a per-profile read-only fallback.
 - **[One device cannot establish cross-unit behavior]** → Label the C6 profile as one sample and reserve `cross-validated` for independent reproduction.
 
 ## Migration Plan
 
 1. Add the compatibility module and C6 profile, then connect profile resolution to the current system-information read.
-2. Apply the profile write gate consistently and add the compatibility panel/report action.
+2. Apply the profile write gate consistently and add the compatibility panel/report action with a single QR link to the pre-filled GitHub issue form.
 3. Add the report validator, contributor instructions, and B/C/G coverage matrix.
 4. Run the complete headless/unit/package checks and review package contents. Keep the TV untouched and leave Homebrew submission for maintainer sign-off.
 5. Roll back by reverting the profile gate and report UI/module together; existing preference values and TV state are not migrated or rewritten.

@@ -99,8 +99,14 @@ and firmware-catalog note.
 PrivacyShield runs on the TV and uses its local webOS services to read or change
 settings. PrivacyShield itself sends no data off the TV and has no account,
 telemetry, or automatic upload service. Its reads and changes stay local. A
-compatibility report is prepared locally and copied to the TV's clipboard; it
-leaves the TV only if you choose to submit it.
+compatibility report contains the TV model and software, service-access status,
+and yes/no read-access results for 17 controls. It contains no current setting
+values or agreement choices. PrivacyShield prepares the JSON locally. The QR
+code opens GitHub's report form with the JSON pre-filled. The TV app does not
+send it. When you open the QR link on a phone, the phone sends the report to
+GitHub in the URL; it is posted as an issue only when you submit the form. Send
+a report when your model or software is unmapped, or controls remain read-only,
+so we can review compatibility coverage.
 
 The app does not record audio or screenshots, run a background service, inspect
 encrypted network traffic, or upload TV settings or viewing activity. Network

@@ -20,6 +20,25 @@ GitHub and fills in the issue form. The issue becomes public only if I submit
 it. The report includes the model, software, service access, and control
 readability; it excludes setting values and agreement choices.
 
+#### Submission checklist
+
+- [x] I have tested this application on a real webOS TV.
+- [x] I confirm that this submission complies with the repository rules.
+
+#### AI-use declaration
+
+- [ ] No AI tools were used.
+- [ ] AI tools were used for limited assistance (for example, explanations, small snippets, or editing).
+- [ ] AI tools were used for research or planning; the application was developed by a human.
+- [ ] AI coding agents were used; an experienced developer has reviewed and tested all generated code.
+- [ ] The application was produced primarily by AI without meaningful human development or review.
+- [x] Other (please describe below).
+
+I used AI tools extensively for research, implementation, documentation, and
+tests. I set the product and privacy requirements, directed revisions,
+reviewed app behavior and wording, and supplied observations from my TV. I take
+responsibility for this submission.
+
 #### Compatibility and testing
 
 I expect the app to work on webOS 6 and later. I tested it on my LG C6
@@ -36,11 +55,6 @@ the TV's model, software, firmware, and permissions.
 I listed it in Homebrew's system category and open-source `main` pool, with
 paired dark and light screenshots. I also included my Ko-fi link for support:
 [ko-fi.com/snapetech](https://ko-fi.com/snapetech).
-
-I used AI tools extensively for research, implementation, documentation, and
-tests. I set the product and privacy requirements, directed revisions,
-reviewed app behavior and wording, and supplied observations from my TV. I take
-responsibility for this submission.
 
 #### Validation
 

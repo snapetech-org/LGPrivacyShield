@@ -33,7 +33,9 @@ the TV's model, software, firmware, and permissions.
 - License: AGPL-3.0-only
 - Listing: `packages/org.privacyshield.webos.yml`
 
-I also included my Ko-fi link for support: [ko-fi.com/snapetech](https://ko-fi.com/snapetech).
+I listed it in Homebrew's system category and open-source `main` pool, with
+paired dark and light screenshots. I also included my Ko-fi link for support:
+[ko-fi.com/snapetech](https://ko-fi.com/snapetech).
 
 I used AI tools extensively for research, implementation, documentation, and
 tests. I set the product and privacy requirements, directed revisions,
@@ -43,6 +45,7 @@ responsibility for this submission.
 #### Validation
 
 The 0.4.0 candidate passed 59 Node.js tests, 49 Python tests, and 18 packaged
-app browser checks. The Homebrew IPK verifier passed its static package check;
-it reports a Runtime APIs warning for webOS 6.4.0 that needs manual testing.
-Earlier webOS releases have not been tested.
+app browser checks. The Homebrew IPK verifier reports ES2017 support on the
+webOS 6.4.0 and later profiles. It marks runtime APIs as `polyfill?` on 6.4.0,
+so that oldest claimed profile still needs manual testing; it reports native
+runtime APIs on 7.4.0 and later. Earlier webOS releases have not been tested.

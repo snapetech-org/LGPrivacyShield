@@ -9,8 +9,8 @@
   "rootRequired": "optional",
   "ipkUrl": "org.privacyshield.webos_0.4.0_all.ipk",
   "ipkHash": {
-    "sha256": "be2864e85260ca6049ad28db11f979eccb6f998eb1be4ea984f664660975f14b"
+    "sha256": "38d5929d583ef0c7ab6e7244ec92cf2956928caaadadec7e40374cd85f804f0d"
   },
-  "ipkSize": 73606,
+  "ipkSize": 73610,
   "installedSize": 258613
 }

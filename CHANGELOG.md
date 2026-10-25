@@ -21,6 +21,7 @@
 - Shifted dark surfaces to blue-gray, with separate action, status, and focus colors.
 - Added a button to save readable TV settings as a reusable restore point.
 - Added a page-by-page user guide, screenshots, and a documentation index.
+- Added paired dark and light screenshots of each app page and long section.
 
 ## 0.1.12
 

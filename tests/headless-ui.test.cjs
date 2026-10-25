@@ -420,43 +420,49 @@ async function captureDocumentationScreenshots(browser, outputDirectory) {
 
   // Use a synthetic matrix identity so documentation captures do not expose a
   // specific physical TV's model or firmware details.
-  await browser.navigate("matrix-C5-p25");
-  await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').dataset.state")) === "ready", "synthetic screenshot fixture");
-  await browser.evaluate("localStorage.clear(); document.querySelector('#main-content').scrollTop = 0");
-  await wait(120);
-
-  const capture = (name) => browser.screenshot(path.join(targetDirectory, name));
-  const selectView = async (view) => {
-    await browser.evaluate(`(() => {
-      document.querySelector('.tab[data-view="${view}"]').click();
-      document.activeElement.blur();
-      document.querySelectorAll('.remote-focused').forEach((element) => element.classList.remove('remote-focused'));
-      document.querySelector('#main-content').scrollTop = 0;
-    })()`);
+  for (const theme of ["dark", "light"]) {
+    await browser.evaluate("localStorage.clear()");
+    await browser.navigate("matrix-C5-p25");
+    await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').dataset.state")) === "ready", `${theme} screenshot fixture`);
+    if (theme === "light") await browser.evaluate("document.querySelector('#theme-toggle').click()");
+    const actualTheme = await browser.evaluate("document.documentElement.dataset.theme");
+    if (actualTheme !== theme) throw new Error(`Expected ${theme} screenshots, got ${actualTheme}`);
+    await browser.evaluate("document.activeElement.blur(); document.querySelectorAll('.remote-focused').forEach((element) => element.classList.remove('remote-focused')); document.querySelector('#main-content').scrollTop = 0");
     await wait(120);
-  };
 
-  await capture("overview.png");
+    const capture = (page) => browser.screenshot(path.join(targetDirectory, `${page}-${theme}.png`));
+    const selectView = async (view) => {
+      await browser.evaluate(`(() => {
+        document.querySelector('.tab[data-view="${view}"]').click();
+        document.activeElement.blur();
+        document.querySelectorAll('.remote-focused').forEach((element) => element.classList.remove('remote-focused'));
+        document.querySelector('#main-content').scrollTop = 0;
+      })()`);
+      await wait(120);
+    };
 
-  await selectView("controls");
-  await capture("controls-top.png");
-  const visibleControls = await browser.evaluate("document.querySelectorAll('.control-row:not([hidden])').length");
-  await browser.evaluate("document.querySelector('.control-row:not([hidden]) [data-setting]').focus()");
-  for (let index = 1; index < visibleControls; index += 1) await browser.press("ArrowDown");
-  await browser.evaluate("document.activeElement.blur(); document.querySelectorAll('.remote-focused').forEach((element) => element.classList.remove('remote-focused'))");
-  await capture("controls-bottom.png");
+    await capture("overview");
 
-  await selectView("agreements");
-  await capture("agreements-top.png");
-  await browser.evaluate("(() => { const main = document.querySelector('#main-content'); main.scrollTop = main.scrollHeight; })()");
-  await wait(120);
-  await capture("agreements-bottom.png");
+    await selectView("controls");
+    await capture("controls-top");
+    const visibleControls = await browser.evaluate("document.querySelectorAll('.control-row:not([hidden])').length");
+    await browser.evaluate("document.querySelector('.control-row:not([hidden]) [data-setting]').focus()");
+    for (let index = 1; index < visibleControls; index += 1) await browser.press("ArrowDown");
+    await browser.evaluate("document.activeElement.blur(); document.querySelectorAll('.remote-focused').forEach((element) => element.classList.remove('remote-focused'))");
+    await capture("controls-bottom");
 
-  await selectView("about");
-  await capture("about.png");
+    await selectView("agreements");
+    await capture("agreements-top");
+    await browser.evaluate("(() => { const main = document.querySelector('#main-content'); main.scrollTop = main.scrollHeight; })()");
+    await wait(120);
+    await capture("agreements-bottom");
 
-  const errors = await browser.evaluate("window.__privacyShieldFixture.errors");
-  if (errors.length) throw new Error(`Documentation screenshots loaded with browser errors: ${errors.join("; ")}`);
+    await selectView("about");
+    await capture("about");
+
+    const errors = await browser.evaluate("window.__privacyShieldFixture.errors");
+    if (errors.length) throw new Error(`${theme} documentation screenshots loaded with browser errors: ${errors.join("; ")}`);
+  }
 }
 
 test("PrivacyShield works in headless Chromium with a simulated webOS remote and service bridge", async (t) => {

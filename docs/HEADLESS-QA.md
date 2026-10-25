@@ -43,16 +43,16 @@ packaged app. The harness does not install or launch the app on a TV.
 
 ## Screenshots
 
-To replace the screenshots embedded in the README and app guide:
+To generate the screenshots linked from the README:
 
 ```sh
 PRIVACYSHIELD_DOC_SCREENSHOT_DIR=docs/screenshots npm run test:headless
 ```
 
-The command writes six 1920×1080 PNG files: Overview, Controls top and bottom,
-LG agreements top and bottom, and About. The fixture uses synthetic
-C5/webOS 25 data. Screenshots show the layout and example values; they are not
-measurements from a physical TV.
+The command writes twelve 1920×1080 PNG files: dark and light captures of
+Overview, Controls top and bottom, LG agreements top and bottom, and About.
+The fixture uses synthetic C5/webOS 25 data. Screenshots show the layout and
+example values; they are not measurements from a physical TV.
 
 ## Read-only TV checks
 

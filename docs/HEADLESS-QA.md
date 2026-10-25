@@ -18,7 +18,7 @@ npm run test:ipk
 Run only the browser checks with `npm run test:headless`. If Chromium is not on
 `PATH`, set `CHROMIUM_BIN=/path/to/chromium`.
 
-The 0.1.11 IPK is built with JavaScript targeted to Chromium 79. The Homebrew
+The 0.1.12 IPK is built with JavaScript targeted to Chromium 79. The Homebrew
 IPK verifier reports ES2017 syntax and no syntax incompatibility on its webOS
 6.4.0/Chromium 79 profile or later; its runtime API row remains a warning on
 6.4.0. The catalog entry therefore declares `webosRelease >=6.0`, while all
@@ -46,6 +46,15 @@ The browser scenarios cover:
    and that settings, preset, and restore stay read-only without writer calls.
    The C6 scenario checks the matching Glasshouse software tuple while keeping
    the different model variant and C5-only microphone-switch report separate.
+6. Eighteen synthetic B1–B6, C1–C6, and G1–G6 identities, checking family
+   labels, launch-platform mapping, locked controls, and zero writer calls.
+   These use mocked identities and shared fake service responses; they are not
+   firmware or settings captures from those TVs.
+
+The unmapped-device report scenario checks that the app generates two local QR
+codes: one encodes the sanitized JSON, and one opens the public issue form. When
+`zbarimg` is installed, the test decodes both images and compares the exact
+payloads. QR generation uses no network request.
 
 The catalog unit test checks all 18 family row counts against the pinned
 49-row Glasshouse, 10-row CleanYourTV, and one-row webOS Unclutter snapshots.

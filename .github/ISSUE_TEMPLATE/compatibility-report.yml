@@ -5,7 +5,9 @@ body:
   - type: markdown
     attributes:
       value: |
-        Use PrivacyShield's **Prepare compatibility report** action and validate the JSON with `python3 scripts/validate_compatibility_report.py report.json` before posting.
+        Install the current IPK from the [latest release](https://github.com/snapetech-org/PrivacyShield/releases/latest). On the TV, open **TV details** and choose **Prepare compatibility report**. Scan the first on-screen code to copy the sanitized JSON, then scan the second code to open this form and paste it below.
+
+        Controls remain read-only on unmapped TVs. Do not try changing settings on an unmapped model to produce a report. To reproduce an observation, use the TV's native settings and report only the menu path and whether a read was available.
 
         Do not include a serial number, MAC or IP address, SSID, LG account, current setting values, agreement choices, or complete firmware/app bundles. PrivacyShield does not upload this report; posting here is your choice.
   - type: input
@@ -91,6 +93,7 @@ body:
     id: write_result
     attributes:
       label: Reversible write and readback
+      description: Keep this as Not tested for unmapped models. Do not attempt a setting write unless PrivacyShield identifies your exact model, SDK, and firmware as a supported profile.
       options:
         - Not tested
         - Write and matching readback confirmed

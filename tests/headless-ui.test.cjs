@@ -23,7 +23,23 @@ const serviceFixture = String.raw`(() => {
     g1: { modelName: "OLED55G19LA", sdkVersion: "6.5.3", firmwareVersion: "03.53.45", userAgent: "Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36 WebAppManager" },
     g4: { modelName: "OLED65G45LW", sdkVersion: "9.2.4", firmwareVersion: "23.23.30", userAgent: "Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36 WebAppManager" }
   };
-  const device = devices[scenario] || devices.success;
+  const matrixMatch = scenario.match(/^matrix-([BCG])([1-6])$/);
+  const matrixPlatforms = {
+    1: { sdk: "6.5.3", firmware: "SIM-2021", chrome: "79" },
+    2: { sdk: "7.4.0", firmware: "SIM-2022", chrome: "87" },
+    3: { sdk: "8.3.0", firmware: "SIM-2023", chrome: "94" },
+    4: { sdk: "9.2.0", firmware: "SIM-2024", chrome: "108" },
+    5: { sdk: "10.3.0", firmware: "SIM-2025", chrome: "120" },
+    6: { sdk: "11.2.0", firmware: "SIM-2026", chrome: "132" }
+  };
+  const simulatedFamily = matrixMatch && matrixPlatforms[matrixMatch[2]];
+  const simulatedDevice = simulatedFamily ? {
+    modelName: "OLED65" + matrixMatch[1] + matrixMatch[2] + "SIM",
+    sdkVersion: simulatedFamily.sdk,
+    firmwareVersion: simulatedFamily.firmware,
+    userAgent: "Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" + simulatedFamily.chrome + ".0.0.0 Safari/537.36 WebAppManager"
+  } : null;
+  const device = devices[scenario] || simulatedDevice || devices.success;
   const modelName = device.modelName;
   const firmwareVersion = device.firmwareVersion;
   Object.defineProperty(Navigator.prototype, "userAgent", { configurable: true, get: () => device.userAgent });
@@ -43,7 +59,7 @@ const serviceFixture = String.raw`(() => {
   const calls = [];
   window.__privacyShieldFixture = { scenario, settings, calls, eulaList };
   window.PalmSystem = {
-    deviceInfo: JSON.stringify({ modelName, platformVersion: "11.2.0", platformVersionMajor: 11, platformVersionMinor: 2 }),
+    deviceInfo: JSON.stringify({ modelName, platformVersion: device.sdkVersion, platformVersionMajor: Number.parseInt(device.sdkVersion, 10), platformVersionMinor: 0 }),
     stageReady() {},
     platformBack() { window.__privacyShieldFixture.backCalled = true; }
   };
@@ -445,7 +461,7 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
         status: document.querySelector('#compatibility-report-status').textContent,
         json: document.querySelector('#compatibility-report-output').value
       }))()`);
-      assert.equal(report.status, "Report ready below. Clipboard access is unavailable; nothing was sent.");
+      assert.equal(report.status, "Scan the codes with a phone to copy the report and open its form. Nothing was uploaded.");
       const reportJson = JSON.parse(report.json);
       assert.equal(reportJson.compatibility.profileId, "lg-oled77c6hup-webos26-43.21.79");
       assert.deepEqual(Object.keys(reportJson.controlReads).length, 15);
@@ -454,7 +470,7 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       if (reportCapture) await browser.screenshot(reportCapture);
       await browser.evaluate(`Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async (value) => { window.__privacyShieldFixture.copiedReport = value; } } })`);
       await browser.press("Enter");
-      await waitFor(async () => (await browser.evaluate("document.querySelector('#compatibility-report-status').textContent")) === "Report copied. It has not been uploaded.", "explicit compatibility report copy");
+      await waitFor(async () => (await browser.evaluate("document.querySelector('#compatibility-report-status').textContent")) === "Report copied to this TV's clipboard. Scan both codes with a phone to carry it to the form; nothing was uploaded.", "explicit compatibility report copy");
       assert.equal(await browser.evaluate("window.__privacyShieldFixture.copiedReport === document.querySelector('#compatibility-report-output').value"), true);
       await browser.press("ArrowDown");
       assert.equal(await browser.evaluate("document.activeElement.id"), "compatibility-report-output");
@@ -591,7 +607,39 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       assert.equal(await browser.evaluate("document.activeElement.id"), "prepare-compatibility-report");
       await browser.press("Enter");
       await waitFor(async () => (await browser.evaluate("document.querySelector('#compatibility-report-output').hidden")) === false, "unmapped compatibility report output");
+      const qr = await browser.evaluate(`(() => ({
+        hidden: document.querySelector('#compatibility-report-qr').hidden,
+        src: document.querySelector('#compatibility-report-qr').src,
+        formHidden: document.querySelector('#compatibility-report-form-qr').hidden,
+        formSrc: document.querySelector('#compatibility-report-form-qr').src,
+        alt: document.querySelector('#compatibility-report-qr').alt,
+        shareVisible: !document.querySelector('#compatibility-report-share').hidden,
+        reportBottom: document.querySelector('#compatibility-report-qr').getBoundingClientRect().bottom,
+        formBottom: document.querySelector('#compatibility-report-form-qr').getBoundingClientRect().bottom,
+        footerTop: document.querySelector('.footer').getBoundingClientRect().top
+      }))()`);
+      assert.equal(qr.hidden, false);
+      assert.equal(qr.formHidden, false);
+      assert.equal(qr.shareVisible, true);
+      assert.ok(qr.reportBottom <= qr.footerTop, "the full report QR must remain above the fixed footer");
+      assert.ok(qr.formBottom <= qr.footerTop, "the report form QR must remain above the fixed footer");
+      assert.match(qr.src, /^data:image\/gif;base64,/);
+      assert.match(qr.formSrc, /^data:image\/gif;base64,/);
+      assert.match(qr.alt, /sanitized compatibility report/i);
       const generated = await browser.evaluate("document.querySelector('#compatibility-report-output').value");
+      const qrDecoder = spawnSync("zbarimg", ["--version"], { encoding: "utf8" });
+      if (!qrDecoder.error && qrDecoder.status === 0) {
+        for (const [source, expected, filename] of [
+          [qr.src, generated, "compatibility-report.gif"],
+          [qr.formSrc, "https://github.com/snapetech-org/PrivacyShield/issues/new?template=compatibility-report.yml", "compatibility-form.gif"]
+        ]) {
+          const qrPath = path.join(userDataDir, filename);
+          fs.writeFileSync(qrPath, Buffer.from(source.split(",", 2)[1], "base64"));
+          const decodedQr = spawnSync("zbarimg", ["--quiet", "--raw", qrPath], { encoding: "utf8" });
+          assert.equal(decodedQr.status, 0, decodedQr.stderr);
+          assert.equal(decodedQr.stdout.trimEnd(), expected);
+        }
+      }
       const json = JSON.parse(generated);
       assert.equal(json.device.model, "OLED65B5HNA");
       assert.equal(json.compatibility.profileId, null);
@@ -600,7 +648,7 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       assert.deepEqual(Object.keys(json.controlReads).length, 15);
       assert.ok(Object.values(json.controlReads).every(Boolean));
       assert.doesNotMatch(generated, /eulaList|serialNumber|macAddress|ssid|192\.168\.|"livePlus":\s*"on"/i);
-      assert.match(await browser.evaluate("document.querySelector('#compatibility-report-status').textContent"), /not sent|not been uploaded/i);
+      assert.match(await browser.evaluate("document.querySelector('#compatibility-report-status').textContent"), /nothing was uploaded/i);
     });
 
     for (const [scenario, model, family, platform, sample] of [
@@ -677,6 +725,33 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
           assert.match(status.samples, /23\.23\.30/);
         }
       });
+    }
+
+    const platformNames = ["6.x", "22", "23", "24", "25", "26"];
+    for (const series of ["B", "C", "G"]) {
+      for (let generation = 1; generation <= 6; generation += 1) {
+        const scenario = `matrix-${series}${generation}`;
+        const model = `OLED65${series}${generation}SIM`;
+        await browser.navigate(scenario);
+        await waitFor(async () => (await browser.evaluate("document.querySelector('#runtime-mode').textContent")) === "TV information updated", `${scenario} model fixture`);
+        const status = await browser.evaluate(`(() => ({
+          model: document.querySelector('#model-name').textContent,
+          family: document.querySelector('#community-cohort').textContent,
+          version: document.querySelector('#webos-version').textContent,
+          profile: document.querySelector('#compatibility-status').textContent,
+          switchesLocked: [...document.querySelectorAll('[data-setting]')].every((input) => input.disabled),
+          presetDisabled: document.querySelector('#privacy-preset').disabled,
+          writerCalls: window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' || call.method === 'updateDNS' || (call.method === 'exec' && /device_control\\.py/.test(call.parameters.command || ""))).length
+        }))()`);
+        assert.equal(status.model, model);
+        assert.match(status.family, new RegExp(`${series}${generation} · ${2020 + generation} model family`));
+        assert.match(status.family, new RegExp(`launch platform webOS ${platformNames[generation - 1]}`));
+        assert.match(status.version, new RegExp(`webOS ${platformNames[generation - 1]}`));
+        assert.equal(status.profile, "Not mapped");
+        assert.equal(status.switchesLocked, true);
+        assert.equal(status.presetDisabled, true);
+        assert.equal(status.writerCalls, 0);
+      }
     }
   } finally {
     if (browser) await browser.stop();

@@ -263,6 +263,24 @@
             </section>
             <button class="button button-primary" type="button" id="prepare-compatibility-report">Prepare compatibility report</button>
             <p id="compatibility-report-status" role="status">The report stays on this TV. PrivacyShield does not upload it.</p>
+            <section id="compatibility-report-share" class="report-share" aria-label="Share compatibility report" hidden>
+              <div class="report-qr-grid">
+                <div class="report-qr-item">
+                  <img id="compatibility-report-qr" alt="QR code containing the sanitized compatibility report" hidden>
+                  <p>1. Scan to copy the report.</p>
+                </div>
+                <div class="report-qr-item">
+                  <img id="compatibility-report-form-qr" alt="QR code that opens the PrivacyShield compatibility issue form" hidden>
+                  <p>2. Scan to open the report form.</p>
+                </div>
+              </div>
+              <div>
+                <h3>Send a test report</h3>
+                <p>Use your phone to scan both codes. Paste the copied report into the form.</p>
+                <p class="report-issue-url">github.com/snapetech-org/PrivacyShield/issues/new?template=compatibility-report.yml</p>
+                <p>The code contains model and software versions plus read-access results. It contains no setting values and is not uploaded by the TV.</p>
+              </div>
+            </section>
             <textarea id="compatibility-report-output" aria-label="Sanitized compatibility report" rows="9" readonly hidden></textarea>
           </section>
           <div class="notice notice-info" id="diagnostics-note">
@@ -285,6 +303,7 @@
     <script src="src/compatibility.js"></script>
     <script src="src/community-data.js"></script>
     <script src="src/community-reference.js"></script>
+    <script src="vendor/qrcode-generator.js"></script>
     <script src="src/app.js"></script>
   </body>
 </html>

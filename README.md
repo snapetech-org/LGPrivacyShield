@@ -80,6 +80,9 @@ their separate model and software limits.
 Version 0.1.11 compiles the packaged JavaScript for Chromium 79, the web engine
 used by webOS 6. This allows the evidence and read-only views to load on 2021
 sets; settings writes remain restricted to the exact validated C6H profile.
+Version 0.1.12 adds two local QR codes for carrying a sanitized compatibility
+report to a phone and opening the public report form. See
+[how to test PrivacyShield on your TV](docs/TEST-ON-YOUR-TV.md).
 The public catalog covers all 18 B1–B6, C1–C6, and G1–G6 family labels, with
 source-scoped device reports, privacy-control paths, model/menu references,
 and limits. Twelve family labels have at least one matching community row in
@@ -104,8 +107,8 @@ checks. See [docs/HEADLESS-QA.md](docs/HEADLESS-QA.md).
 
 The public repository is
 [snapetech-org/PrivacyShield](https://github.com/snapetech-org/PrivacyShield).
-The current package version is v0.1.11. Its IPK and matching manifest are
-attached to the [GitHub release](https://github.com/snapetech-org/PrivacyShield/releases/tag/v0.1.11).
+The current package version is v0.1.12. Its IPK and matching manifest are
+attached to the [GitHub release](https://github.com/snapetech-org/PrivacyShield/releases/tag/v0.1.12).
 The Homebrew catalog submission is [PR #296](https://github.com/webosbrew/apps-repo/pull/296);
 the central catalog will list the app after upstream maintainers merge it. The
 listing includes a clickable Ko-fi link and the catalog's `funding.ko_fi` entry.

@@ -10,6 +10,8 @@ description: |
   Homebrew apps. Settings can be changed only on the validated OLED77C6HUP
   running SDK 11.2.0 and firmware 43.21.79. Other model and firmware
   combinations remain read-only until their settings maps are verified.
+  Owners can prepare a sanitized compatibility report for another model and
+  submit it to the project. Reports do not unlock settings writes.
   PrivacyShield does not upload TV settings or viewing activity.
   Support development on [Ko-fi](https://ko-fi.com/snapetech).
 funding:

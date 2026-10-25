@@ -53,6 +53,16 @@ test("uses current selectable records and exposes additional model agreements wi
   assert.equal(summary.some(({ id }) => id === "S_LGN" || id === "S_ALL" || id === "OTHER_ID"), false);
 });
 
+test("uses the title reported by this TV while retaining the sourced agreement effect", () => {
+  const summary = model.featureConsentSummary({ eulaInfoNetwork: { eulaList: [
+    { id: "S_ADG", type: "M", accepted: true, title: "Informations de visionnement" }
+  ] } });
+  const agreement = summary.find(({ id }) => id === "S_ADG");
+  assert.equal(agreement.title, "Informations de visionnement");
+  assert.match(agreement.acceptedEffect, /Live Plus.*ACR/i);
+  assert.match(agreement.evidence, /recorded.*on the C6/i);
+});
+
 test("privacy preset applies only reviewed reversible choices", () => {
   const preset = model.privacyPreset();
   assert.deepEqual(preset.map((entry) => entry.key), [

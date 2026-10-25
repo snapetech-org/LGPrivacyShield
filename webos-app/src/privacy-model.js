@@ -30,35 +30,35 @@
       title: "Viewing Information Agreement",
       acceptedEffect: "Live Plus can use ACR when it is on. LG says ACR may process content fingerprints with device, source, and network information for audience analysis; some source-aware voice commands may also need this agreement.",
       declinedEffect: "ACR is unavailable; some source-aware voice commands may be limited.",
-      evidence: "LG privacy statement; title and ID matched to this TV's agreement record."
+      evidence: "LG privacy statement; S_ADG was recorded as Viewing Information Agreement on the C6."
     },
     {
       id: "S_VNG",
       title: "Voice Information",
       acceptedEffect: "LG voice recognition can run after a voice action, such as pressing the remote microphone button or enabling supported hands-free voice. Consent alone does not activate it.",
       declinedEffect: "LG voice recognition is unavailable. Voice wake and hands-free settings remain separate controls.",
-      evidence: "LG privacy statement; title and ID matched to this TV's agreement record."
+      evidence: "LG privacy statement; S_VNG was recorded as Voice Information on the C6."
     },
     {
       id: "S_TAG",
       title: "Interest-Based Advertisement Agreement",
       acceptedEffect: "Permits interest-based and cross-device ads under this agreement. LG says ACR viewing data requires both this and Viewing Information consent.",
       declinedEffect: "No consent for interest-based or cross-device ads under this agreement. Other ad or service processing may be covered elsewhere.",
-      evidence: "LG privacy statement and Smart TV legal documents; title and ID matched to this TV."
+      evidence: "LG privacy statement; S_TAG was recorded as Interest-Based Advertisement Agreement on the C6."
     },
     {
       id: "S_MKT",
       title: "Marketing Communications Agreement",
       acceptedEffect: "Permits marketing communications covered by this agreement.",
       declinedEffect: "This consent is absent. LG's public summary does not identify message channels or TV features controlled by it.",
-      evidence: "Title and ID matched to this TV. LG lists the agreement as optional; its public summary does not detail its effects."
+      evidence: "The C6 records this title for S_MKT. LG lists it as optional but does not specify its channels or TV effects."
     },
     {
       id: "S_DPA",
       title: "Data Partners Agreement",
       acceptedEffect: "For Canada, LG support notes link this agreement to ad measurement and analytics with third-party partners.",
       declinedEffect: "No consent under this agreement. LG does not identify a specific service that stops on this TV.",
-      evidence: "Canadian LG software notes; title and ID matched to this TV's agreement record."
+      evidence: "The C6 records this title for S_DPA. Canadian LG software notes describe partner ad measurement and analytics."
     },
     {
       id: "S_PRG",
@@ -66,7 +66,7 @@
       required: true,
       acceptedEffect: "Required with Terms of Use for LG smart services, including apps such as Netflix and YouTube.",
       declinedEffect: "LG smart services remain unavailable. Regular TV features can continue if agreement choices are deferred.",
-      evidence: "LG User Agreement help; title and ID matched to this TV's agreement record."
+      evidence: "LG User Agreement help; the C6 records this title for S_PRG."
     },
     {
       id: "S_SVC",
@@ -74,7 +74,7 @@
       required: true,
       acceptedEffect: "Required with the Privacy Policy for LG smart services, including apps such as Netflix and YouTube.",
       declinedEffect: "LG smart services remain unavailable. Regular TV features can continue if agreement choices are deferred.",
-      evidence: "LG User Agreement help; title and ID matched to this TV's agreement record."
+      evidence: "LG User Agreement help; the C6 records this title for S_SVC."
     }
   ]);
 
@@ -100,11 +100,15 @@
     return [];
   }
 
-  function agreementState(record, id) {
+  function agreementRecord(record, id) {
     const matches = agreementList(record).filter((entry) => entry && entry.id === id);
     const selectable = matches.filter((entry) => entry.type === "M");
     const candidates = selectable.length ? selectable : matches;
-    const item = candidates[candidates.length - 1];
+    return candidates[candidates.length - 1] || null;
+  }
+
+  function agreementState(record, id) {
+    const item = agreementRecord(record, id);
     if (!item || typeof item.accepted !== "boolean") return "unknown";
     return item.accepted ? "accepted" : "withdrawn";
   }
@@ -139,10 +143,15 @@
 
   function featureConsentSummary(record) {
     const knownIds = new Set(AGREEMENTS.map(({ id }) => id));
-    const known = AGREEMENTS.map((agreement) => ({
-      ...agreement,
-      state: agreementState(record, agreement.id)
-    }));
+    const known = AGREEMENTS.map((agreement) => {
+      const current = agreementRecord(record, agreement.id);
+      const title = agreementTitle(current && current.title);
+      return {
+        ...agreement,
+        ...(title ? { title } : {}),
+        state: agreementState(record, agreement.id)
+      };
+    });
     const additional = new Map();
     for (const entry of agreementList(record)) {
       if (!entry || entry.type !== "M" || typeof entry.id !== "string"

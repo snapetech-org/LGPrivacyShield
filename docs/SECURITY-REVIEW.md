@@ -20,8 +20,8 @@ Reviewed 2026-10-25 against the LGPrivacyShield 0.4.1 source candidate.
 - Homebrew Channel's `exec` service runs commands with root privilege. The app
   uses it to run two bundled scripts: a read-only snapshot and a setting writer
   that accepts only known keys and `on` or `off`. The TV's Homebrew service and
-  installed app package remain trusted. The page policy and narrower API do
-  not sandbox compromised JavaScript from other TV services.
+  installed app package remain trusted. Compromised app code could still call
+  webOS services directly; the page policy does not sandbox it from that bridge.
 - The app reads and changes settings through local webOS services. It does not
   monitor or block network traffic from LG system software or other TV apps.
   Router or DNS logs are needed to review destination history.

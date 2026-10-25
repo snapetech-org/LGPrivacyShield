@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.1 (unreleased)
+## 0.4.1 (2026-10-25)
 
 - Restrict the app's Homebrew root bridge to its bundled snapshot and allowlisted setting scripts.
 - Add a content security policy, validate package identity before building paths, and package only tracked app files.

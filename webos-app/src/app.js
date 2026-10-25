@@ -297,9 +297,58 @@
   }
 
   function paintAgreementState() {
-    for (const entry of Model.featureConsentSummary(state.agreements)) {
-      const row = $(`[data-agreement="${entry.id}"]`);
+    const summary = Model.featureConsentSummary(state.agreements);
+    const additionalIds = new Set(summary.filter((entry) => entry.unmapped).map((entry) => entry.id));
+    for (const row of $$(".unmapped-agreement", $("#agreement-list"))) {
+      if (!additionalIds.has(row.dataset.agreement)) row.remove();
+    }
+    for (const entry of summary) {
+      let row = $(`[data-agreement="${entry.id}"]`);
+      if (!row && entry.unmapped) {
+        row = document.createElement("article");
+        row.className = "agreement-row unmapped-agreement";
+        row.dataset.agreement = entry.id;
+        const copy = document.createElement("div");
+        copy.className = "agreement-copy";
+        const heading = document.createElement("div");
+        heading.className = "agreement-heading";
+        const title = document.createElement("h2");
+        title.textContent = entry.title;
+        const tag = document.createElement("span");
+        tag.className = "unmapped-tag";
+        tag.textContent = "Effect not mapped";
+        const code = document.createElement("span");
+        code.className = "agreement-code";
+        code.textContent = `TV record ${entry.id}`;
+        heading.append(title, tag);
+        copy.append(heading, code);
+        for (const [label, text] of [
+          ["Accepted:", entry.acceptedEffect],
+          ["Not accepted:", entry.declinedEffect]
+        ]) {
+          const paragraph = document.createElement("p");
+          const strong = document.createElement("strong");
+          strong.textContent = label;
+          const value = document.createElement("span");
+          value.className = label === "Accepted:" ? "agreement-accepted" : "agreement-declined";
+          value.textContent = text;
+          paragraph.append(strong, " ", value);
+          copy.append(paragraph);
+        }
+        const evidence = document.createElement("p");
+        evidence.className = "agreement-evidence";
+        evidence.textContent = entry.evidence;
+        copy.append(evidence);
+        const pill = document.createElement("span");
+        pill.className = "status-pill status-unknown";
+        pill.textContent = "Unavailable";
+        row.append(copy, pill);
+        $("#agreement-list").append(row);
+      }
       if (!row) continue;
+      $(".agreement-accepted", row).textContent = entry.acceptedEffect;
+      $(".agreement-declined", row).textContent = entry.declinedEffect;
+      $(".agreement-evidence", row).textContent = entry.evidence;
       const pill = $(".status-pill", row);
       const label = entry.state === "accepted" ? "Accepted" : entry.state === "withdrawn" ? "Not accepted" : "Unavailable";
       statusPill(pill, label, entry.state === "accepted" ? "on" : entry.state === "withdrawn" ? "off" : "unknown");

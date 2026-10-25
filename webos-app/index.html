@@ -189,25 +189,72 @@
           <div class="section-intro">
             <p class="eyebrow">Consent and services</p>
             <h1 id="agreements-title">LG agreements</h1>
-            <p>Review the recorded choices below. Use LG User Agreements to change them.</p>
+            <p>Review the saved choices and their documented effects. Change them in LG User Agreements.</p>
+          </div>
+          <div class="agreement-context">
+            <p>Acceptance makes an agreement-dependent feature eligible; it does not turn the feature on. The status shows the saved choice, not whether data was used or sent.</p>
+            <p>ACR also requires Live Plus to be on. Voice recognition requires a voice action or an enabled hands-free feature. These controls are separate from consent.</p>
           </div>
           <div class="agreement-list" id="agreement-list">
-            <article class="agreement-row" data-agreement="S_ADG"><div><h2>Viewing Information Agreement</h2><p>Some context-aware voice commands may require the agreement. Live Plus is controlled separately.</p></div><span class="status-pill status-unknown">Checking</span></article>
-            <article class="agreement-row" data-agreement="S_VNG"><div><h2>Voice Information</h2><p>Covers LG voice recognition, including voice search. Some voice features may stop working if consent is withdrawn.</p></div><span class="status-pill status-unknown">Checking</span></article>
-            <article class="agreement-row" data-agreement="S_TAG"><div><h2>Interest-Based Advertisement Agreement</h2><p>Allows ads to be personalized based on interests.</p></div><span class="status-pill status-unknown">Checking</span></article>
-            <article class="agreement-row" data-agreement="S_MKT"><div><h2>Marketing Communications Agreement</h2><p>Controls LG marketing messages.</p></div><span class="status-pill status-unknown">Checking</span></article>
-            <article class="agreement-row" data-agreement="S_DPA"><div><h2>Data Partners Agreement</h2><p>Some partner features may stop working. Availability varies by region.</p></div><span class="status-pill status-unknown">Checking</span></article>
-            <article class="agreement-row required" data-agreement="S_PRG"><div><h2>Privacy Policy <span class="required-tag">Required</span></h2><p>LG's privacy terms for smart services.</p></div><span class="status-pill status-unknown">Checking</span></article>
-            <article class="agreement-row required" data-agreement="S_SVC"><div><h2>Terms of Use <span class="required-tag">Required</span></h2><p>Required to use LG smart services such as Netflix and YouTube.</p></div><span class="status-pill status-unknown">Checking</span></article>
+            <article class="agreement-row" data-agreement="S_ADG">
+              <div class="agreement-copy"><div class="agreement-heading"><h2>Viewing Information Agreement</h2><span class="optional-tag">Optional</span></div>
+                <p><strong>Accepted:</strong> <span class="agreement-accepted">Live Plus can use ACR when it is on. LG says ACR may process content fingerprints with device, source, and network information for audience analysis; some source-aware voice commands may also need this agreement.</span></p>
+                <p><strong>Not accepted:</strong> <span class="agreement-declined">ACR is unavailable; some source-aware voice commands may be limited.</span></p>
+                <p class="agreement-evidence">LG privacy statement; title and ID matched to this TV's agreement record.</p>
+              </div><span class="status-pill status-unknown">Checking</span>
+            </article>
+            <article class="agreement-row" data-agreement="S_VNG">
+              <div class="agreement-copy"><div class="agreement-heading"><h2>Voice Information</h2><span class="optional-tag">Optional</span></div>
+                <p><strong>Accepted:</strong> <span class="agreement-accepted">LG voice recognition can run after a voice action, such as pressing the remote microphone button or enabling supported hands-free voice. Consent alone does not activate it.</span></p>
+                <p><strong>Not accepted:</strong> <span class="agreement-declined">LG voice recognition is unavailable. Voice wake and hands-free settings remain separate controls.</span></p>
+                <p class="agreement-evidence">LG privacy statement; title and ID matched to this TV's agreement record.</p>
+              </div><span class="status-pill status-unknown">Checking</span>
+            </article>
+            <article class="agreement-row" data-agreement="S_TAG">
+              <div class="agreement-copy"><div class="agreement-heading"><h2>Interest-Based Advertisement Agreement</h2><span class="optional-tag">Optional</span></div>
+                <p><strong>Accepted:</strong> <span class="agreement-accepted">Permits interest-based and cross-device ads under this agreement. LG says ACR viewing data requires both this and Viewing Information consent.</span></p>
+                <p><strong>Not accepted:</strong> <span class="agreement-declined">No consent for interest-based or cross-device ads under this agreement. Other ad or service processing may be covered elsewhere.</span></p>
+                <p class="agreement-evidence">LG privacy statement and Smart TV legal documents; title and ID matched to this TV.</p>
+              </div><span class="status-pill status-unknown">Checking</span>
+            </article>
+            <article class="agreement-row" data-agreement="S_MKT">
+              <div class="agreement-copy"><div class="agreement-heading"><h2>Marketing Communications Agreement</h2><span class="optional-tag">Optional</span></div>
+                <p><strong>Accepted:</strong> <span class="agreement-accepted">Permits marketing communications covered by this agreement.</span></p>
+                <p><strong>Not accepted:</strong> <span class="agreement-declined">This consent is absent. LG's public summary does not identify message channels or TV features controlled by it.</span></p>
+                <p class="agreement-evidence">Title and ID matched to this TV. LG lists the agreement as optional; its public summary does not detail its effects.</p>
+              </div><span class="status-pill status-unknown">Checking</span>
+            </article>
+            <article class="agreement-row" data-agreement="S_DPA">
+              <div class="agreement-copy"><div class="agreement-heading"><h2>Data Partners Agreement</h2><span class="optional-tag">Optional</span></div>
+                <p><strong>Accepted:</strong> <span class="agreement-accepted">For Canada, LG support notes link this agreement to ad measurement and analytics with third-party partners.</span></p>
+                <p><strong>Not accepted:</strong> <span class="agreement-declined">No consent under this agreement. LG does not identify a specific service that stops on this TV.</span></p>
+                <p class="agreement-evidence">Canadian LG software notes; title and ID matched to this TV's agreement record.</p>
+              </div><span class="status-pill status-unknown">Checking</span>
+            </article>
+            <article class="agreement-row required" data-agreement="S_PRG">
+              <div class="agreement-copy"><div class="agreement-heading"><h2>Privacy Policy</h2><span class="required-tag">Required for smart services</span></div>
+                <p><strong>Accepted:</strong> <span class="agreement-accepted">Required with Terms of Use for LG smart services, including apps such as Netflix and YouTube.</span></p>
+                <p><strong>Not accepted:</strong> <span class="agreement-declined">LG smart services remain unavailable. Regular TV features can continue if agreement choices are deferred.</span></p>
+                <p class="agreement-evidence">LG User Agreement help; title and ID matched to this TV's agreement record.</p>
+              </div><span class="status-pill status-unknown">Checking</span>
+            </article>
+            <article class="agreement-row required" data-agreement="S_SVC">
+              <div class="agreement-copy"><div class="agreement-heading"><h2>Terms of Use</h2><span class="required-tag">Required for smart services</span></div>
+                <p><strong>Accepted:</strong> <span class="agreement-accepted">Required with the Privacy Policy for LG smart services, including apps such as Netflix and YouTube.</span></p>
+                <p><strong>Not accepted:</strong> <span class="agreement-declined">LG smart services remain unavailable. Regular TV features can continue if agreement choices are deferred.</span></p>
+                <p class="agreement-evidence">LG User Agreement help; title and ID matched to this TV's agreement record.</p>
+              </div><span class="status-pill status-unknown">Checking</span>
+            </article>
           </div>
           <div class="agreement-actions">
-            <button class="button button-primary" type="button" id="agreement-manager-button">Review and change agreements</button>
+            <button class="button button-primary" type="button" id="agreement-manager-button">Open LG User Agreements</button>
             <span id="agreement-action-status" role="status">LG opens its own agreement screen so you can review each choice before saving.</span>
           </div>
           <div class="notice notice-warning">
-            <strong>Required agreements affect LG smart services</strong>
-            <span>Withdrawing the Privacy Policy or Terms of Use can disable smart services. On this firmware, LG's agreement flow also warns that it revokes other choices and restarts setup.</span>
+            <strong>Required agreements affect smart services</strong>
+            <span>LG requires the Privacy Policy and Terms of Use for smart services. On this TV, changing a required agreement can revoke other choices and restart setup. Review LG's confirmation before saving.</span>
           </div>
+          <p class="agreement-sources">Sources: <a href="https://www.lg.com/us/newsroom/corporate/statement-understanding-privacy-on-lg-smart-tvs" target="_blank" rel="noopener noreferrer">LG privacy statement</a> · <a href="https://www.lg.com/us/support/help-library/seeing-a-user-agreements-screen-on-your-lg-tv-CT10000018-20155426555618" target="_blank" rel="noopener noreferrer">LG agreement help</a> · <a href="https://us.lgappstv.com/main/terms" target="_blank" rel="noopener noreferrer">LG Smart TV legal documents</a> · <a href="https://www.lg.com/np/support/product/lg-55UR8050PSB.ATC" target="_blank" rel="noopener noreferrer">LG regional software note</a></p>
         </section>
 
         <section class="view" id="view-evidence" aria-labelledby="evidence-title" hidden>

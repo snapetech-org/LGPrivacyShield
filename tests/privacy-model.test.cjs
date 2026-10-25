@@ -20,6 +20,39 @@ test("reads consent only from explicit agreement acceptance state", () => {
   assert.equal(model.agreementState(record, "S_TAG"), "unknown");
 });
 
+test("maps every C6 agreement and separates required service terms from optional consents", () => {
+  assert.deepEqual(model.AGREEMENTS.map(({ id }) => id), [
+    "S_ADG", "S_VNG", "S_TAG", "S_MKT", "S_DPA", "S_PRG", "S_SVC"
+  ]);
+  assert.deepEqual(model.AGREEMENTS.filter(({ required }) => required).map(({ id }) => id), ["S_PRG", "S_SVC"]);
+  assert.match(model.AGREEMENTS.find(({ id }) => id === "S_ADG").acceptedEffect, /Live Plus.*ACR/i);
+  assert.match(model.AGREEMENTS.find(({ id }) => id === "S_TAG").acceptedEffect, /both.*Viewing Information/i);
+  assert.match(model.AGREEMENTS.find(({ id }) => id === "S_DPA").acceptedEffect, /ad measurement and analytics/i);
+  assert.match(model.AGREEMENTS.find(({ id }) => id === "S_MKT").declinedEffect, /does not identify message channels/i);
+  assert.ok(model.AGREEMENTS.every(({ acceptedEffect, declinedEffect, evidence }) => acceptedEffect && declinedEffect && evidence));
+});
+
+test("uses current selectable records and exposes additional model agreements without guessing effects", () => {
+  const record = { eulaInfoNetwork: { eulaList: [
+    { id: "S_SVC", type: "M", accepted: true, title: "Terms of Use" },
+    { id: "S_PRG", type: "M", accepted: true, title: "Privacy Policy" },
+    { id: "S_DIA", type: "M", accepted: false, title: "Diagnostic &amp; Data Agreement<br>Additional terms" },
+    { id: "S_LGN", type: "L", accepted: false, title: "Legal Notice" },
+    { id: "S_ALL", type: "S", accepted: false, title: "Select All" },
+    { id: "OTHER_ID", type: "M", accepted: false, title: "Ignored malformed identifier" }
+  ] } };
+  assert.equal(model.agreementState(record, "S_SVC"), "accepted");
+  assert.equal(model.hasAgreementRecord(record), true);
+  const summary = model.featureConsentSummary(record);
+  assert.equal(summary.find(({ id }) => id === "S_SVC").state, "accepted");
+  const additional = summary.find(({ id }) => id === "S_DIA");
+  assert.equal(additional.title, "Diagnostic & Data Agreement Additional terms");
+  assert.equal(additional.state, "withdrawn");
+  assert.equal(additional.unmapped, true);
+  assert.match(additional.acceptedEffect, /no verified feature map/i);
+  assert.equal(summary.some(({ id }) => id === "S_LGN" || id === "S_ALL" || id === "OTHER_ID"), false);
+});
+
 test("privacy preset applies only reviewed reversible choices", () => {
   const preset = model.privacyPreset();
   assert.deepEqual(preset.map((entry) => entry.key), [

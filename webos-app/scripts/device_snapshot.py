@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Read a minimal local-only snapshot for PrivacyShield's Evidence view."""
 import glob
+import html
 import json
 import os
 import re
@@ -40,6 +41,7 @@ REFERENCE_CATEGORIES = {
 }
 FIRMWARE_MAP_KEYS = set(CONTROL_CATEGORIES) | set(REFERENCE_CATEGORIES)
 CATEGORY_NAME = re.compile(r"^[A-Za-z][A-Za-z0-9_]{0,63}$")
+AGREEMENT_ID = re.compile(r"^S_[A-Z0-9]{1,8}$")
 
 
 def read_json(path):
@@ -238,7 +240,7 @@ def reference_settings(option=None, general=None, network=None, firmware_map=Non
 
 
 def agreements(record=None):
-    """Return only agreement IDs and explicit accepted booleans."""
+    """Return current selectable agreement labels and explicit saved states."""
     if record is None:
         record = read_json("/var/luna/preferences/eula")
     if not isinstance(record, dict):
@@ -247,14 +249,33 @@ def agreements(record=None):
     source = info.get("eulaList", []) if isinstance(info, dict) else []
     if not isinstance(source, list):
         source = []
-    allowlist = {"S_ADG", "S_VNG", "S_TAG", "S_MKT", "S_DPA", "S_PRG", "S_SVC"}
-    entries = [
-        {"id": item["id"], "accepted": item["accepted"]}
-        for item in source
-        if isinstance(item, dict)
-        and item.get("id") in allowlist
-        and isinstance(item.get("accepted"), bool)
-    ]
+    known_ids = {"S_ADG", "S_VNG", "S_TAG", "S_MKT", "S_DPA", "S_PRG", "S_SVC"}
+    entries = []
+    for item in source:
+        if not isinstance(item, dict):
+            continue
+        agreement_id = item.get("id")
+        if not isinstance(agreement_id, str) or not AGREEMENT_ID.fullmatch(agreement_id):
+            continue
+        if item.get("type") != "M" and agreement_id not in known_ids:
+            continue
+        entry = {"id": agreement_id}
+        if item.get("type") == "M":
+            entry["type"] = "M"
+        accepted = item.get("accepted")
+        if isinstance(accepted, bool):
+            entry["accepted"] = accepted
+        title = item.get("title")
+        if isinstance(title, str):
+            # The firmware record may include bilingual HTML. Keep plain text
+            # only; the app inserts it with textContent, never as markup.
+            clean_title = re.sub(r"<[^>]*>", " ", title)
+            clean_title = " ".join(html.unescape(clean_title).split())[:160]
+            if clean_title:
+                entry["title"] = clean_title
+        entries.append(entry)
+        if len(entries) >= 24:
+            break
     return {"eulaInfoNetwork": {"eulaList": entries}}
 
 

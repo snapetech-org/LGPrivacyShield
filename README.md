@@ -14,6 +14,8 @@ is read back from the TV before success is shown.
   separate ad preferences, broadcast features, and presence features unchanged.
 - LG agreement status. Changes open LG's native User Agreements screen. The app
   does not accept EULA terms or edit saved agreement records.
+- Per-agreement accepted and declined effects, with source quality and an
+  explicit unmapped state for additional regional or model-specific choices.
 - Model and software details, local service and installed-app status, LG
   diagnostic-upload settings, documented menu paths, and published model
   reports.

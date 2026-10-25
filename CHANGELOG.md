@@ -8,6 +8,8 @@
   package metadata does not enable controls.
 - Added read-only status for additional published settings and clearer
   compatibility evidence limits.
+- Added a source-backed accepted/declined effect map for LG agreements, plus
+  visible unmapped status for additional model or region-specific agreements.
 - Expanded headless Chromium, Python, firmware-catalog, and package checks.
 - Added the About screen, AGPL-3.0-only licensing, third-party notices, and Ko-fi
   links.

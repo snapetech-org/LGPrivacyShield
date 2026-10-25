@@ -96,10 +96,13 @@ const serviceFixture = String.raw`(() => {
     ? "luna://com.webos.service.settings"
     : "luna://com.webos.settingsservice";
   const eulaList = [
-    { id: "S_ADG", accepted: true }, { id: "S_VNG", accepted: true },
-    { id: "S_TAG", accepted: true }, { id: "S_MKT", accepted: true },
-    { id: "S_DPA", accepted: false }, { id: "S_PRG", accepted: true },
-    { id: "S_SVC", accepted: true }
+    { id: "S_ADG", type: "M", title: "Viewing Information Agreement", accepted: true },
+    { id: "S_VNG", type: "M", title: "Voice Information", accepted: true },
+    { id: "S_TAG", type: "M", title: "Interest-Based Advertisement Agreement", accepted: true },
+    { id: "S_MKT", type: "M", title: "Marketing Communications Agreement", accepted: true },
+    { id: "S_DPA", type: "M", title: "Data Partners Agreement", accepted: false },
+    { id: "S_PRG", type: "M", title: "Privacy Policy", accepted: true },
+    { id: "S_SVC", type: "M", title: "Terms of Use", accepted: true }
   ];
   const calls = [];
   window.__privacyShieldFixture = { scenario, settings, referenceSettings, firmwareSettingsMap, calls, eulaList, errors: [], activeSettingsUri };
@@ -444,6 +447,14 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
           buttons: [...document.querySelectorAll('button')].map((button) => (button.getAttribute('aria-label') || button.innerText).trim()),
           switches: [...document.querySelectorAll('[data-setting]')].map((input) => (input.getAttribute('aria-label') || [...(input.labels || [])].map((label) => label.innerText).join(' ')).trim()),
           links: [...document.querySelectorAll('a[href]')].map((link) => (link.getAttribute('aria-label') || link.innerText).trim()),
+          agreementCards: [...document.querySelectorAll('#agreement-list .agreement-row')].map((row) => ({
+            id: row.dataset.agreement,
+            title: row.querySelector('h2')?.innerText.trim(),
+            tag: row.querySelector('.required-tag, .optional-tag')?.innerText.trim(),
+            accepted: row.querySelector('.agreement-accepted')?.innerText.trim(),
+            declined: row.querySelector('.agreement-declined')?.innerText.trim(),
+            evidence: row.querySelector('.agreement-evidence')?.innerText.trim()
+          })),
           summaries: [...document.querySelectorAll('summary')].map((summary) => summary.innerText.trim())
         };
         return {
@@ -467,6 +478,14 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       assert.equal(audit.switches.length, 17);
       assert.ok(audit.switches.every(Boolean), "every privacy switch must have an accessible name");
       assert.ok(audit.links.every(Boolean), "every link must have a text or accessible name");
+      assert.deepEqual(audit.agreementCards.map((item) => item.id), ["S_ADG", "S_VNG", "S_TAG", "S_MKT", "S_DPA", "S_PRG", "S_SVC"]);
+      assert.deepEqual(audit.agreementCards.filter((item) => item.tag === "Required for smart services").map((item) => item.id), ["S_PRG", "S_SVC"]);
+      assert.ok(audit.agreementCards.filter((item) => item.id.startsWith("S_") && !["S_PRG", "S_SVC"].includes(item.id)).every((item) => item.tag === "Optional"));
+      assert.match(audit.agreementCards.find((item) => item.id === "S_ADG").accepted, /Live Plus.*ACR/i);
+      assert.match(audit.agreementCards.find((item) => item.id === "S_TAG").accepted, /both.*Viewing Information/i);
+      assert.match(audit.agreementCards.find((item) => item.id === "S_DPA").accepted, /ad measurement and analytics/i);
+      assert.match(audit.agreementCards.find((item) => item.id === "S_MKT").declined, /does not identify message channels/i);
+      assert.match(audit.bodyCopy, /saved choice, not whether data was used or sent/i);
       assert.ok(audit.summaries.every(Boolean), "every disclosure must have a label");
       assert.doesNotMatch(audit.bodyCopy, /\b(?:idfk|todo|tbd|lorem ipsum|placeholder|app-side|maintainer test|developer app)\b/i);
       assert.equal(audit.version, "0.4.0");
@@ -753,11 +772,26 @@ test("PrivacyShield works in headless Chromium with a simulated webOS remote and
       assert.deepEqual(agreementLaunch.parameters, { id: "com.webos.app.firstuse-overlay", params: { target: "eula", context: "all" } });
       await browser.evaluate(`(() => {
         window.__privacyShieldFixture.eulaList.find((item) => item.id === 'S_TAG').accepted = false;
+        window.__privacyShieldFixture.eulaList.push({ id: 'S_DIA', type: 'M', title: 'Diagnostic Data Agreement', accepted: false });
         document.dispatchEvent(new Event('visibilitychange'));
       })()`);
       await waitFor(async () => (await browser.evaluate("document.querySelector('[data-agreement=S_TAG] .status-pill').textContent")) === "Not accepted", "agreement status refresh after return");
+      await waitFor(async () => Boolean(await browser.evaluate("document.querySelector('[data-agreement=S_DIA] .status-pill')?.textContent === 'Not accepted'")), "unmapped agreement status");
+      const extraAgreement = await browser.evaluate(`(() => {
+        const row = document.querySelector('[data-agreement=S_DIA]');
+        return { title: row.querySelector('h2').textContent, tag: row.querySelector('.unmapped-tag').textContent,
+          effect: row.querySelector('.agreement-declined').textContent, code: row.querySelector('.agreement-code').textContent };
+      })()`);
+      assert.deepEqual(extraAgreement, {
+        title: "Diagnostic Data Agreement",
+        tag: "Effect not mapped",
+        effect: "This choice is not accepted. PrivacyShield has not verified which services or data uses it affects.",
+        code: "TV record S_DIA"
+      });
       assert.equal(await browser.evaluate("window.__privacyShieldFixture.calls.filter((call) => call.method === 'setSystemSettings' && /eula/i.test(JSON.stringify(call.parameters))).length"), 0, "PrivacyShield must leave agreement writes to LG's consent screen");
-      await browser.press("ArrowRight");
+      for (let step = 0; step < 8 && await browser.evaluate("document.querySelector('.view.is-visible').id !== 'view-evidence'"); step += 1) {
+        await browser.press("ArrowRight");
+      }
       assert.equal(await browser.evaluate("document.querySelector('.view.is-visible').id"), "view-evidence");
       let reportButtonFocused = false;
       for (let step = 0; step < 40 && !reportButtonFocused; step += 1) {

@@ -139,13 +139,25 @@ h1 span { color:var(--current); }
 .notice span { color:#53696d; }
 .notice-warning { border-left-color:var(--amber); background:#f1e8d4; }
 
+.agreement-context { margin:0 1.6vw 14px; padding:12px 16px; border-left:4px solid var(--current); background:#e8efeb; }
+.agreement-context p { margin:0; color:var(--muted); font-size:.8rem; }
+.agreement-context p + p { margin-top:5px; }
 .agreement-list { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:0 1.6vw; }
-.agreement-row { min-height:122px; display:flex; align-items:center; justify-content:space-between; gap:18px; padding:17px 19px; background:var(--paper); border:1px solid var(--line); border-radius:6px; }
+.agreement-row { min-height:145px; display:flex; align-items:flex-start; justify-content:space-between; gap:18px; padding:15px 17px; background:var(--paper); border:1px solid var(--line); border-radius:6px; }
+.agreement-copy { min-width:0; }
+.agreement-heading { display:flex; align-items:center; flex-wrap:wrap; gap:7px; }
 .agreement-row h2 { margin:0; font-size:.97rem; }
 .agreement-row p { max-width:620px; margin:6px 0 0; color:var(--muted); font-size:.81rem; }
+.agreement-row p strong { color:var(--ink); }
+.agreement-row .agreement-evidence { margin-top:8px; font-size:.68rem; }
+.agreement-code { display:block; margin-top:4px; color:var(--muted); font-size:.65rem; }
+.unmapped-tag { padding:3px 7px; color:#70551d; background:#f1e6c7; border-radius:3px; font-size:.62rem; font-weight:700; }
 .agreement-actions { display:flex; align-items:center; gap:18px; margin:16px 1.6vw; }
 .agreement-actions span { max-width:700px; color:var(--muted); font-size:.82rem; }
-.required-tag { margin-left:7px; padding:3px 7px; color:var(--current); background:#dbe7e3; border-radius:3px; font-size:.62rem; vertical-align:middle; }
+.required-tag, .optional-tag { padding:3px 7px; color:var(--current); background:#dbe7e3; border-radius:3px; font-size:.62rem; font-weight:700; }
+.optional-tag { color:#53696d; background:#e4ebe8; }
+.agreement-sources { margin:0 1.6vw 18px; color:var(--muted); font-size:.74rem; }
+.agreement-sources a { color:var(--current); font-weight:700; text-decoration-thickness:2px; text-underline-offset:3px; }
 
 .evidence-grid { display:grid; grid-template-columns:1fr 1fr; gap:13px; margin:0 1.6vw; }
 .evidence-card { min-height:190px; padding:19px 21px; background:var(--paper); border:1px solid var(--line); border-radius:7px; }

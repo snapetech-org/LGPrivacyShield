@@ -25,13 +25,57 @@
   ]);
 
   const AGREEMENTS = Object.freeze([
-    { id: "S_ADG", title: "Viewing Information Agreement", feature: "Some viewing-based services and context-aware voice commands may be unavailable. Live Plus controls ACR separately." },
-    { id: "S_VNG", title: "Voice Information", feature: "LG voice recognition, including remote push-to-talk, may be unavailable." },
-    { id: "S_TAG", title: "Interest-Based Advertisement Agreement", feature: "Interest-based ad personalization is unavailable." },
-    { id: "S_MKT", title: "Marketing Communications Agreement", feature: "LG marketing communications are unavailable." },
-    { id: "S_DPA", title: "Data Partners Agreement", feature: "Some partner-data services may be unavailable." },
-    { id: "S_PRG", title: "Privacy Policy", required: true, feature: "Required for LG smart services." },
-    { id: "S_SVC", title: "Terms of Use", required: true, feature: "Required for LG smart services." }
+    {
+      id: "S_ADG",
+      title: "Viewing Information Agreement",
+      acceptedEffect: "Live Plus can use ACR when it is on. LG says ACR may process content fingerprints with device, source, and network information for audience analysis; some source-aware voice commands may also need this agreement.",
+      declinedEffect: "ACR is unavailable; some source-aware voice commands may be limited.",
+      evidence: "LG privacy statement; title and ID matched to this TV's agreement record."
+    },
+    {
+      id: "S_VNG",
+      title: "Voice Information",
+      acceptedEffect: "LG voice recognition can run after a voice action, such as pressing the remote microphone button or enabling supported hands-free voice. Consent alone does not activate it.",
+      declinedEffect: "LG voice recognition is unavailable. Voice wake and hands-free settings remain separate controls.",
+      evidence: "LG privacy statement; title and ID matched to this TV's agreement record."
+    },
+    {
+      id: "S_TAG",
+      title: "Interest-Based Advertisement Agreement",
+      acceptedEffect: "Permits interest-based and cross-device ads under this agreement. LG says ACR viewing data requires both this and Viewing Information consent.",
+      declinedEffect: "No consent for interest-based or cross-device ads under this agreement. Other ad or service processing may be covered elsewhere.",
+      evidence: "LG privacy statement and Smart TV legal documents; title and ID matched to this TV."
+    },
+    {
+      id: "S_MKT",
+      title: "Marketing Communications Agreement",
+      acceptedEffect: "Permits marketing communications covered by this agreement.",
+      declinedEffect: "This consent is absent. LG's public summary does not identify message channels or TV features controlled by it.",
+      evidence: "Title and ID matched to this TV. LG lists the agreement as optional; its public summary does not detail its effects."
+    },
+    {
+      id: "S_DPA",
+      title: "Data Partners Agreement",
+      acceptedEffect: "For Canada, LG support notes link this agreement to ad measurement and analytics with third-party partners.",
+      declinedEffect: "No consent under this agreement. LG does not identify a specific service that stops on this TV.",
+      evidence: "Canadian LG software notes; title and ID matched to this TV's agreement record."
+    },
+    {
+      id: "S_PRG",
+      title: "Privacy Policy",
+      required: true,
+      acceptedEffect: "Required with Terms of Use for LG smart services, including apps such as Netflix and YouTube.",
+      declinedEffect: "LG smart services remain unavailable. Regular TV features can continue if agreement choices are deferred.",
+      evidence: "LG User Agreement help; title and ID matched to this TV's agreement record."
+    },
+    {
+      id: "S_SVC",
+      title: "Terms of Use",
+      required: true,
+      acceptedEffect: "Required with the Privacy Policy for LG smart services, including apps such as Netflix and YouTube.",
+      declinedEffect: "LG smart services remain unavailable. Regular TV features can continue if agreement choices are deferred.",
+      evidence: "LG User Agreement help; title and ID matched to this TV's agreement record."
+    }
   ]);
 
   function normalizeToggle(value) {
@@ -57,9 +101,24 @@
   }
 
   function agreementState(record, id) {
-    const item = agreementList(record).find((entry) => entry && entry.id === id);
+    const matches = agreementList(record).filter((entry) => entry && entry.id === id);
+    const selectable = matches.filter((entry) => entry.type === "M");
+    const candidates = selectable.length ? selectable : matches;
+    const item = candidates[candidates.length - 1];
     if (!item || typeof item.accepted !== "boolean") return "unknown";
     return item.accepted ? "accepted" : "withdrawn";
+  }
+
+  function agreementTitle(value) {
+    if (typeof value !== "string") return "";
+    return value.replace(/<[^>]*>/g, " ")
+      .replace(/&nbsp;|&#160;/gi, " ")
+      .replace(/&amp;/gi, "&")
+      .replace(/&lt;/gi, "<")
+      .replace(/&gt;/gi, ">")
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;|&apos;/gi, "'")
+      .replace(/\s+/g, " ").trim().slice(0, 160);
   }
 
   function countPrivacyControls(settings, controls = CONTROLS) {
@@ -79,10 +138,27 @@
   }
 
   function featureConsentSummary(record) {
-    return AGREEMENTS.map((agreement) => ({
+    const knownIds = new Set(AGREEMENTS.map(({ id }) => id));
+    const known = AGREEMENTS.map((agreement) => ({
       ...agreement,
       state: agreementState(record, agreement.id)
     }));
+    const additional = new Map();
+    for (const entry of agreementList(record)) {
+      if (!entry || entry.type !== "M" || typeof entry.id !== "string"
+        || !/^S_[A-Z0-9]{1,8}$/.test(entry.id) || knownIds.has(entry.id)) continue;
+      const title = agreementTitle(entry.title);
+      additional.set(entry.id, {
+        id: entry.id,
+        title: title || "Additional LG agreement",
+        evidence: "This TV reports the agreement and saved choice. Its feature effect is not mapped in PrivacyShield.",
+        acceptedEffect: "Acceptance is recorded by LG. PrivacyShield has no verified feature map for this agreement.",
+        declinedEffect: "This choice is not accepted. PrivacyShield has not verified which services or data uses it affects.",
+        state: typeof entry.accepted === "boolean" ? (entry.accepted ? "accepted" : "withdrawn") : "unknown",
+        unmapped: true
+      });
+    }
+    return known.concat([...additional.values()]);
   }
 
   function snapshotSettings(snapshot) {
@@ -91,7 +167,9 @@
   }
 
   function hasAgreementRecord(record) {
-    return AGREEMENTS.some(({ id }) => agreementState(record, id) !== "unknown");
+    return AGREEMENTS.some(({ id }) => agreementState(record, id) !== "unknown")
+      || agreementList(record).some((entry) => entry && entry.type === "M"
+        && typeof entry.id === "string" && /^S_[A-Z0-9]{1,8}$/.test(entry.id));
   }
 
   function privacyPreset() {

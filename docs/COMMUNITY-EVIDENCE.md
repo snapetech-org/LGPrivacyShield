@@ -91,6 +91,11 @@ Glasshouse traced native agreement dependencies and flags on a CX/webOS 5.6.2 an
 
 This is why agreement records are not treated like ordinary on/off preferences. PrivacyShield opens LG's native agreement screen; it does not edit cached EULA records. The feature impact must be checked on the exact TV and agreement before changing it.
 
+The current per-agreement map and its official LG sources are in
+[LG-AGREEMENT-EFFECTS.md](LG-AGREEMENT-EFFECTS.md). Direct C6 title/ID records
+are kept separate from LG's broader feature descriptions and Glasshouse's
+firmware-specific observations.
+
 ### Additional settings found in firmware
 
 Glasshouse's C5/webOS 10.3.1 search of `/usr` and `/etc` reports these keys and readers. The authors note that a reader constructing a key name at runtime could be missed.

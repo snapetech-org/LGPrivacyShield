@@ -196,15 +196,18 @@ class DeviceSnapshotTests(unittest.TestCase):
         )
         self.assertEqual(device_snapshot.privacy_settings({}, {}, {}, {}), {})
 
-    def test_agreements_return_only_allowlisted_explicit_booleans(self):
+    def test_agreements_return_current_titles_and_explicit_selectable_choices(self):
         record = {
             "eulaInfoNetwork": {
                 "eulaList": [
-                    {"id": "S_VNG", "accepted": False},
-                    {"id": "S_ADG", "accepted": True},
-                    {"id": "S_ALL", "accepted": True},
-                    {"id": "S_TAG", "accepted": "false"},
-                    {"id": "S_MKT"},
+                    {"id": "S_VNG", "type": "M", "accepted": False, "title": "Voice Information<br>Renseignements vocaux"},
+                    {"id": "S_ADG", "type": "M", "accepted": True, "title": "Viewing Information Agreement"},
+                    {"id": "S_DIA", "type": "M", "accepted": False, "title": "Diagnostic Data Agreement"},
+                    {"id": "S_ALL", "type": "S", "accepted": True, "title": "Select All"},
+                    {"id": "S_LGN", "type": "L", "accepted": False, "title": "Legal Notice"},
+                    {"id": "S_TAG", "type": "M", "accepted": "false", "title": "Bad acceptance value"},
+                    {"id": "S_MKT", "type": "M", "title": "Missing acceptance"},
+                    {"id": "S_BAD/ID", "type": "M", "accepted": True, "title": "Bad ID"},
                 ]
             }
         }
@@ -213,8 +216,11 @@ class DeviceSnapshotTests(unittest.TestCase):
             {
                 "eulaInfoNetwork": {
                     "eulaList": [
-                        {"id": "S_VNG", "accepted": False},
-                        {"id": "S_ADG", "accepted": True},
+                        {"id": "S_VNG", "type": "M", "accepted": False, "title": "Voice Information Renseignements vocaux"},
+                        {"id": "S_ADG", "type": "M", "accepted": True, "title": "Viewing Information Agreement"},
+                        {"id": "S_DIA", "type": "M", "accepted": False, "title": "Diagnostic Data Agreement"},
+                        {"id": "S_TAG", "type": "M", "title": "Bad acceptance value"},
+                        {"id": "S_MKT", "type": "M", "title": "Missing acceptance"},
                     ]
                 }
             },

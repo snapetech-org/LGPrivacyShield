@@ -38,13 +38,15 @@ firmware image was extracted or that another physical TV was tested.
 
 ## Verification record · 2026-10-25
 
-- `npm test` passed: 59 Node.js tests and 51 Python tests.
-- `npm run package` passed and produced a 146,660-byte IPK.
+- `npm test` passed: 61 Node.js tests and 51 Python tests.
+- `npm run package` passed and produced a 149,332-byte IPK.
 - `npm run test:ipk` passed: package metadata and all 22 packaged-app browser
   tests passed after extraction.
-- SHA-256: `0a00e091d4d97f4dced349bd2aaaa6dab6bf8e0c9e9a2995fbb59d1616404518`
+- SHA-256: `f0596b38a318adad3d3ea28b6382b88233bea6d70dad0aa3b8e70b1ac73b3701`
 
-The package was tested in Chromium and was not installed or launched on a TV.
+This verification includes the per-agreement effect map and unmapped-agreement
+display. The package was tested in Chromium and was not installed or launched
+on a TV.
 
 The browser scenarios cover:
 

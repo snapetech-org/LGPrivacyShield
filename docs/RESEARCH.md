@@ -26,6 +26,15 @@ source-aware voice commands may need Viewing Information. Accept only the
 agreements needed for the desired features. The Privacy Policy and Terms of
 Use are required for smart services such as Netflix and YouTube.
 
+`docs/LG-AGREEMENT-EFFECTS.md` records the seven ID/title pairs observed in the
+exact C6 agreement response and maps their supported effects to LG's current
+privacy statement and User Agreements help. The Canadian-market Data Partners
+Agreement is documented for ad measurement and analytics with third-party
+partners, but its exact C6 feature gates are not published. The Marketing
+Communications Agreement's channels and TV effects are also not specified in
+LG's public summary. Additional selectable agreements are shown in the app
+with an unmapped-effect notice instead of guessed behavior.
+
 PrivacyShield's control catalog has 17 settings traced to LG's Settings UI:
 Live Plus / ACR, two voice controls, Limit Ad Tracking, Do Not Sell, Screen
 Saver Promotion, Home menu ads, Live Promotion, Home content recommendations,

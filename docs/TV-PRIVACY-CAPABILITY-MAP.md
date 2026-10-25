@@ -139,28 +139,24 @@ third-party cookies, Bluetooth wake, and Sleep on Absence for separate choice.
 
 ## LG agreement choices
 
-PrivacyShield reads `eulaInfoNetwork.eulaList` and displays seven known IDs.
+PrivacyShield reads the current selectable entries in
+`eulaInfoNetwork.eulaList`. On the exact C6 firmware, seven entries of type
+`M` have verified ID/title pairs. The app displays those seven with the
+source-backed accepted and declined effects in
+[LG-AGREEMENT-EFFECTS.md](LG-AGREEMENT-EFFECTS.md). Other current `M` entries
+reported by a TV are displayed with their status and an **Effect not mapped**
+cue. The app excludes the native screen's Overview, Select All, Legal Notice,
+and older legacy entries from selectable-consent rows.
+
 `accepted: false` is shown as **Not accepted**; missing or malformed data is
 **Unavailable**. The app does not write `eulaStatus` or `eulaInfoNetwork`. Its
 button opens LG's native User Agreements screen and refreshes the displayed
-state when the app returns. Agreement status says which choices are saved; it
-does not show what data was sent.
+state when the app returns. Agreement status records the saved choice; it does
+not show what data was processed or sent.
 
-| ID | Agreement | Feature note |
-|---|---|---|
-| `S_ADG` | Viewing Information Agreement | Some source-aware voice features may depend on it. It does not enable Live Plus. |
-| `S_VNG` | Voice Information | LG voice recognition may be unavailable when declined. |
-| `S_TAG` | Interest-Based Advertisement | Interest-based ad personalization may be unavailable. |
-| `S_MKT` | Marketing Communications | Controls LG marketing communications. |
-| `S_DPA` | Data Partners | Some partner-data services may be unavailable. |
-| `S_PRG` | Privacy Policy | Required for LG smart services. |
-| `S_SVC` | Terms of Use | Required for LG smart services. |
-
-On this firmware, LG's First Use flow warns that withdrawing a required
-agreement can revoke the other agreements and restart setup. LG support says
-that declining required agreements leaves smart services unavailable.
-Behavior can vary by region and firmware. See
-[FEATURE-IMPACT.md](FEATURE-IMPACT.md) before changing agreement choices.
+On this firmware, LG's native agreement flow warns that changing a required
+agreement can revoke other choices and restart setup. Terms and menu behavior
+can vary by region and firmware.
 
 ## Per-app permission manager
 

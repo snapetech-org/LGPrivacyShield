@@ -30,21 +30,22 @@ It leaves the five separate choices above unchanged.
 
 ## LG agreements
 
-LG lets users review and change agreement selections in its User Agreements
-screen. PrivacyShield shows the saved status and opens that screen. It does not
-write EULA preference files or present acceptance as a normal software switch.
+PrivacyShield shows the saved agreement status, the documented accepted and
+declined effects, and any additional agreement the TV reports without a
+verified effect map. Changes remain in LG's native User Agreements screen.
+PrivacyShield does not write cached consent records.
 
-The Terms of Use and Privacy Policy are required for LG smart services such as
-Netflix and YouTube. Other agreements are optional. Voice recognition may need
-Voice Information consent, and some content-aware commands may need Viewing
-Information consent. Accept only the agreements needed for the features you
-want. Accepting Viewing Information does not turn on Live Plus.
+The Privacy Policy and Terms of Use are required for LG smart services such as
+Netflix and YouTube. Optional consents gate ACR, voice recognition, and
+advertising uses. Consent alone does not turn on a feature: Live Plus controls
+ACR separately, and voice features require an additional user action or enabled
+voice setting. A saved agreement status does not prove data was processed or
+sent. See [LG-AGREEMENT-EFFECTS.md](LG-AGREEMENT-EFFECTS.md) for the per-ID map,
+evidence quality, source links, and remaining limits.
 
-On this firmware, the native First Use flow warns that withdrawing a required
-agreement can revoke all agreements and restart setup. LG support says that
-declining required agreements leaves smart services unavailable. Regular TV
-features can continue when the user defers agreement choices. These behaviors
-may differ by region and firmware.
+On this C6, LG's native flow warned that changing a required agreement can
+revoke other choices and restart setup. Review its confirmation before saving.
+Menu behavior and agreement terms may differ by region and firmware.
 
 ## Microphone
 

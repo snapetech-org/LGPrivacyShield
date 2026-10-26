@@ -14,6 +14,10 @@ scope, including PlezyNG and `plezyng.app`; do not revert to the old
 10-repository / 86-workflow baseline or remove repositories or workflows from
 scope.
 
+Restore the private Windows runner `packer` for Windows build and release
+jobs. Keep those builds blocked until the private JIT route is restored and
+authorized; `windows-latest` is not an alternative.
+
 Coordinate shared runner-group and broker changes before cutover, and preserve
 active release work. If a build has no private JIT platform route, provision
 the route and treat the build as blocked until it is ready. Never route that

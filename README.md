@@ -60,24 +60,28 @@ The TV's system software and other apps may still use the network. LGPrivacyShie
 
 ## Expected TV support
 
-We expect LGPrivacyShield to support every LG OLED model family B1–B6, C1–C6, and G1–G6 on webOS 6.x and webOS 22, 23, 24, 25, or 26. That puts all 18 families in scope for each listed webOS version, including versions later than a model's launch version.
+We expect LGPrivacyShield to support all 18 LG OLED model families below—B1–B6, C1–C6, and G1–G6—on every listed webOS version: 6.x, 22, 23, 24, 25, and 26. The table makes that full scope explicit; a family is not limited to the webOS version it launched with.
 
-| TV generation | OLED model families | Launch webOS |
+| TV generation | OLED model families | Expected webOS versions |
 |---|---|---|
-| 2021 | B1, C1, G1 | 6.x |
-| 2022 | B2, C2, G2 | 22 |
-| 2023 | B3, C3, G3 | 23 |
-| 2024 | B4, C4, G4 | 24 |
-| 2025 | B5, C5, G5 | 25 |
-| 2026 | B6, C6, G6 | 26 |
+| 2021 | B1, C1, G1 | 6.x, 22, 23, 24, 25, 26 |
+| 2022 | B2, C2, G2 | 6.x, 22, 23, 24, 25, 26 |
+| 2023 | B3, C3, G3 | 6.x, 22, 23, 24, 25, 26 |
+| 2024 | B4, C4, G4 | 6.x, 22, 23, 24, 25, 26 |
+| 2025 | B5, C5, G5 | 6.x, 22, 23, 24, 25, 26 |
+| 2026 | B6, C6, G6 | 6.x, 22, 23, 24, 25, 26 |
 
-The table shows each family's launch webOS version. The app selects its settings map using the TV's family and installed webOS version, so an updated TV uses its current software profile. Available controls vary by model, region, firmware, and Homebrew access. A setting appears only when the TV returns a recognized current value, and changes are verified by reading the requested value back. Physical TV testing has been on one C6 (`OLED77C6HUP`) running webOS 26 (firmware `43.21.79`). See the [model compatibility maps](docs/DEVICE-COMPATIBILITY.md) for details.
+The app selects its settings map using the TV's family and installed webOS version, so an updated TV uses its current software profile. Available controls vary by model, region, firmware, and Homebrew access. A setting appears only when the TV returns a recognized current value, and changes are verified by reading the requested value back. Physical TV testing has been on one C6 (`OLED77C6HUP`) running webOS 26 (firmware `43.21.79`). See the [model compatibility maps](docs/DEVICE-COMPATIBILITY.md) for details.
 
 ## Compatibility feedback
 
-If a model is missing or a control cannot be read, choose **Prepare compatibility report** in Controls and scan the QR code. Scanning opens GitHub's compatibility form with a report prefilled in the link; submitting the form creates a public issue for maintainers to review. The report includes the TV model, software and firmware, profile and service access, and whether each of the 17 controls could be read. It excludes current setting values and LG agreement choices.
+When a model is missing or a control cannot be read:
 
-Owners can add the TV's region or a menu-path observation before submitting. These reports give maintainers feedback across models, software versions, and regions so we can spot coverage gaps and improve the model maps.
+1. In Controls, choose **Prepare compatibility report**.
+2. Scan the QR code to open GitHub's compatibility form with the report prefilled in the link.
+3. Submit the form to create a public issue for maintainers to review.
+
+The report includes the TV model, software and firmware, profile and service access, and whether each of the 17 controls could be read. It excludes current setting values and LG agreement choices. Before submitting, owners can add the TV's region or a menu-path observation. Each report gives maintainers feedback across models, software versions, and regions to help find coverage gaps and improve the model maps.
 
 ## Install and help
 

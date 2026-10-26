@@ -5,11 +5,11 @@
 See Live Plus and voice status, adjust the controls your TV supports, and save settings to restore later.
 
 **Expected TV scope:** We expect LGPrivacyShield to support all 18 LG OLED families—B1–B6,
-C1–C6, and G1–G6—on webOS 6.x and 22–26. Each family is in scope on every listed version,
-including after updates beyond a TV's launch-year software. If a model is missing or a control
-cannot be read, the in-app QR code opens a prefilled GitHub report. Owner submissions show us
-which controls are readable across models, software versions, and regions, helping us improve
-the model maps.
+C1–C6, and G1–G6—across webOS 6.x, 22, 23, 24, 25, and 26. Each family is in scope on every
+listed version, including after updates beyond a TV's launch-year software. If a model is
+missing or a control cannot be read, the in-app QR code opens a prefilled GitHub compatibility
+report. Owner submissions give us feedback on which controls are readable across models,
+software versions, and regions, so we can improve the model maps.
 See [expected model and webOS support](#expected-model-and-webos-support) and
 [compatibility feedback](#compatibility-feedback).
 
@@ -70,8 +70,8 @@ The TV's system software and other apps may still use the network. LGPrivacyShie
 ## Expected model and webOS support
 
 We expect LGPrivacyShield to support all 18 LG OLED model families: B1–B6,
-C1–C6, and G1–G6. Each family is in scope on webOS 6.x and 22–26, including
-versions newer than the TV's launch-year software.
+C1–C6, and G1–G6. Each family is in scope on webOS 6.x, 22, 23, 24, 25, and
+26, including versions newer than the TV's launch-year software.
 
 | TV generation | B family | C family | G family | Expected webOS versions |
 |---|---|---|---|---|
@@ -86,13 +86,19 @@ The app selects its settings map using the TV's family and installed webOS versi
 
 ## Compatibility feedback
 
-When a model is missing or a control cannot be read:
+To send compatibility feedback when a model is missing or a control cannot be
+read:
 
 1. In Controls, choose **Prepare compatibility report**.
 2. Scan the QR code to open GitHub's compatibility form with the report prefilled in the link.
-3. Submit the form to create a public issue for maintainers to review.
+3. Review the report, add an optional TV region or menu-path observation, and
+   submit it to open a public issue for maintainers.
 
-The report includes the TV model, software and firmware, profile and service access, and whether each of the 17 controls could be read. It excludes current setting values and LG agreement choices. Before submitting, owners can add the TV's region or a menu-path observation. These submissions let us compare which controls the app can read across models, software versions, and regions, so we can spot gaps and improve the model maps.
+The report includes the TV model, software and firmware, profile and service
+access, and whether each of the 17 controls could be read. It excludes current
+setting values and LG agreement choices. These owner reports give us feedback
+to compare control availability across models, software versions, and regions,
+spot gaps, and improve the model maps.
 
 ## Install and help
 

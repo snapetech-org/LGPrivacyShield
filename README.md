@@ -4,10 +4,12 @@
 
 See Live Plus and voice status, adjust the controls your TV supports, and save settings to restore later.
 
-**Expected TV scope:** We expect LGPrivacyShield to support LG OLED B1–B6, C1–C6, and G1–G6 on
-webOS 6.x and webOS 22, 23, 24, 25, and 26. If a model is missing or a control cannot be read,
-scan the compatibility QR code to open a prefilled report. Owner submissions help us compare
-control availability across models, software versions, and regions and improve the model maps.
+**Expected TV scope:** We expect LGPrivacyShield to support all 18 LG OLED families—B1–B6,
+C1–C6, and G1–G6—on webOS 6.x and 22–26. Each family is in scope on every listed version,
+including after updates beyond a TV's launch-year software. If a model is missing or a control
+cannot be read, the in-app QR code opens a prefilled GitHub report. Owner submissions show us
+which controls are readable across models, software versions, and regions, helping us improve
+the model maps.
 See [expected model and webOS support](#expected-model-and-webos-support) and
 [compatibility feedback](#compatibility-feedback).
 
@@ -68,8 +70,8 @@ The TV's system software and other apps may still use the network. LGPrivacyShie
 ## Expected model and webOS support
 
 We expect LGPrivacyShield to support all 18 LG OLED model families: B1–B6,
-C1–C6, and G1–G6. For every family, the expected webOS versions are 6.x, 22,
-23, 24, 25, and 26, including versions newer than the TV's launch year.
+C1–C6, and G1–G6. Each family is in scope on webOS 6.x and 22–26, including
+versions newer than the TV's launch-year software.
 
 | TV generation | B family | C family | G family | Expected webOS versions |
 |---|---|---|---|---|
@@ -90,7 +92,7 @@ When a model is missing or a control cannot be read:
 2. Scan the QR code to open GitHub's compatibility form with the report prefilled in the link.
 3. Submit the form to create a public issue for maintainers to review.
 
-The report includes the TV model, software and firmware, profile and service access, and whether each of the 17 controls could be read. It excludes current setting values and LG agreement choices. Before submitting, owners can add the TV's region or a menu-path observation. Each submission gives us owner feedback about control availability across models, software versions, and regions, helping us spot coverage gaps and improve the model maps.
+The report includes the TV model, software and firmware, profile and service access, and whether each of the 17 controls could be read. It excludes current setting values and LG agreement choices. Before submitting, owners can add the TV's region or a menu-path observation. These submissions let us compare which controls the app can read across models, software versions, and regions, so we can spot gaps and improve the model maps.
 
 ## Install and help
 

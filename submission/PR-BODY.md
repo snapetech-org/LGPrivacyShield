@@ -1,10 +1,16 @@
-#### Expected compatibility and owner feedback
+#### Expected TV scope and QR feedback
 
-We expect LGPrivacyShield to support all 18 LG OLED families: B1–B6, C1–C6,
-and G1–G6, across webOS 6.x and 22–26. If a model is missing or a control
-cannot be read, owners can scan the app's QR code to open a prefilled GitHub
-report. Submissions give us feedback on control availability across models,
-software versions, and regions, helping us find gaps and improve the maps.
+We expect LGPrivacyShield to support all 18 LG OLED families—B1–B6, C1–C6,
+and G1–G6—on webOS 6.x and 22–26. Each family is in scope on every listed
+version, including after a TV receives a software update beyond its launch
+version.
+
+When a TV is unmapped or a control cannot be read, scanning the app's QR code
+opens a prefilled GitHub form. Submitting it creates a public issue containing
+model and software details plus control-read results, but no current setting
+values or agreement choices. These owner reports let us compare control
+availability across models, software versions, and regions, then improve the
+compatibility maps.
 
 #### What LGPrivacyShield does
 
@@ -27,8 +33,8 @@ app.
 #### Expected TV compatibility scope
 
 We expect LGPrivacyShield to support all 18 LG OLED families: B1–B6, C1–C6,
-and G1–G6. For every family, the expected webOS versions are 6.x, 22, 23, 24,
-25, and 26, including versions newer than the TV's launch year:
+and G1–G6. Each family is in scope on webOS 6.x and 22–26, including versions
+newer than the TV's launch-year software:
 
 | TV generation | B family | C family | G family | Expected webOS versions |
 |---|---|---|---|---|

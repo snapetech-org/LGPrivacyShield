@@ -13,6 +13,7 @@ See Live Plus and voice status, adjust the controls your TV supports, and save s
   - [About](#about)
 - [Local operation and privacy](#local-operation-and-privacy)
 - [Expected TV support](#expected-tv-support)
+- [Compatibility feedback](#compatibility-feedback)
 - [Install and help](#install-and-help)
 
 ## Screenshots
@@ -53,17 +54,15 @@ Find the app version, license and source code, plus the support QR code and [Ko-
 
 **Local-first:** LGPrivacyShield runs on your TV and uses local webOS services. The app sends no data during normal use.
 
-To report a missing model or a control that cannot be read, choose **Prepare compatibility report** in Controls and scan the QR code. It opens GitHub's compatibility form with a report prefilled in the link. The report includes the TV model, software and firmware, profile and service access, and whether each of the 17 controls could be read. It excludes current setting values and agreement choices. Add the TV's region or a menu-path observation, then submit the form to create a public issue. These owner reports give us feedback to find coverage gaps and improve the model maps.
-
 The app does not record audio or screenshots, run a background service, inspect encrypted network traffic, or upload TV settings or viewing activity. Network destination history requires separate router or DNS logs. A software voice switch does not disconnect a physical microphone if the TV does not expose a verified microphone-disconnect control to this app.
 
 The TV's system software and other apps may still use the network. LGPrivacyShield does not monitor or block their traffic. See the [security notes](SECURITY.md) for the app's trust boundary and review limits.
 
 ## Expected TV support
 
-We expect LGPrivacyShield to support LG OLED TVs in the B1–B6, C1–C6, and G1–G6 families across webOS 6.x and webOS 22–26.
+We expect LGPrivacyShield to support LG OLED model families B1–B6, C1–C6, and G1–G6 on webOS 6.x and webOS 22–26.
 
-| TV generation | OLED families | Launch webOS |
+| TV generation | OLED model families | Launch webOS |
 |---|---|---|
 | 2021 | B1, C1, G1 | 6.x |
 | 2022 | B2, C2, G2 | 22 |
@@ -72,7 +71,13 @@ We expect LGPrivacyShield to support LG OLED TVs in the B1–B6, C1–C6, and G1
 | 2025 | B5, C5, G5 | 25 |
 | 2026 | B6, C6, G6 | 26 |
 
-The app chooses its settings map from the TV's family and installed webOS version, so an updated TV uses its current software profile. Available controls vary by model, region, firmware, and Homebrew access. A setting appears only when the TV returns a recognized current value, and changes are verified by reading the requested value back. Physical testing has been on one C6 (`OLED77C6HUP`) running webOS 26 (firmware `43.21.79`). See the [model compatibility maps](docs/DEVICE-COMPATIBILITY.md) for details.
+The table groups models by generation and shows their launch webOS version. We expect the listed families to work across webOS 6.x and 22–26; the app selects its settings map using the TV's family and installed webOS version, so an updated TV uses its current software profile. Available controls vary by model, region, firmware, and Homebrew access. A setting appears only when the TV returns a recognized current value, and changes are verified by reading the requested value back. Physical testing has been on one C6 (`OLED77C6HUP`) running webOS 26 (firmware `43.21.79`). See the [model compatibility maps](docs/DEVICE-COMPATIBILITY.md) for details.
+
+## Compatibility feedback
+
+If a model is missing or a control cannot be read, choose **Prepare compatibility report** in Controls and scan the QR code. It opens GitHub's compatibility form with a report prefilled in the link. The report includes the TV model, software and firmware, profile and service access, and whether each of the 17 controls could be read. It excludes current setting values and LG agreement choices.
+
+Add the TV's region or a menu-path observation, then submit the form to create a public issue. These owner reports give maintainers feedback across models, software versions, and regions so we can find coverage gaps and improve the model maps.
 
 ## Install and help
 

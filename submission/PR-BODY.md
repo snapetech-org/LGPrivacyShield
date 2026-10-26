@@ -19,11 +19,12 @@ app.
 When a model is missing or a control cannot be read, I can prepare a
 compatibility report in Controls and scan one QR code. It opens GitHub's
 compatibility issue form with the report prefilled in the link. The report
-includes the TV model, SDK, firmware, profile scope, service access, and whether
-each of the 17 controls could be read. It excludes current setting values and
-agreement choices. I can add the TV region or a menu-path observation before
-submitting. Submitting creates a public issue that gives maintainers owner
-feedback to review model coverage and improve the maps.
+includes the TV model, software and firmware, profile and service access, and
+whether each of the 17 controls could be read. It excludes current setting
+values and LG agreement choices. I can add the TV region or a menu-path
+observation before submitting. The resulting public issue gives maintainers
+owner feedback across models, software versions, and regions, helping us find
+coverage gaps and improve the model maps.
 
 #### Submission checklist
 
@@ -44,12 +45,13 @@ tests. I set the product and privacy requirements, directed revisions,
 reviewed app behavior and wording, and supplied observations from my TV. I take
 responsibility for this submission.
 
-#### Compatibility and testing
+#### Expected TV compatibility scope
 
-We expect LGPrivacyShield to support LG OLED TVs in the B1–B6, C1–C6, and G1–G6
-families across webOS 6.x and webOS 22–26. The generation map is:
+We expect LGPrivacyShield to support LG OLED model families B1–B6, C1–C6, and
+G1–G6 on webOS 6.x and webOS 22–26. The table groups the models by TV
+generation and shows their launch webOS version:
 
-| TV generation | OLED families | Launch webOS |
+| TV generation | OLED model families | Launch webOS |
 |---|---|---|
 | 2021 | B1, C1, G1 | 6.x |
 | 2022 | B2, C2, G2 | 22 |
@@ -58,9 +60,11 @@ families across webOS 6.x and webOS 22–26. The generation map is:
 | 2025 | B5, C5, G5 | 25 |
 | 2026 | B6, C6, G6 | 26 |
 
-The settings map follows the model family and installed webOS version, so a TV
-updated to a later release uses its current software profile. Available
-controls depend on the TV's model, region, firmware, and Homebrew access. A
+The table shows each family's launch webOS version; we expect the listed
+families to work across webOS 6.x and 22–26. The settings map follows the model
+family and installed webOS version, so a TV updated to a later release uses
+its current software profile. Available controls depend on the TV's model,
+region, firmware, and Homebrew access. A
 setting appears only when its current value is readable, and changes are
 confirmed by readback. I physically tested it on my LG C6 (OLED77C6HUP), running
 webOS 26 / Rockhopper 11.2.0-3512, firmware 43.21.79. The Homebrew IPK

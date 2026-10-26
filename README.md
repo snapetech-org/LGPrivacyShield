@@ -60,7 +60,7 @@ The TV's system software and other apps may still use the network. LGPrivacyShie
 
 ## Expected TV support
 
-We expect LGPrivacyShield to support LG OLED model families B1–B6, C1–C6, and G1–G6 on webOS 6.x and webOS 22–26.
+We expect LGPrivacyShield to support every LG OLED model family B1–B6, C1–C6, and G1–G6 on webOS 6.x and webOS 22, 23, 24, 25, or 26. That puts all 18 families in scope for each listed webOS version, including versions later than a model's launch version.
 
 | TV generation | OLED model families | Launch webOS |
 |---|---|---|
@@ -71,13 +71,13 @@ We expect LGPrivacyShield to support LG OLED model families B1–B6, C1–C6, an
 | 2025 | B5, C5, G5 | 25 |
 | 2026 | B6, C6, G6 | 26 |
 
-The table groups models by generation and shows their launch webOS version. We expect the listed families to work across webOS 6.x and 22–26; the app selects its settings map using the TV's family and installed webOS version, so an updated TV uses its current software profile. Available controls vary by model, region, firmware, and Homebrew access. A setting appears only when the TV returns a recognized current value, and changes are verified by reading the requested value back. Physical testing has been on one C6 (`OLED77C6HUP`) running webOS 26 (firmware `43.21.79`). See the [model compatibility maps](docs/DEVICE-COMPATIBILITY.md) for details.
+The table shows each family's launch webOS version. The app selects its settings map using the TV's family and installed webOS version, so an updated TV uses its current software profile. Available controls vary by model, region, firmware, and Homebrew access. A setting appears only when the TV returns a recognized current value, and changes are verified by reading the requested value back. Physical TV testing has been on one C6 (`OLED77C6HUP`) running webOS 26 (firmware `43.21.79`). See the [model compatibility maps](docs/DEVICE-COMPATIBILITY.md) for details.
 
 ## Compatibility feedback
 
-If a model is missing or a control cannot be read, choose **Prepare compatibility report** in Controls and scan the QR code. It opens GitHub's compatibility form with a report prefilled in the link. The report includes the TV model, software and firmware, profile and service access, and whether each of the 17 controls could be read. It excludes current setting values and LG agreement choices.
+If a model is missing or a control cannot be read, choose **Prepare compatibility report** in Controls and scan the QR code. Scanning opens GitHub's compatibility form with a report prefilled in the link; submitting the form creates a public issue for maintainers to review. The report includes the TV model, software and firmware, profile and service access, and whether each of the 17 controls could be read. It excludes current setting values and LG agreement choices.
 
-Add the TV's region or a menu-path observation, then submit the form to create a public issue. These owner reports give maintainers feedback across models, software versions, and regions so we can find coverage gaps and improve the model maps.
+Owners can add the TV's region or a menu-path observation before submitting. These reports give maintainers feedback across models, software versions, and regions so we can spot coverage gaps and improve the model maps.
 
 ## Install and help
 

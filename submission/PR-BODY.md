@@ -16,15 +16,19 @@ separate router or DNS logs. A software voice switch cannot disconnect a
 physical microphone unless the TV exposes a verified disconnect control to the
 app.
 
-When a model is missing or a control cannot be read, I can prepare a
-compatibility report in Controls, scan its QR code to open GitHub's prefilled
-form, and submit the form to create a public issue for maintainers to review.
+When a model is missing or a control cannot be read:
+
+1. In Controls, I choose **Prepare compatibility report**.
+2. I scan its QR code to open GitHub's form with the report prefilled in the
+   link.
+3. I submit the form to create a public issue for maintainers to review.
+
 The report includes the TV model, software and firmware, profile and service
 access, and whether each of the 17 controls could be read. It excludes current
-setting values and LG agreement choices. I can add the TV region or a
-menu-path observation before submitting. Each report gives maintainers
-feedback across models, software versions, and regions to help find coverage
-gaps and improve the model maps.
+setting values and LG agreement choices. I can add the TV region or a menu-path
+observation before submitting. Each report gives maintainers feedback across
+models, software versions, and regions to help find coverage gaps and improve
+the model maps.
 
 #### Submission checklist
 

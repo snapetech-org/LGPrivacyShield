@@ -1,3 +1,11 @@
+#### Expected compatibility and owner feedback
+
+We expect LGPrivacyShield to support all 18 LG OLED families: B1–B6, C1–C6,
+and G1–G6, across webOS 6.x and 22–26. If a model is missing or a control
+cannot be read, owners can scan the app's QR code to open a prefilled GitHub
+report. Submissions give us feedback on control availability across models,
+software versions, and regions, helping us find gaps and improve the maps.
+
 #### What LGPrivacyShield does
 
 I built LGPrivacyShield to help me review and change the privacy settings my LG
@@ -22,14 +30,14 @@ We expect LGPrivacyShield to support all 18 LG OLED families: B1–B6, C1–C6,
 and G1–G6. For every family, the expected webOS versions are 6.x, 22, 23, 24,
 25, and 26, including versions newer than the TV's launch year:
 
-| TV generation | B family | C family | G family |
-|---|---|---|---|
-| 2021 | B1 | C1 | G1 |
-| 2022 | B2 | C2 | G2 |
-| 2023 | B3 | C3 | G3 |
-| 2024 | B4 | C4 | G4 |
-| 2025 | B5 | C5 | G5 |
-| 2026 | B6 | C6 | G6 |
+| TV generation | B family | C family | G family | Expected webOS versions |
+|---|---|---|---|---|
+| 2021 | B1 | C1 | G1 | 6.x, 22, 23, 24, 25, 26 |
+| 2022 | B2 | C2 | G2 | 6.x, 22, 23, 24, 25, 26 |
+| 2023 | B3 | C3 | G3 | 6.x, 22, 23, 24, 25, 26 |
+| 2024 | B4 | C4 | G4 | 6.x, 22, 23, 24, 25, 26 |
+| 2025 | B5 | C5 | G5 | 6.x, 22, 23, 24, 25, 26 |
+| 2026 | B6 | C6 | G6 | 6.x, 22, 23, 24, 25, 26 |
 
 The settings map follows the model family and installed webOS version, so a TV
 updated to a later release uses its current software profile. Available

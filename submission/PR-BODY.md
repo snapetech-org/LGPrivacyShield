@@ -18,18 +18,18 @@ app.
 
 #### Expected TV compatibility scope
 
-We expect LGPrivacyShield to support all 18 LG OLED families—B1–B6, C1–C6,
-and G1–G6—on webOS 6.x and 22–26. Each family is included on every version
-listed below, including versions newer than its launch year:
+We expect LGPrivacyShield to support all 18 LG OLED families: B1–B6, C1–C6,
+and G1–G6. For every family, the expected webOS versions are 6.x, 22, 23, 24,
+25, and 26, including versions newer than the TV's launch year:
 
-| TV generation | OLED model families | Expected webOS versions |
-|---|---|---|
-| 2021 | B1, C1, G1 | 6.x, 22, 23, 24, 25, 26 |
-| 2022 | B2, C2, G2 | 6.x, 22, 23, 24, 25, 26 |
-| 2023 | B3, C3, G3 | 6.x, 22, 23, 24, 25, 26 |
-| 2024 | B4, C4, G4 | 6.x, 22, 23, 24, 25, 26 |
-| 2025 | B5, C5, G5 | 6.x, 22, 23, 24, 25, 26 |
-| 2026 | B6, C6, G6 | 6.x, 22, 23, 24, 25, 26 |
+| TV generation | B family | C family | G family |
+|---|---|---|---|
+| 2021 | B1 | C1 | G1 |
+| 2022 | B2 | C2 | G2 |
+| 2023 | B3 | C3 | G3 |
+| 2024 | B4 | C4 | G4 |
+| 2025 | B5 | C5 | G5 |
+| 2026 | B6 | C6 | G6 |
 
 The settings map follows the model family and installed webOS version, so a TV
 updated to a later release uses its current software profile. Available
@@ -50,9 +50,9 @@ When a model is missing or a control cannot be read:
 The report includes the TV model, software and firmware, profile and service
 access, and whether each of the 17 controls could be read. It excludes current
 setting values and LG agreement choices. I can add the TV region or a menu-path
-observation before submitting. Submissions give us feedback across models,
-software versions, and regions, helping us find coverage gaps and improve the
-model maps.
+observation before submitting. These reports let us compare which controls are
+readable across models, software versions, and regions, spot coverage gaps, and
+improve the model maps.
 
 #### Submission checklist
 

@@ -5,6 +5,20 @@ Project-owner signoff is required before publishing a release or updating the
 Homebrew catalog entry. Keep the catalog pull request open for maintainer
 review.
 
+## CI runner policy
+
+Every build for the 65 `snapetech-org` repositories must run on a private JIT
+runner. GitHub-hosted runners and hosted fallback are unavailable because
+hosted minutes are exhausted. Keep all 65 repositories and their workflows in
+scope, including PlezyNG and `plezyng.app`; do not revert to the old
+10-repository / 86-workflow baseline or remove repositories or workflows from
+scope.
+
+Coordinate shared runner-group and broker changes before cutover, and preserve
+active release work. If a build has no private JIT platform route, provision
+the route and treat the build as blocked until it is ready. Never route that
+build to a GitHub-hosted runner.
+
 ## Before release
 
 1. Update `package.json`, `package-lock.json`, `webos-app/appinfo.json`, and

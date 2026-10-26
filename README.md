@@ -12,7 +12,7 @@ See Live Plus and voice status, adjust the controls your TV supports, and save s
   - [LG agreements](#lg-agreements)
   - [About](#about)
 - [Local operation and privacy](#local-operation-and-privacy)
-- [Expected TV support](#expected-tv-support)
+- [Expected model and webOS support](#expected-model-and-webos-support)
 - [Compatibility feedback](#compatibility-feedback)
 - [Install and help](#install-and-help)
 
@@ -58,9 +58,9 @@ The app does not record audio or screenshots, run a background service, inspect 
 
 The TV's system software and other apps may still use the network. LGPrivacyShield does not monitor or block their traffic. See the [security notes](SECURITY.md) for the app's trust boundary and review limits.
 
-## Expected TV support
+## Expected model and webOS support
 
-We expect LGPrivacyShield to support all 18 LG OLED model families below—B1–B6, C1–C6, and G1–G6—on every listed webOS version: 6.x, 22, 23, 24, 25, and 26. The table makes that full scope explicit; a family is not limited to the webOS version it launched with.
+We expect LGPrivacyShield to support all 18 LG OLED model families—B1–B6, C1–C6, and G1–G6—on webOS 6.x and 22–26. Each family is included on every version in the table, including versions newer than its launch year.
 
 | TV generation | OLED model families | Expected webOS versions |
 |---|---|---|
@@ -81,7 +81,7 @@ When a model is missing or a control cannot be read:
 2. Scan the QR code to open GitHub's compatibility form with the report prefilled in the link.
 3. Submit the form to create a public issue for maintainers to review.
 
-The report includes the TV model, software and firmware, profile and service access, and whether each of the 17 controls could be read. It excludes current setting values and LG agreement choices. Before submitting, owners can add the TV's region or a menu-path observation. Each report gives maintainers feedback across models, software versions, and regions to help find coverage gaps and improve the model maps.
+The report includes the TV model, software and firmware, profile and service access, and whether each of the 17 controls could be read. It excludes current setting values and LG agreement choices. Before submitting, owners can add the TV's region or a menu-path observation. Submissions give us feedback across models, software versions, and regions, helping us find coverage gaps and improve the model maps.
 
 ## Install and help
 

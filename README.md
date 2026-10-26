@@ -4,7 +4,12 @@
 
 See Live Plus and voice status, adjust the controls your TV supports, and save settings to restore later.
 
-**Expected TV scope:** We expect LGPrivacyShield to support LG OLED B1–B6, C1–C6, and G1–G6 on webOS 6.x and webOS 22, 23, 24, 25, and 26. If a model is missing or a control cannot be read, scan the compatibility QR code to open a prefilled report. Owner submissions help us compare control availability across models, software versions, and regions and improve the model maps. See [expected model and webOS support](#expected-model-and-webos-support) and [compatibility feedback](#compatibility-feedback).
+**Expected TV scope:** We expect LGPrivacyShield to support LG OLED B1–B6, C1–C6, and G1–G6 on
+webOS 6.x and webOS 22, 23, 24, 25, and 26. If a model is missing or a control cannot be read,
+scan the compatibility QR code to open a prefilled report. Owner submissions help us compare
+control availability across models, software versions, and regions and improve the model maps.
+See [expected model and webOS support](#expected-model-and-webos-support) and
+[compatibility feedback](#compatibility-feedback).
 
 ## Contents
 

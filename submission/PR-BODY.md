@@ -1,3 +1,18 @@
+#### Expected TV scope and QR feedback
+
+We expect LGPrivacyShield to support all 18 LG OLED model families—B1–B6,
+C1–C6, and G1–G6—on webOS 6.x, 22, 23, 24, 25, and 26. Every family is in
+scope on every listed version, including after a TV receives a software update
+beyond its launch-year version.
+
+When a TV is unmapped or a control cannot be read, scanning the app's QR code
+opens a prefilled GitHub compatibility form. Owners can review it, add an
+optional region or menu-path observation, and submit it as a public issue. The
+report includes model and software details plus control-read results, but no
+current setting values or agreement choices. These reports tell us which
+controls are readable across models, software versions, and regions, helping
+us spot gaps and improve the compatibility maps.
+
 #### What LGPrivacyShield does
 
 I built LGPrivacyShield to help me review and change the privacy settings my LG
@@ -16,15 +31,43 @@ separate router or DNS logs. A software voice switch cannot disconnect a
 physical microphone unless the TV exposes a verified disconnect control to the
 app.
 
-When a model is missing or a control cannot be read, I can prepare a
-compatibility report in Controls and scan one QR code. It opens GitHub's
-compatibility issue form with the report prefilled in the link. The report
-includes the TV model, software and firmware, profile and service access, and
-whether each of the 17 controls could be read. It excludes current setting
-values and LG agreement choices. I can add the TV region or a menu-path
-observation before submitting. The resulting public issue gives maintainers
-owner feedback across models, software versions, and regions, helping us find
-coverage gaps and improve the model maps.
+#### Expected TV compatibility scope
+
+We expect LGPrivacyShield to support all 18 LG OLED model families: B1–B6,
+C1–C6, and G1–G6. Every family is in scope on webOS 6.x, 22, 23, 24, 25, and 26,
+including versions newer than the TV's launch-year software:
+
+| TV generation | B family | C family | G family | Expected webOS versions |
+|---|---|---|---|---|
+| 2021 | B1 | C1 | G1 | 6.x, 22, 23, 24, 25, 26 |
+| 2022 | B2 | C2 | G2 | 6.x, 22, 23, 24, 25, 26 |
+| 2023 | B3 | C3 | G3 | 6.x, 22, 23, 24, 25, 26 |
+| 2024 | B4 | C4 | G4 | 6.x, 22, 23, 24, 25, 26 |
+| 2025 | B5 | C5 | G5 | 6.x, 22, 23, 24, 25, 26 |
+| 2026 | B6 | C6 | G6 | 6.x, 22, 23, 24, 25, 26 |
+
+The settings map follows the model family and installed webOS version, so a TV
+updated to a later release uses its current software profile. Available
+controls depend on the TV's model, region, firmware, and Homebrew access. A
+setting appears only when its current value is readable, and changes are
+confirmed by readback. I physically tested it on my LG C6 (OLED77C6HUP),
+running webOS 26 / Rockhopper 11.2.0-3512, firmware 43.21.79. The Homebrew IPK
+verifier reports ES2017 and runtime API support on webOS 6.4.0, 7.4.0, 8.3.0,
+9.2.0, 10.2.0, and 11.2.0 profiles.
+
+When a model is missing or a control cannot be read:
+
+1. In Controls, I choose **Prepare compatibility report**.
+2. I scan its QR code to open GitHub's form with the report prefilled in the
+   link.
+3. I submit the form to create a public issue for maintainers to review.
+
+The report includes the TV model, software and firmware, profile and service
+access, and whether each of the 17 controls could be read. It excludes current
+setting values and LG agreement choices. I can add the TV region or a menu-path
+observation before submitting. These reports let us compare which controls are
+readable across models, software versions, and regions, spot coverage gaps, and
+improve the model maps.
 
 #### Submission checklist
 
@@ -44,32 +87,6 @@ I used AI tools extensively for research, implementation, documentation, and
 tests. I set the product and privacy requirements, directed revisions,
 reviewed app behavior and wording, and supplied observations from my TV. I take
 responsibility for this submission.
-
-#### Expected TV compatibility scope
-
-We expect LGPrivacyShield to support LG OLED model families B1–B6, C1–C6, and
-G1–G6 on webOS 6.x and webOS 22–26. The table groups the models by TV
-generation and shows their launch webOS version:
-
-| TV generation | OLED model families | Launch webOS |
-|---|---|---|
-| 2021 | B1, C1, G1 | 6.x |
-| 2022 | B2, C2, G2 | 22 |
-| 2023 | B3, C3, G3 | 23 |
-| 2024 | B4, C4, G4 | 24 |
-| 2025 | B5, C5, G5 | 25 |
-| 2026 | B6, C6, G6 | 26 |
-
-The table shows each family's launch webOS version; we expect the listed
-families to work across webOS 6.x and 22–26. The settings map follows the model
-family and installed webOS version, so a TV updated to a later release uses
-its current software profile. Available controls depend on the TV's model,
-region, firmware, and Homebrew access. A
-setting appears only when its current value is readable, and changes are
-confirmed by readback. I physically tested it on my LG C6 (OLED77C6HUP), running
-webOS 26 / Rockhopper 11.2.0-3512, firmware 43.21.79. The Homebrew IPK
-verifier reports ES2017 and runtime API support on webOS 6.4.0, 7.4.0, 8.3.0,
-9.2.0, 10.2.0, and 11.2.0 profiles.
 
 #### Submission details
 
